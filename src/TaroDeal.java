@@ -1,10 +1,6 @@
 package Tarot;
 
-import com.sun.javafx.geom.Rectangle;
-
 import javafx.application.Application;
-import javafx.scene.Group;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class TaroDeal extends Application {
@@ -13,12 +9,12 @@ public class TaroDeal extends Application {
 	}
 
 	@Override
-	public void start(Stage primaryStage) throws Exception {
+	public void start(Stage stage) throws Exception {
 		
 		Controller controller = new Controller();
 		
-		primaryStage.setTitle("Tarot deal");
-		primaryStage.setScene(scene);
-		primaryStage.show();
+		stage.setTitle("Tarot deal");
+		stage.setScene(controller.getView().getScene());
+		stage.show();
 	}
 }

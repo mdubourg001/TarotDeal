@@ -4,6 +4,10 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 
 public class View {
-	Group group = new Group();
-	Scene scene = new Scene(group, 1280, 900);
+	private Group group = new Group();
+	private Scene scene = new Scene(group, 1280, 900);
+	
+	public Scene getScene() {
+		return scene;
+	}
 }
