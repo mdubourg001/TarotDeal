@@ -12,6 +12,7 @@ public class TarotDeal extends Application {
 	public void start(Stage stage) throws Exception {
 		
 		Controller controller = new Controller();
+
 		
 		stage.setTitle("Tarot deal");
 		stage.setScene(controller.getView().getScene());
