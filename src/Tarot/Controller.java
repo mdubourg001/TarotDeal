@@ -1,17 +1,13 @@
 package Tarot;
 
 public class Controller {
-	private View view = new View();
-	private Model model = new Model();
+	private Model model;
 	
-	public View getView() {
-		return view;
+	public Controller(Model model){
+		this.model = model;
 	}
 	
-	public Model getModel() {
+	public Model getModel(){
 		return model;
 	}
-
-
-
 }
