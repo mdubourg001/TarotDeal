@@ -4,9 +4,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class CardView{
-	public static final int CARD_W = 200;
-	public static final int CARD_H = 355;
-	
 	private static Image back = new Image("file:./cards/back.jpg");
 	
 	private Image image;
@@ -15,8 +12,8 @@ public class CardView{
 	public CardView(String file, int x, int y) {
 		this.image = new Image(file);
 		this.view = new ImageView(CardView.back);
-		this.view.setFitWidth(CARD_W);
-		this.view.setFitHeight(CARD_H);
+		this.view.setFitWidth(CardModel.CARD_W);
+		this.view.setFitHeight(CardModel.CARD_H);
 		this.view.setX(x);
 		this.view.setY(y);
 	}

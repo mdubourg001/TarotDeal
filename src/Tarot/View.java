@@ -1,5 +1,6 @@
 package Tarot;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javafx.scene.Group;
@@ -13,7 +14,7 @@ public class View implements Observer{
 	private Group group = new Group();
 	private Scene scene = new Scene(group, Model.SCREEN_W, Model.SCREEN_H);
 	
-	private Map<String, CardView> cardViews;
+	private Map<String, CardView> cardViews = new HashMap<String, CardView>();
 	
 	public View(Controller controller){
 		this.controller = controller;

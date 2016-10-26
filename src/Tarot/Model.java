@@ -11,7 +11,7 @@ public class Model implements Observable {
 	
 	private ArrayList<Observer> listObserver = new ArrayList<Observer>();
 	
-	private ArrayList<CardModel> cards;
+	private ArrayList<CardModel> cards = new ArrayList<CardModel>();
 	
 	public Model(){
 		loadCards();
@@ -49,7 +49,7 @@ public class Model implements Observable {
 				fullName += "0";
 			}
 			fullName += Integer.toString(i) + ".jpg";
-			cards.add(new CardModel("Trump" + Integer.toString(i), fullName, (SCREEN_W-CardView.CARD_W)/2, (SCREEN_H-CardView.CARD_H)/2));
+			cards.add(new CardModel("Trump" + Integer.toString(i), fullName, (SCREEN_W-CardModel.CARD_W)/2, (SCREEN_H-CardModel.CARD_H)/2));
 		}
 	}
 
@@ -58,7 +58,7 @@ public class Model implements Observable {
 		for(String color : cardColors()){
 			for(String value : cardValues()){
 				fullName = "file:./cards/Tarot_nouveau_-_Grimaud_-_1898_-_" + color + "_-_" + value + ".jpg";
-				cards.add(new CardModel(color + value, fullName, (SCREEN_W-CardView.CARD_W)/2, (SCREEN_H-CardView.CARD_H)/2));
+				cards.add(new CardModel(color + value, fullName, (SCREEN_W-CardModel.CARD_W)/2, (SCREEN_H-CardModel.CARD_H)/2));
 			}
 		}
 	}

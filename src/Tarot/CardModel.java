@@ -1,6 +1,9 @@
 package Tarot;
 
 public class CardModel {
+	public static final int CARD_W = 200;
+	public static final int CARD_H = 355;
+	
 	private String name;
 	private String path;
 	private int x;
