@@ -19,6 +19,8 @@ public class Main extends Application{
 		view = new View(controller);
 		model.addObserver(view);
 		
+		view.copyModelCards();
+		
 		stage.setTitle("Martinez Dubourg S3D");
 		stage.setScene(view.getScene());
 		stage.sizeToScene();

@@ -1,8 +1,8 @@
 package Tarot;
 
 public class CardModel {
-	public static final int CARD_W = 200;
-	public static final int CARD_H = 355;
+	public static final int CARD_W = 100;
+	public static final int CARD_H = 174;
 	
 	private String name;
 	private String path;
@@ -31,6 +31,11 @@ public class CardModel {
 	
 	public int getY() {
 		return y;
+	}
+	
+	public void moveTo(int x, int y){
+		this.x = x;
+		this.y = y;
 	}
 
 	public boolean isRecto() {
