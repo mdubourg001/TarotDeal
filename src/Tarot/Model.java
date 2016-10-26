@@ -12,10 +12,16 @@ public class Model implements Observable {
 	
 	private static final int NB_PLAYERS = 4;
 	
+	private static final int DECK_X_START = 185;
+	private static final int DECK_Y_START = 50;
+	
 	private static final int DIST_CARD_X_START = 50;
 	private static final int DIST_CARD_Y1 = 300;
 	private static final int DIST_CARD_Y2 = 500;
 	private static final int DIST_CARD_X_DIFF = 135;
+	
+	private static final int CHIEN_CARD_X_START = 320;
+	private static final int CHIEN_CARD_Y = 50;
 	
 	private static final int PLAYER_3_Y = -200;
 	private static final int PLAYERS_2_4_X1 = -200;
@@ -27,13 +33,19 @@ public class Model implements Observable {
 	private ArrayList<CardModel> deckCards = new ArrayList<CardModel>();
 	private ArrayList<CardModel> myCards = new ArrayList<CardModel>();
 	private ArrayList<CardModel> othersCards = new ArrayList<CardModel>();
+	private ArrayList<CardModel> chienCards = new ArrayList<CardModel>();
+	
+	private int distributedCards = 0;
+	private int nbCardsInChien = 0;
 
 	private int currentPlayer = 1;
 	private int myDistCardX = DIST_CARD_X_START;
 	private int myDistCardY = DIST_CARD_Y1;
+	private int chienCardX = CHIEN_CARD_X_START;
 	
 	private int myIndexCard = -3;
 	private int othersIndexCard = -3;
+	private int chienIndexCard = -1;
 	
 	public Model(){
 		loadCards();
@@ -66,8 +78,10 @@ public class Model implements Observable {
 				fullName += "0";
 			}
 			fullName += Integer.toString(i) + ".jpg";
-			deckCards.add(new CardModel("Trump" + Integer.toString(i), fullName, (SCREEN_W-CardModel.CARD_W)/2, 100));
+			deckCards.add(new CardModel("Trump" + Integer.toString(i), fullName, DECK_X_START, DECK_Y_START));
 		}
+		fullName = "file:./cards/Tarot_nouveau_-_Grimaud_-_1898_-_Trumps_-_Excuse";
+		deckCards.add(new CardModel("Excuse", fullName, DECK_X_START, DECK_Y_START));
 	}
 
 	private void loadColoredCards(){
@@ -75,7 +89,7 @@ public class Model implements Observable {
 		for(String color : cardColors()){
 			for(String value : cardValues()){
 				fullName = "file:./cards/Tarot_nouveau_-_Grimaud_-_1898_-_" + color + "_-_" + value + ".jpg";
-				deckCards.add(new CardModel(color + value, fullName, (SCREEN_W-CardModel.CARD_W)/2, 100));
+				deckCards.add(new CardModel(color + value, fullName, DECK_X_START, DECK_Y_START));
 			}
 		}
 	}
@@ -115,7 +129,15 @@ public class Model implements Observable {
 		}
 	}
 	
-	public void distribute3Cards(){
+	public void distributeCards(){
+		if(distributedCards > 0 && nbCardsInChien < 6){
+			addCardToChien();
+		}
+		distribute3Cards();
+	}
+	
+	private void distribute3Cards(){
+		distributedCards += 3;
 		switch(currentPlayer){
 		case 1 :
 			move3CardsToMe();
@@ -138,7 +160,7 @@ public class Model implements Observable {
 		}
 	}
 	
-	public void move3CardsToMe(){
+	private void move3CardsToMe(){
 		myIndexCard += 3;
 		for(int i=0; i<3; i++){
 			myCards.add(deckCards.get(0));
@@ -156,7 +178,7 @@ public class Model implements Observable {
 				myCards.get(myIndexCard+2));
 	}
 	
-	public void move3CardsToOther(int x[], int y[]){
+	private void move3CardsToOther(int x[], int y[]){
 		othersIndexCard += 3;
 		for(int i=0; i<3; i++){
 			othersCards.add(deckCards.get(0));
@@ -179,7 +201,29 @@ public class Model implements Observable {
 	@Override
 	public void notify3CardsDistributed(CardModel card1, CardModel card2,CardModel card3) {
 		for(Observer obs : listObserver){
-			obs.update3CardsDistributed(card1, card2, card3);
+			obs.update3CardsDistributed(card1, card2, card3, distributedCards == 78);
+		}
+	}
+	
+	private void addCardToChien(){
+		distributedCards++;
+		nbCardsInChien++;
+		moveCardTochien();
+	}
+	
+	private void moveCardTochien(){
+		chienIndexCard++;
+		chienCards.add(deckCards.get(0));
+		chienCards.get(chienIndexCard).moveTo(chienCardX, CHIEN_CARD_Y);
+		chienCardX += DIST_CARD_X_DIFF;
+		deckCards.remove(0);
+		notifyCardAddToChien(chienCards.get(chienIndexCard));
+	}
+
+	@Override
+	public void notifyCardAddToChien(CardModel card) {
+		for(Observer obs : listObserver){
+			obs.updateCardAddToChien(card);
 		}
 	}
 }

@@ -25,8 +25,6 @@ public class View implements Observer{
 	
 	private Map<String, CardView> cardViews = new HashMap<String, CardView>();
 	
-	private int distributedCards = 0;
-	
 	public View(Controller controller){
 		this.controller = controller;
 		this.model = controller.getModel();
@@ -50,14 +48,12 @@ public class View implements Observer{
 		for(CardModel card : model.getCards()){
 			group.getChildren().add(cardViews.get(card.getName()).getView());
 		}
-		model.distribute3Cards();
+		model.distributeCards();
 	}
 	
 	@Override
-	public void update3CardsDistributed(CardModel card1, CardModel card2,CardModel card3) {
-		Timeline animationMove3Cards;
-		
-		animationMove3Cards = new Timeline();
+	public void update3CardsDistributed(CardModel card1, CardModel card2,CardModel card3, boolean dealFinished) {
+		Timeline animationMove3Cards = new Timeline();
 		
         KeyValue kVMoveXCard1 = new KeyValue(cardViews.get(card1.getName()).getView().xProperty(), card1.getX());
         KeyValue kVMoveYCard1 = new KeyValue(cardViews.get(card1.getName()).getView().yProperty(), card1.getY());
@@ -72,9 +68,8 @@ public class View implements Observer{
         
         EventHandler onFinished = new EventHandler<ActionEvent>() {
             public void handle(ActionEvent t) {
-            	distributedCards += 3;
-            	if(distributedCards < 72){
-            		model.distribute3Cards();
+            	if(!dealFinished){
+            		model.distributeCards();
             	}
             }
         };
@@ -83,5 +78,21 @@ public class View implements Observer{
         animationMove3Cards.getKeyFrames().add(keyFrame);
         
         animationMove3Cards.play();
+	}
+
+	@Override
+	public void updateCardAddToChien(CardModel card) {
+		Timeline animationMoveCard = new Timeline();
+		
+		KeyValue kVMoveXCard = new KeyValue(cardViews.get(card.getName()).getView().xProperty(), card.getX());
+        KeyValue kVMoveYCard = new KeyValue(cardViews.get(card.getName()).getView().yProperty(), card.getY());
+        
+        Duration duration1S = Duration.seconds(1);
+        
+        KeyFrame keyFrame = new KeyFrame(duration1S, kVMoveXCard, kVMoveYCard);
+        animationMoveCard.getKeyFrames().add(keyFrame);
+        
+        animationMoveCard.play();
+		
 	}
 }
