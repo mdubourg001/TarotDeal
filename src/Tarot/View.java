@@ -90,9 +90,9 @@ public class View implements Observer{
 		KeyValue kVMoveXCard = new KeyValue(cardViews.get(card.getName()).getView().xProperty(), card.getX());
         KeyValue kVMoveYCard = new KeyValue(cardViews.get(card.getName()).getView().yProperty(), card.getY());
         
-        Duration duration1S = Duration.seconds(1);
+        Duration duration0P5S = Duration.seconds(0.5);
         
-        KeyFrame keyFrame = new KeyFrame(duration1S, kVMoveXCard, kVMoveYCard);
+        KeyFrame keyFrame = new KeyFrame(duration0P5S, kVMoveXCard, kVMoveYCard);
         animationMoveCard.getKeyFrames().add(keyFrame);
         
         animationMoveCard.play();
