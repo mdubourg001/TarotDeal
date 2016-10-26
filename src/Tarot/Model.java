@@ -10,6 +10,10 @@ public class Model implements Observable {
 	public static final int FIRST_TRUMP = 1;
 	public static final int LAST_TRUMP = 21;
 	
+	public static final int NB_CARDS = 78;
+	public static final int CHIEN_SIZE = 6;
+	public static final int PLAYER_NB_CARDS = 18;
+	
 	private static final int NB_PLAYERS = 4;
 	
 	private static final int DECK_X_START = 185;
@@ -61,8 +65,16 @@ public class Model implements Observable {
 		listObserver = new ArrayList<Observer>();
 	}
 
-	public ArrayList<CardModel> getCards() {
+	public ArrayList<CardModel> getDeckCards() {
 		return deckCards;
+	}
+	
+	public ArrayList<CardModel> getMyCards() {
+		return myCards;
+	}
+	
+	public ArrayList<CardModel> getChienCards() {
+		return chienCards;
 	}
 	
 	private void loadCards(){
@@ -80,7 +92,7 @@ public class Model implements Observable {
 			fullName += Integer.toString(i) + ".jpg";
 			deckCards.add(new CardModel("Trump" + Integer.toString(i), fullName, DECK_X_START, DECK_Y_START));
 		}
-		fullName = "file:./cards/Tarot_nouveau_-_Grimaud_-_1898_-_Trumps_-_Excuse";
+		fullName = "file:./cards/Tarot_nouveau_-_Grimaud_-_1898_-_Trumps_-_Excuse.jpg";
 		deckCards.add(new CardModel("Excuse", fullName, DECK_X_START, DECK_Y_START));
 	}
 
@@ -201,7 +213,7 @@ public class Model implements Observable {
 	@Override
 	public void notify3CardsDistributed(CardModel card1, CardModel card2,CardModel card3) {
 		for(Observer obs : listObserver){
-			obs.update3CardsDistributed(card1, card2, card3, distributedCards == 78);
+			obs.update3CardsDistributed(card1, card2, card3, distributedCards == NB_CARDS);
 		}
 	}
 	

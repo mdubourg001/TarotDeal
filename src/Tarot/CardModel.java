@@ -8,7 +8,6 @@ public class CardModel {
 	private String path;
 	private int x;
 	private int y;
-	private boolean recto = false;
 	
 	public CardModel(String name, String path, int x, int y){
 		this.name = name;
@@ -36,13 +35,5 @@ public class CardModel {
 	public void moveTo(int x, int y){
 		this.x = x;
 		this.y = y;
-	}
-
-	public boolean isRecto() {
-		return recto;
-	}
-
-	public void revert() {
-		this.recto = !this.recto;
 	}
 }

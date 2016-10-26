@@ -1,5 +1,6 @@
 package Tarot;
 
+import javafx.geometry.Point3D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -16,6 +17,8 @@ public class CardView{
 		this.view.setFitHeight(CardModel.CARD_H);
 		this.view.setX(x);
 		this.view.setY(y);
+		this.view.setRotationAxis(new Point3D(0,1,0));
+		this.view.setRotate(180);
 	}
 
 	public ImageView getView() {
@@ -24,5 +27,9 @@ public class CardView{
 	
 	public Image getImage() {
 		return image;
+	}
+	
+	public void changeImage(){
+		view.setImage(image);
 	}
 }
