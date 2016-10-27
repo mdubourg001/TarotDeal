@@ -1,20 +1,21 @@
 package Tarot;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
-import javafx.animation.RotateTransition;
-import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Point3D;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 
 public class View implements Observer{
@@ -73,7 +74,7 @@ public class View implements Observer{
 					model.distributeCards();
 				}
 				else{
-					revertChien();
+					revertPlayer();
 				}
 			}
 		};
@@ -85,7 +86,7 @@ public class View implements Observer{
 	}
 
 	@Override
-	public void updateCardAddToChien(CardModel card) {
+	public void updateCardMoved(CardModel card) {
 		Timeline animationMoveCard = new Timeline();
 
 		KeyValue kVMoveXCard = new KeyValue(cardViews.get(card.getName()).getView().xProperty(), card.getX());
@@ -124,9 +125,6 @@ public class View implements Observer{
 				if(chienIndex < Model.CHIEN_SIZE){
 					initRevertChien(duration0P1S);
 					revertChienAnimation1.play();
-				}
-				else{
-					revertPlayer();
 				}
 			}
 		};
@@ -172,7 +170,7 @@ public class View implements Observer{
 			public void handle(ActionEvent t) {
 				playerIndex++;
 				if(playerIndex < Model.PLAYER_NB_CARDS){
-					initrevertPlayer(duration0P1S);
+					initRevertPlayer(duration0P1S);
 					revertPlayerAnimation1.play();
 				}
 				else{
@@ -181,11 +179,11 @@ public class View implements Observer{
 			}
 		};
 
-		initrevertPlayer(duration0P1S);
+		initRevertPlayer(duration0P1S);
 		revertPlayerAnimation1.play();
 	}
 
-	private void initrevertPlayer(Duration duration){
+	private void initRevertPlayer(Duration duration){
 		revertPlayerAnimation1 = new Timeline();
 		revertPlayerAnimation2 = new Timeline();
 
@@ -202,9 +200,9 @@ public class View implements Observer{
 	@Override
 	public void updatePlayerCardsOrganized() {
 		Timeline animationOrganizePlayerCards = new Timeline();
-		
+
 		KeyValue[] kVMoveCards = new KeyValue[36];
-		
+
 		int i = 0;
 		for(CardModel card : model.getMyCards()){
 			kVMoveCards[i] = new KeyValue(cardViews.get(card.getName()).getView().xProperty(), card.getX());
@@ -216,7 +214,7 @@ public class View implements Observer{
 
 		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				
+				drawChoseButtons();
 			}
 		};
 
@@ -224,5 +222,105 @@ public class View implements Observer{
 		animationOrganizePlayerCards.getKeyFrames().add(keyFrame);
 
 		animationOrganizePlayerCards.play();
+	}
+
+	private static final int BUTTON_X_START = 50;
+	private static final int BUTTON_X_DIFF = 210;
+	private static final int BUTTON_Y = 750;
+	private static final int BUTTON_W = 200;
+	private static final int BUTTON_H = 100;
+
+	private Button priseBut = new Button("Prise");
+	private Button gardeBut = new Button("Garde");
+	private Button gardeSansBut = new Button("Garde\nsans chien");
+	private Button gardeContreBut = new Button("Garde contre\nle chien");
+
+	private Font buttonsFont = new Font(20);
+
+	public void drawChoseButtons(){
+		initButton(priseBut, BUTTON_X_START, BUTTON_Y);
+		priseBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.PRISE));
+
+		initButton(gardeBut, BUTTON_X_START + BUTTON_X_DIFF, BUTTON_Y);
+		gardeBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.GARDE));
+
+		initButton(gardeSansBut, BUTTON_X_START + 2*BUTTON_X_DIFF, BUTTON_Y);
+		gardeSansBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.GARDE_SANS));
+
+		initButton(gardeContreBut, BUTTON_X_START + 3*BUTTON_X_DIFF, BUTTON_Y);
+		gardeContreBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.GARDE_CONTRE));
+	}
+
+	private void initButton(Button button, int x, int y){
+		button.setFont(buttonsFont);
+		button.setLayoutX(x);
+		button.setLayoutY(y);
+		button.setTextAlignment(TextAlignment.CENTER);
+		button.setPrefSize(BUTTON_W, BUTTON_H);
+		group.getChildren().add(button);
+	}
+
+	@Override
+	public void updateActionChosen(PlayerAction action) {
+		group.getChildren().remove(priseBut);
+		group.getChildren().remove(gardeBut);
+		group.getChildren().remove(gardeSansBut);
+		group.getChildren().remove(gardeContreBut);
+
+		revertChien();
+		if(action == PlayerAction.PRISE || action == PlayerAction.GARDE){
+			doGap();
+		}
+		//continue()
+	}
+	
+	private int selectedCardXStart = 0;
+	private int selectedCardYStart = 0;
+	private void doGap(){
+		for(CardModel card : model.getMyCards()){
+			cardViews.get(card.getName()).getView().setOnMousePressed(new EventHandler<MouseEvent>() {
+				@Override public void handle(MouseEvent event) {
+					putOnFirstGround(cardViews.get(card.getName()).getView());
+					selectedCardXStart = (int) cardViews.get(card.getName()).getView().getX();
+					selectedCardYStart = (int) cardViews.get(card.getName()).getView().getY();
+				}
+			});
+			cardViews.get(card.getName()).getView().setOnMouseDragged(new EventHandler<MouseEvent>() {
+				@Override public void handle(MouseEvent event) {
+					cardViews.get(card.getName()).getView().setX(event.getSceneX() - CardModel.CARD_W/2);
+					cardViews.get(card.getName()).getView().setY(event.getSceneY() - CardModel.CARD_H/2);
+				}
+			});
+			cardViews.get(card.getName()).getView().setOnMouseReleased(new EventHandler<MouseEvent>() {
+				@Override public void handle(MouseEvent event) {
+					if(cardViews.get(card.getName()).getView().getY() < Model.GAP_Y){
+						cardViews.get(card.getName()).getView().setX(selectedCardXStart);
+						cardViews.get(card.getName()).getView().setY(selectedCardYStart);
+					}
+					else{
+						controller.addCardToGap(card);
+						removeListeners(cardViews.get(card.getName()));
+					}
+				}
+			});
+		}
+	}
+	
+	private void putOnFirstGround(Node node){
+		group.getChildren().remove(node);
+		group.getChildren().add(node);
+	}
+
+	@Override
+	public void updateGapDone() {
+		for(CardModel card : model.getMyCards()){
+			removeListeners(cardViews.get(card.getName()));
+		}
+	}
+	
+	private void removeListeners(CardView cardView){
+		cardView.getView().setOnMousePressed(null);
+		cardView.getView().setOnMouseDragged(null);
+		cardView.getView().setOnMouseReleased(null);
 	}
 }

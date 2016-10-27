@@ -38,6 +38,7 @@ public class Model implements Observable {
 	private ArrayList<CardModel> myCards = new ArrayList<CardModel>();
 	private ArrayList<CardModel> othersCards = new ArrayList<CardModel>();
 	private ArrayList<CardModel> chienCards = new ArrayList<CardModel>();
+	private ArrayList<CardModel> gapCards = new ArrayList<CardModel>();
 	
 	private int distributedCards = 0;
 	private int nbCardsInChien = 0;
@@ -225,13 +226,13 @@ public class Model implements Observable {
 		chienCards.get(chienIndexCard).moveTo(chienCardX, CHIEN_CARD_Y);
 		chienCardX += DIST_CARD_X_DIFF;
 		deckCards.remove(0);
-		notifyCardAddToChien(chienCards.get(chienIndexCard));
+		notifyCardMoved(chienCards.get(chienIndexCard));
 	}
 
 	@Override
-	public void notifyCardAddToChien(CardModel card) {
+	public void notifyCardMoved(CardModel card) {
 		for(Observer obs : listObserver){
-			obs.updateCardAddToChien(card);
+			obs.updateCardMoved(card);
 		}
 	}
 	
@@ -257,6 +258,43 @@ public class Model implements Observable {
 	public void notifyPlayerCardsOrganized() {
 		for(Observer obs : listObserver){
 			obs.updatePlayerCardsOrganized();
+		}
+	}
+	
+	private PlayerAction myAction;
+	public void chooseAction(PlayerAction action){
+		myAction = action;
+		notifyActionChosen(myAction);
+	}
+
+	@Override
+	public void notifyActionChosen(PlayerAction action) {
+		for(Observer obs : listObserver){
+			obs.updateActionChosen(action);
+		}
+	}
+	
+	public static final int NB_CARD_GAP = 6;
+	public static final int GAP_X_START = 320;
+	public static final int GAP_Y = 700;
+	private int nbCardInGap = 0;
+	
+	public void addCardToGap(CardModel card){
+		gapCards.add(card);
+		myCards.remove(card);
+		card.setX(GAP_X_START + nbCardInGap*DIST_CARD_X_DIFF);
+		card.setY(GAP_Y);
+		nbCardInGap++;
+		notifyCardMoved(card);
+		if(nbCardInGap == NB_CARD_GAP){
+			notifyGapDone();
+		}
+	}
+	
+	@Override
+	public void notifyGapDone() {
+		for(Observer obs : listObserver){
+			obs.updateGapDone();
 		}
 	}
 }
