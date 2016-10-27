@@ -37,12 +37,43 @@ public class View implements Observer{
 	public Scene getScene(){
 		return scene;
 	}
+	
+	private int currentAction = -1;
+	public void doNextAction(){
+		currentAction++;
+		switch(currentAction){
+		case 0 :
+			copyModelCards();
+			break;
+		case 1 :
+			model.mixDeck();
+			break;
+		case 2 :
+			model.distributeCards();
+			break;
+		case 3 :
+			revertPlayer();
+			break;
+		case 4 :
+			model.organizePlayerCards();
+			break;
+		case 5 :
+			drawChoseButtons();
+			break;
+		case 6 :
+			model.organizePlayerCards();//Only if it use gap
+			break;
+		case 7 :
+			//continue
+			break;
+		}
+	}
 
 	public void copyModelCards(){
 		for(CardModel card : model.getDeckCards()){
 			cardViews.put(card.getName(), new CardView(card.getPath(), card.getX(), card.getY()));
 		}
-		model.mixDeck();
+		doNextAction();
 	}
 
 	@Override
@@ -50,7 +81,7 @@ public class View implements Observer{
 		for(CardModel card : model.getDeckCards()){
 			group.getChildren().add(cardViews.get(card.getName()).getView());
 		}
-		model.distributeCards();
+		doNextAction();
 	}
 
 	@Override
@@ -74,7 +105,7 @@ public class View implements Observer{
 					model.distributeCards();
 				}
 				else{
-					revertPlayer();
+					doNextAction();
 				}
 			}
 		};
@@ -174,7 +205,7 @@ public class View implements Observer{
 					revertPlayerAnimation1.play();
 				}
 				else{
-					model.organizePlayerCards();
+					doNextAction();
 				}
 			}
 		};
@@ -201,7 +232,7 @@ public class View implements Observer{
 	public void updatePlayerCardsOrganized() {
 		Timeline animationOrganizePlayerCards = new Timeline();
 
-		KeyValue[] kVMoveCards = new KeyValue[36];
+		KeyValue[] kVMoveCards = new KeyValue[2*Model.NB_CARDS_PLAYER];
 
 		int i = 0;
 		for(CardModel card : model.getMyCards()){
@@ -214,7 +245,7 @@ public class View implements Observer{
 
 		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				drawChoseButtons();
+				doNextAction();
 			}
 		};
 
@@ -271,7 +302,10 @@ public class View implements Observer{
 		if(action == PlayerAction.PRISE || action == PlayerAction.GARDE){
 			doGap();
 		}
-		//continue()
+		else{
+			currentAction++;
+			doNextAction();
+		}
 	}
 	
 	private int selectedCardXStart = 0;

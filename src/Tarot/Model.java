@@ -11,6 +11,7 @@ public class Model implements Observable {
 	public static final int LAST_TRUMP = 21;
 	
 	public static final int NB_CARDS = 78;
+	public static final int NB_CARDS_PLAYER = 18;
 	public static final int CHIEN_SIZE = 6;
 	public static final int PLAYER_NB_CARDS = 18;
 	
@@ -287,6 +288,11 @@ public class Model implements Observable {
 		nbCardInGap++;
 		notifyCardMoved(card);
 		if(nbCardInGap == NB_CARD_GAP){
+			while(chienCards.size() != 0){
+				myCards.add(chienCards.get(0));
+				chienCards.remove(0);
+			}
+			organizePlayerCards();
 			notifyGapDone();
 		}
 	}

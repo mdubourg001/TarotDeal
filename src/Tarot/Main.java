@@ -19,7 +19,7 @@ public class Main extends Application{
 		view = new View(controller);
 		model.addObserver(view);
 		
-		view.copyModelCards();
+		view.doNextAction();
 		
 		stage.setTitle("Martinez Dubourg S3D");
 		stage.setScene(view.getScene());
