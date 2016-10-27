@@ -77,9 +77,13 @@ public class Model implements Observable {
 		return chienCards;
 	}
 	
+	private int currentCardOrder = 0;
 	private void loadCards(){
+		loadColoredCards("Clubs");
+		loadColoredCards("Diamonds");
 		loadTrumps();
-		loadColoredCards();
+		loadColoredCards("Hearts");
+		loadColoredCards("Spades");
 	}
 
 	private void loadTrumps(){
@@ -90,29 +94,21 @@ public class Model implements Observable {
 				fullName += "0";
 			}
 			fullName += Integer.toString(i) + ".jpg";
-			deckCards.add(new CardModel("Trump" + Integer.toString(i), fullName, DECK_X_START, DECK_Y_START));
+			deckCards.add(new CardModel("Trump" + Integer.toString(i), fullName, DECK_X_START, DECK_Y_START, currentCardOrder));
+			currentCardOrder++;
 		}
 		fullName = "file:./cards/Tarot_nouveau_-_Grimaud_-_1898_-_Trumps_-_Excuse.jpg";
-		deckCards.add(new CardModel("Excuse", fullName, DECK_X_START, DECK_Y_START));
+		deckCards.add(new CardModel("Excuse", fullName, DECK_X_START, DECK_Y_START, currentCardOrder));
+		currentCardOrder++;
 	}
 
-	private void loadColoredCards(){
+	private void loadColoredCards(String color){
 		String fullName;
-		for(String color : cardColors()){
-			for(String value : cardValues()){
-				fullName = "file:./cards/Tarot_nouveau_-_Grimaud_-_1898_-_" + color + "_-_" + value + ".jpg";
-				deckCards.add(new CardModel(color + value, fullName, DECK_X_START, DECK_Y_START));
-			}
+		for(String value : cardValues()){
+			fullName = "file:./cards/Tarot_nouveau_-_Grimaud_-_1898_-_" + color + "_-_" + value + ".jpg";
+			deckCards.add(new CardModel(color + value, fullName, DECK_X_START, DECK_Y_START, currentCardOrder));
+			currentCardOrder++;
 		}
-	}
-
-	private ArrayList<String> cardColors(){
-		ArrayList<String> colors = new ArrayList<String>();
-		colors.add("Clubs");
-		colors.add("Diamonds");
-		colors.add("Hearts");
-		colors.add("Spades");
-		return colors;
 	}
 
 	private ArrayList<String> cardValues(){
@@ -236,6 +232,31 @@ public class Model implements Observable {
 	public void notifyCardAddToChien(CardModel card) {
 		for(Observer obs : listObserver){
 			obs.updateCardAddToChien(card);
+		}
+	}
+	
+	public void organizePlayerCards(){
+		Collections.sort(myCards);
+		
+		int newX = DIST_CARD_X_START;
+		int newY = DIST_CARD_Y1;
+		for(CardModel card : myCards){
+			card.setX(newX);
+			card.setY(newY);
+			newX += DIST_CARD_X_DIFF;
+			if(newX > DIST_CARD_X_START + 8*DIST_CARD_X_DIFF){
+				newX = DIST_CARD_X_START;
+				newY = DIST_CARD_Y2;
+			}
+		}
+		
+		notifyPlayerCardsOrganized();
+	}
+
+	@Override
+	public void notifyPlayerCardsOrganized() {
+		for(Observer obs : listObserver){
+			obs.updatePlayerCardsOrganized();
 		}
 	}
 }
