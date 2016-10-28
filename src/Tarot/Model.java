@@ -127,6 +127,18 @@ public class Model implements Observable {
 		return values;
 	}
 	
+	public ArrayList<String> ungapableCards(){
+		ArrayList<String> values = new ArrayList<String>();
+		values.add("Trump1");
+		values.add("Trump21");
+		values.add("Excuse");
+		values.add("ClubsKing");
+		values.add("DiamondsKing");
+		values.add("HeartsKing");
+		values.add("SpadesKing");
+		return values;
+	}
+	
 	public void mixDeck(){
 		Collections.shuffle(deckCards);
 		int shift = 0;
@@ -257,7 +269,6 @@ public class Model implements Observable {
 				newY = DIST_CARD_Y2;
 			}
 		}
-		
 		notifyPlayerCardsOrganized();
 	}
 
@@ -265,6 +276,37 @@ public class Model implements Observable {
 	public void notifyPlayerCardsOrganized() {
 		for(Observer obs : listObserver){
 			obs.updatePlayerCardsOrganized();
+		}
+	}
+	
+	public void detectPetitSec(){
+		boolean petitSec = false;
+		for(CardModel card : myCards){
+			System.out.println(card.getName());
+			if(card.getName().contentEquals("Trump1")){
+				petitSec = true;
+			}
+			else if(othersTrumps().contains(card.getName())){
+				petitSec = false;
+				break;
+			}
+		}
+		System.out.println(petitSec);
+		notifyPetitSec(petitSec);
+	}
+	
+	private ArrayList<String> othersTrumps(){
+		ArrayList<String> othersTrumps = new ArrayList<String>();
+		for(int i = FIRST_TRUMP+1; i <= LAST_TRUMP; i++){
+			othersTrumps.add("Trump"+Integer.toString(i));
+		}
+		return othersTrumps;
+	}
+	
+	@Override
+	public void notifyPetitSec(boolean petitSec) {
+		for(Observer obs : listObserver){
+			obs.updatePetitSec(petitSec);
 		}
 	}
 	

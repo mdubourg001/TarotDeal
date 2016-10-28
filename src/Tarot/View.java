@@ -55,12 +55,15 @@ public class View implements Observer{
 			model.organizePlayerCards();
 			break;
 		case 4 :
-			drawChoseButtons();
+			model.detectPetitSec();
 			break;
 		case 5 :
-			model.organizePlayerCards();//Only if it use gap
+			drawChoseButtons();
 			break;
 		case 6 :
+			model.organizePlayerCards();//Only if it use gap
+			break;
+		case 7 :
 			//continue
 			break;
 		}
@@ -120,9 +123,9 @@ public class View implements Observer{
 		KeyValue kVMoveXCard = new KeyValue(cardView.getView().xProperty(), x);
 		KeyValue kVMoveYCard = new KeyValue(cardView.getView().yProperty(), y);
 
-		Duration duration0P5S = Duration.seconds(0.5);
+		Duration duration0P3S = Duration.seconds(0.3);
 
-		KeyFrame keyFrame = new KeyFrame(duration0P5S, kVMoveXCard, kVMoveYCard);
+		KeyFrame keyFrame = new KeyFrame(duration0P3S, kVMoveXCard, kVMoveYCard);
 		animationMoveCard.getKeyFrames().add(keyFrame);
 
 		animationMoveCard.play();
@@ -251,6 +254,16 @@ public class View implements Observer{
 
 		animationOrganizePlayerCards.play();
 	}
+	
+	@Override
+	public void updatePetitSec(boolean petitSec) {
+		if(!petitSec){
+			doNextAction();
+		}
+		else{
+			//cancel the game
+		}
+	}
 
 	private static final int BUTTON_X_START = 50;
 	private static final int BUTTON_X_DIFF = 210;
@@ -324,7 +337,7 @@ public class View implements Observer{
 			});
 			cardViews.get(card.getName()).getView().setOnMouseReleased(new EventHandler<MouseEvent>() {
 				@Override public void handle(MouseEvent event) {
-					if(cardViews.get(card.getName()).getView().getY() < Model.GAP_Y){
+					if(model.ungapableCards().contains(card.getName()) || cardViews.get(card.getName()).getView().getY() < Model.GAP_Y){
 						moveCardTo(cardViews.get(card.getName()), selectedCardXStart, selectedCardYStart);
 					}
 					else{
