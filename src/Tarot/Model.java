@@ -17,8 +17,8 @@ public class Model implements Observable {
 	
 	private static final int NB_PLAYERS = 4;
 	
-	private static final int DECK_X_START = 185;
-	private static final int DECK_Y_START = 50;
+	private static final int DECK_X_START = 115;
+	private static final int DECK_Y_START = 20;
 	
 	private static final int DIST_CARD_X_START = 50;
 	private static final int DIST_CARD_Y1 = 300;
@@ -96,11 +96,11 @@ public class Model implements Observable {
 				fullName += "0";
 			}
 			fullName += Integer.toString(i) + ".jpg";
-			deckCards.add(new CardModel("Trump" + Integer.toString(i), fullName, DECK_X_START, DECK_Y_START, currentCardOrder));
+			deckCards.add(new CardModel("Trump" + Integer.toString(i), fullName, currentCardOrder));
 			currentCardOrder++;
 		}
 		fullName = "file:./cards/Tarot_nouveau_-_Grimaud_-_1898_-_Trumps_-_Excuse.jpg";
-		deckCards.add(new CardModel("Excuse", fullName, DECK_X_START, DECK_Y_START, currentCardOrder));
+		deckCards.add(new CardModel("Excuse", fullName, currentCardOrder));
 		currentCardOrder++;
 	}
 
@@ -108,7 +108,7 @@ public class Model implements Observable {
 		String fullName;
 		for(String value : cardValues()){
 			fullName = "file:./cards/Tarot_nouveau_-_Grimaud_-_1898_-_" + color + "_-_" + value + ".jpg";
-			deckCards.add(new CardModel(color + value, fullName, DECK_X_START, DECK_Y_START, currentCardOrder));
+			deckCards.add(new CardModel(color + value, fullName, currentCardOrder));
 			currentCardOrder++;
 		}
 	}
@@ -129,6 +129,12 @@ public class Model implements Observable {
 	
 	public void mixDeck(){
 		Collections.shuffle(deckCards);
+		int shift = 0;
+		for(CardModel card : deckCards){
+			card.setX(DECK_X_START + shift);
+			card.setY(DECK_Y_START + shift);
+			shift++;
+		}
 		notifyDeckMixed();
 	}
 	

@@ -10,11 +10,9 @@ public class CardModel implements Comparable<CardModel> {
 	private int y;
 	private int order;
 	
-	public CardModel(String name, String path, int x, int y, int order){
+	public CardModel(String name, String path, int order){
 		this.name = name;
 		this.path = path;
-		this.x = x;
-		this.y = y;
 		this.order = order;
 	}
 	

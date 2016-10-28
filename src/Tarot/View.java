@@ -43,42 +43,35 @@ public class View implements Observer{
 		currentAction++;
 		switch(currentAction){
 		case 0 :
-			copyModelCards();
-			break;
-		case 1 :
 			model.mixDeck();
 			break;
-		case 2 :
+		case 1 :
 			model.distributeCards();
 			break;
-		case 3 :
+		case 2 :
 			revertPlayer();
 			break;
-		case 4 :
+		case 3 :
 			model.organizePlayerCards();
 			break;
-		case 5 :
+		case 4 :
 			drawChoseButtons();
 			break;
-		case 6 :
+		case 5 :
 			model.organizePlayerCards();//Only if it use gap
 			break;
-		case 7 :
+		case 6 :
 			//continue
 			break;
 		}
 	}
 
-	public void copyModelCards(){
-		for(CardModel card : model.getDeckCards()){
-			cardViews.put(card.getName(), new CardView(card.getPath(), card.getX(), card.getY()));
-		}
-		doNextAction();
-	}
-
 	@Override
 	public void updateDeckMixed() {
-		for(CardModel card : model.getDeckCards()){
+		CardModel card;
+		for(int i = model.getDeckCards().size()-1; i >= 0; i--){
+			card = model.getDeckCards().get(i);
+			cardViews.put(card.getName(), new CardView(card.getPath(), card.getX(), card.getY()));
 			group.getChildren().add(cardViews.get(card.getName()).getView());
 		}
 		doNextAction();
