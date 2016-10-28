@@ -111,10 +111,14 @@ public class View implements Observer{
 
 	@Override
 	public void updateCardMoved(CardModel card) {
+		moveCardTo(cardViews.get(card.getName()), card.getX(), card.getY());
+	}
+	
+	private void moveCardTo(CardView cardView, int x, int y) {
 		Timeline animationMoveCard = new Timeline();
 
-		KeyValue kVMoveXCard = new KeyValue(cardViews.get(card.getName()).getView().xProperty(), card.getX());
-		KeyValue kVMoveYCard = new KeyValue(cardViews.get(card.getName()).getView().yProperty(), card.getY());
+		KeyValue kVMoveXCard = new KeyValue(cardView.getView().xProperty(), x);
+		KeyValue kVMoveYCard = new KeyValue(cardView.getView().yProperty(), y);
 
 		Duration duration0P5S = Duration.seconds(0.5);
 
@@ -321,8 +325,7 @@ public class View implements Observer{
 			cardViews.get(card.getName()).getView().setOnMouseReleased(new EventHandler<MouseEvent>() {
 				@Override public void handle(MouseEvent event) {
 					if(cardViews.get(card.getName()).getView().getY() < Model.GAP_Y){
-						cardViews.get(card.getName()).getView().setX(selectedCardXStart);
-						cardViews.get(card.getName()).getView().setY(selectedCardYStart);
+						moveCardTo(cardViews.get(card.getName()), selectedCardXStart, selectedCardYStart);
 					}
 					else{
 						controller.addCardToGap(card);
