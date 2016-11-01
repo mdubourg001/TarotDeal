@@ -82,6 +82,10 @@ public class View implements Observer{
 
 	@Override
 	public void update3CardsDistributed(CardModel card1, CardModel card2,CardModel card3, boolean dealFinished) {
+		putOnFirstGround(cardViews.get(card3.getName()).getView());
+		putOnFirstGround(cardViews.get(card2.getName()).getView());
+		putOnFirstGround(cardViews.get(card1.getName()).getView());
+		
 		Timeline animationMove3Cards = new Timeline();
 
 		KeyValue kVMoveXCard1 = new KeyValue(cardViews.get(card1.getName()).getView().xProperty(), card1.getX());
@@ -118,6 +122,7 @@ public class View implements Observer{
 	}
 	
 	private void moveCardTo(CardView cardView, int x, int y) {
+		putOnFirstGround(cardView.getView());
 		Timeline animationMoveCard = new Timeline();
 
 		KeyValue kVMoveXCard = new KeyValue(cardView.getView().xProperty(), x);

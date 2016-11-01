@@ -282,7 +282,6 @@ public class Model implements Observable {
 	public void detectPetitSec(){
 		boolean petitSec = false;
 		for(CardModel card : myCards){
-			System.out.println(card.getName());
 			if(card.getName().contentEquals("Trump1")){
 				petitSec = true;
 			}
@@ -291,7 +290,6 @@ public class Model implements Observable {
 				break;
 			}
 		}
-		System.out.println(petitSec);
 		notifyPetitSec(petitSec);
 	}
 	
