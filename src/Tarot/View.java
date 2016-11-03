@@ -6,10 +6,14 @@ import java.util.Map;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.application.ConditionalFeature;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.DepthTest;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
@@ -24,14 +28,22 @@ public class View implements Observer{
 
 	private Group group = new Group();
 	private Scene scene = new Scene(group, Model.SCREEN_W, Model.SCREEN_H);
-
+	private PerspectiveCamera camera = new PerspectiveCamera();
+	
 	private Map<String, CardView> cardViews = new HashMap<String, CardView>();
 
 	public View(Controller controller){
 		this.controller = controller;
 		this.model = controller.getModel();
+		
+		group.setDepthTest(DepthTest.ENABLE); 
+		
+		if(!Platform.isSupported(ConditionalFeature.SCENE3D)){
+			throw new RuntimeException("SCENE3D not supported");
+		}
 
 		scene.setFill(Color.BLACK);
+		scene.setCamera(camera);
 	}
 
 	public Scene getScene(){
@@ -193,29 +205,29 @@ public class View implements Observer{
 	private EventHandler<ActionEvent> revertPlayerOnFinished1;
 	private EventHandler<ActionEvent> revertPlayerOnFinished2;
 	public void revertPlayer() {
-		Duration duration0P1S = Duration.seconds(0.1);
+		Duration duration0P4S = Duration.seconds(0.4);
 
 		revertPlayerOnFinished1 = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				cardViews.get(model.getMyCards().get(playerIndex).getName()).changeImage();
 				revertPlayerAnimation2.play();
+				
+				playerIndex++;
+				if(playerIndex < Model.PLAYER_NB_CARDS){
+					initRevertPlayer(duration0P4S);
+					revertPlayerAnimation1.play();
+				}
 			}
 		};
 
 		revertPlayerOnFinished2 = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				playerIndex++;
-				if(playerIndex < Model.PLAYER_NB_CARDS){
-					initRevertPlayer(duration0P1S);
-					revertPlayerAnimation1.play();
-				}
-				else{
+				if(playerIndex == Model.PLAYER_NB_CARDS){
 					doNextAction();
 				}
 			}
 		};
 
-		initRevertPlayer(duration0P1S);
+		initRevertPlayer(duration0P4S);
 		revertPlayerAnimation1.play();
 	}
 
@@ -231,6 +243,30 @@ public class View implements Observer{
 
 		revertPlayerAnimation1.getKeyFrames().add(revertPlayerKeyFrame1);
 		revertPlayerAnimation2.getKeyFrames().add(revertPlayerKeyFrame2);
+		
+		//en fonction de la position x modifier le temps à attendre avant de changer d'image.
+		double delta = model.getMyCards().get(playerIndex).getX() + CardModel.CARD_W/2 - Model.SCREEN_W/2;
+		changeImage(duration.toSeconds() + duration.toSeconds()*(delta/2500), playerIndex);
+	}
+	
+	private Timeline changeImageAnimation;
+	private KeyFrame changeImageKeyFrame;
+	private EventHandler<ActionEvent> changeImageOnFinished;
+	public void changeImage(double time, int playerIndex) {
+		changeImageAnimation = new Timeline();
+		
+		Duration duration0S = Duration.seconds(time);
+		
+		changeImageOnFinished = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent t) {
+				cardViews.get(model.getMyCards().get(playerIndex).getName()).changeImage();
+			}
+		};
+		
+		changeImageKeyFrame = new KeyFrame(duration0S, changeImageOnFinished);
+		
+		changeImageAnimation.getKeyFrames().add(changeImageKeyFrame);
+		changeImageAnimation.play();
 	}
 
 	@Override
