@@ -17,8 +17,8 @@ public class Model implements Observable {
 	
 	private static final int NB_PLAYERS = 4;
 	
-	private static final int DECK_X_START = 115;
-	private static final int DECK_Y_START = 20;
+	private static final int DECK_X_START = 150;
+	private static final int DECK_Y_START = 50;
 	
 	private static final int DIST_CARD_X_START = 50;
 	private static final int DIST_CARD_Y1 = 300;
@@ -28,10 +28,11 @@ public class Model implements Observable {
 	private static final int CHIEN_CARD_X_START = 320;
 	private static final int CHIEN_CARD_Y = 50;
 	
-	private static final int PLAYER_3_Y = -200;
-	private static final int PLAYERS_2_4_X1 = -200;
-	private static final int PLAYERS_2_4_X2 = 0;
-	private static final int PLAYERS_2_4_X3 = 200;
+	private static final int PLAYER_3_Y = -400;
+	private static final int PLAYERS_2_4_X_SHIFT = 200;
+	private static final int PLAYERS_2_4_Y1 = -200;
+	private static final int PLAYERS_2_4_Y2 = 0;
+	private static final int PLAYERS_2_4_Y3 = 200;
 	
 	private ArrayList<Observer> listObserver = new ArrayList<Observer>();
 	
@@ -141,11 +142,12 @@ public class Model implements Observable {
 	
 	public void mixDeck(){
 		Collections.shuffle(deckCards);
-		int shift = 0;
+		double z = -38;
 		for(CardModel card : deckCards){
-			card.setX(DECK_X_START + shift);
-			card.setY(DECK_Y_START + shift);
-			shift++;
+			card.setX(DECK_X_START);
+			card.setY(DECK_Y_START);
+			card.setZ(z);
+			z += 0.5;
 		}
 		notifyDeckMixed();
 	}
@@ -172,18 +174,18 @@ public class Model implements Observable {
 			break;
 		case 2 :
 			move3CardsToOther(
-					new int[]{-CardModel.CARD_W,-CardModel.CARD_W,-CardModel.CARD_W}, 
-					new int[]{PLAYERS_2_4_X1, PLAYERS_2_4_X2, PLAYERS_2_4_X3});
+					new int[]{-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, -PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, -PLAYERS_2_4_X_SHIFT-CardModel.CARD_W}, 
+					new int[]{PLAYERS_2_4_Y1, PLAYERS_2_4_Y2, PLAYERS_2_4_Y3});
 			break;
 		case 3 :
 			move3CardsToOther(
 					new int[]{(SCREEN_W-CardModel.CARD_W)/2-DIST_CARD_X_DIFF,(SCREEN_W-CardModel.CARD_W)/2,(SCREEN_W-CardModel.CARD_W)/2+DIST_CARD_X_DIFF}, 
-					new int[]{PLAYER_3_Y,PLAYER_3_Y,PLAYER_3_Y});
+					new int[]{PLAYER_3_Y, PLAYER_3_Y, PLAYER_3_Y});
 			break;
 		case 4 :
 			move3CardsToOther(
-					new int[]{SCREEN_W,SCREEN_W,SCREEN_W}, 
-					new int[]{PLAYERS_2_4_X1, PLAYERS_2_4_X2, PLAYERS_2_4_X3});
+					new int[]{PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_X_SHIFT+SCREEN_W}, 
+					new int[]{PLAYERS_2_4_Y1, PLAYERS_2_4_Y2, PLAYERS_2_4_Y3});
 			break;
 		}
 	}
@@ -192,7 +194,7 @@ public class Model implements Observable {
 		myIndexCard += 3;
 		for(int i=0; i<3; i++){
 			myCards.add(deckCards.get(0));
-			myCards.get(myIndexCard+i).moveTo(myDistCardX, myDistCardY);
+			myCards.get(myIndexCard+i).moveTo(myDistCardX, myDistCardY, 1);
 			myDistCardX += DIST_CARD_X_DIFF;
 			if(myDistCardX > DIST_CARD_X_START + 8*DIST_CARD_X_DIFF){
 				myDistCardX = DIST_CARD_X_START;
@@ -210,7 +212,7 @@ public class Model implements Observable {
 		othersIndexCard += 3;
 		for(int i=0; i<3; i++){
 			othersCards.add(deckCards.get(0));
-			othersCards.get(othersIndexCard+i).moveTo(x[i], y[i]);
+			othersCards.get(othersIndexCard+i).moveTo(x[i], y[i], 1);
 			deckCards.remove(0);
 		}
 		changePlayer();
@@ -242,7 +244,7 @@ public class Model implements Observable {
 	private void moveCardTochien(){
 		chienIndexCard++;
 		chienCards.add(deckCards.get(0));
-		chienCards.get(chienIndexCard).moveTo(chienCardX, CHIEN_CARD_Y);
+		chienCards.get(chienIndexCard).moveTo(chienCardX, CHIEN_CARD_Y, 1);
 		chienCardX += DIST_CARD_X_DIFF;
 		deckCards.remove(0);
 		notifyCardMoved(chienCards.get(chienIndexCard));
@@ -347,6 +349,34 @@ public class Model implements Observable {
 	public void notifyGapDone() {
 		for(Observer obs : listObserver){
 			obs.updateGapDone();
+		}
+	}
+	
+	public void revertPlayer() {
+		for(CardModel card : myCards){
+			card.onFront = true;
+		}
+		notifyRevertPlayer();
+	}
+
+	@Override
+	public void notifyRevertPlayer() {
+		for(Observer obs : listObserver){
+			obs.updateRevertPlayer();
+		}
+	}
+	
+	public void revertChien() {
+		for(CardModel card : chienCards){
+			card.onFront = true;
+		}
+		notifyRevertChien();
+	}
+
+	@Override
+	public void notifyRevertChien() {
+		for(Observer obs : listObserver){
+			obs.updateRevertChien();
 		}
 	}
 }

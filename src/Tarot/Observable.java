@@ -10,4 +10,6 @@ public interface Observable {
 	  public void notifyPetitSec(boolean petitSec);
 	  public void notifyActionChosen(PlayerAction action);
 	  public void notifyGapDone();
+	  public void notifyRevertPlayer();
+	  public void notifyRevertChien();
 }

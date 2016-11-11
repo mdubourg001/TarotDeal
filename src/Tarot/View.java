@@ -10,11 +10,13 @@ import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Point3D;
 import javafx.scene.DepthTest;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
+import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -27,7 +29,7 @@ public class View implements Observer{
 	private Model model;
 
 	private Group group = new Group();
-	private Scene scene = new Scene(group, Model.SCREEN_W, Model.SCREEN_H);
+	private Scene scene = new Scene(group, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.BALANCED);
 	private PerspectiveCamera camera = new PerspectiveCamera();
 	
 	private Map<String, CardView> cardViews = new HashMap<String, CardView>();
@@ -44,6 +46,10 @@ public class View implements Observer{
 
 		scene.setFill(Color.BLACK);
 		scene.setCamera(camera);
+		camera.setRotationAxis(new Point3D(1,0,0));
+		camera.setRotate(20);
+		camera.setTranslateZ(-300);
+		camera.setTranslateY(200);
 	}
 
 	public Scene getScene(){
@@ -61,7 +67,7 @@ public class View implements Observer{
 			model.distributeCards();
 			break;
 		case 2 :
-			revertPlayer();
+			model.revertPlayer();
 			break;
 		case 3 :
 			model.organizePlayerCards();
@@ -70,12 +76,15 @@ public class View implements Observer{
 			model.detectPetitSec();
 			break;
 		case 5 :
-			drawChoseButtons();
+			model.revertChien();
 			break;
 		case 6 :
-			model.organizePlayerCards();//Only if it use gap
+			drawChoseButtons();
 			break;
 		case 7 :
+			model.organizePlayerCards();//Only if it use gap
+			break;
+		case 8 :
 			//continue
 			break;
 		}
@@ -83,34 +92,17 @@ public class View implements Observer{
 
 	@Override
 	public void updateDeckMixed() {
-		CardModel card;
-		for(int i = model.getDeckCards().size()-1; i >= 0; i--){
-			card = model.getDeckCards().get(i);
-			cardViews.put(card.getName(), new CardView(card.getPath(), card.getX(), card.getY()));
-			group.getChildren().add(cardViews.get(card.getName()).getView());
+		for(CardModel card : model.getDeckCards()){
+			cardViews.put(card.getName(), new CardView(card.getPath(), card.getX(), card.getY(), card.getZ()));
+			group.getChildren().add(cardViews.get(card.getName()).getBack());
+			group.getChildren().add(cardViews.get(card.getName()).getFront());
 		}
 		doNextAction();
 	}
 
 	@Override
 	public void update3CardsDistributed(CardModel card1, CardModel card2,CardModel card3, boolean dealFinished) {
-		putOnFirstGround(cardViews.get(card3.getName()).getView());
-		putOnFirstGround(cardViews.get(card2.getName()).getView());
-		putOnFirstGround(cardViews.get(card1.getName()).getView());
 		
-		Timeline animationMove3Cards = new Timeline();
-
-		KeyValue kVMoveXCard1 = new KeyValue(cardViews.get(card1.getName()).getView().xProperty(), card1.getX());
-		KeyValue kVMoveYCard1 = new KeyValue(cardViews.get(card1.getName()).getView().yProperty(), card1.getY());
-
-		KeyValue kVMoveXCard2 = new KeyValue(cardViews.get(card2.getName()).getView().xProperty(), card2.getX());
-		KeyValue kVMoveYCard2 = new KeyValue(cardViews.get(card2.getName()).getView().yProperty(), card2.getY());
-
-		KeyValue kVMoveXCard3 = new KeyValue(cardViews.get(card3.getName()).getView().xProperty(), card3.getX());
-		KeyValue kVMoveYCard3 = new KeyValue(cardViews.get(card3.getName()).getView().yProperty(), card3.getY());
-
-		Duration duration0P5S = Duration.seconds(0.5);
-
 		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
 				if(!dealFinished){
@@ -121,179 +113,155 @@ public class View implements Observer{
 				}
 			}
 		};
-
-		KeyFrame keyFrame = new KeyFrame(duration0P5S, onFinished, kVMoveXCard1, kVMoveYCard1, kVMoveXCard2, kVMoveYCard2, kVMoveXCard3, kVMoveYCard3);
-		animationMove3Cards.getKeyFrames().add(keyFrame);
-
-		animationMove3Cards.play();
+		
+		moveCardTo(cardViews.get(card1.getName()), card1, null);
+		moveCardTo(cardViews.get(card2.getName()), card2, null);
+		moveCardTo(cardViews.get(card3.getName()), card3, onFinished);
 	}
 
 	@Override
 	public void updateCardMoved(CardModel card) {
-		moveCardTo(cardViews.get(card.getName()), card.getX(), card.getY());
+		moveCardTo(cardViews.get(card.getName()), card, null);
 	}
 	
-	private void moveCardTo(CardView cardView, int x, int y) {
-		putOnFirstGround(cardView.getView());
+	private void moveCardTo(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
 		Timeline animationMoveCard = new Timeline();
 
-		KeyValue kVMoveXCard = new KeyValue(cardView.getView().xProperty(), x);
-		KeyValue kVMoveYCard = new KeyValue(cardView.getView().yProperty(), y);
+		KeyValue kVMoveXCardB = new KeyValue(cardView.getBack().xProperty(), card.getX());
+		KeyValue kVMoveXCardF = new KeyValue(cardView.getFront().xProperty(), card.getX());
+		
+		KeyValue kVMoveYCardB = new KeyValue(cardView.getBack().yProperty(), card.getY());
+		KeyValue kVMoveYCardF = new KeyValue(cardView.getFront().yProperty(), card.getY());
+		
+		KeyValue kVMoveZCardB;
+		KeyValue kVMoveZCardF;
+		if(!card.onFront){
+			kVMoveZCardB = new KeyValue(cardView.getBack().translateZProperty(), card.getZ());
+			kVMoveZCardF = new KeyValue(cardView.getFront().translateZProperty(), card.getZ()+0.1);
+		}
+		else{
+			kVMoveZCardB = new KeyValue(cardView.getBack().translateZProperty(), card.getZ()+0.1);
+			kVMoveZCardF = new KeyValue(cardView.getFront().translateZProperty(), card.getZ());
+		}
+		
+		double delta = Math.abs(cardView.getBack().getX() - card.getX());
+		delta += Math.abs(cardView.getBack().getY() - card.getY());
+		
+		Duration duration = Duration.seconds(delta/1500);
 
-		Duration duration0P3S = Duration.seconds(0.3);
-
-		KeyFrame keyFrame = new KeyFrame(duration0P3S, kVMoveXCard, kVMoveYCard);
+		KeyFrame keyFrame = new KeyFrame(duration, onFinished, 
+				kVMoveXCardB, kVMoveYCardB, kVMoveZCardB,
+				kVMoveXCardF, kVMoveYCardF, kVMoveZCardF);
 		animationMoveCard.getKeyFrames().add(keyFrame);
 
 		animationMoveCard.play();
 	}
-
-	private Timeline revertChienAnimation1;
-	private Timeline revertChienAnimation2;
-	private int chienIndex = 0;
-	private KeyValue revertChienKVRevertCard1;
-	private KeyValue revertChienKVRevertCard2;
-	private KeyFrame revertChienKeyFrame1;
-	private KeyFrame revertChienKeyFrame2;
-	private EventHandler<ActionEvent> revertChienOnFinished1;
-	private EventHandler<ActionEvent> revertChienOnFinished2;
-	public void revertChien() {
-		Duration duration0P1S = Duration.seconds(0.1);
-
-		revertChienOnFinished1 = new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent t) {
-				cardViews.get(model.getChienCards().get(chienIndex).getName()).changeImage();
-				revertChienAnimation2.play();
-			}
-		};
-
-		revertChienOnFinished2 = new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent t) {
-				chienIndex++;
-				if(chienIndex < Model.CHIEN_SIZE){
-					initRevertChien(duration0P1S);
-					revertChienAnimation1.play();
-				}
-			}
-		};
-
-		initRevertChien(duration0P1S);
-		revertChienAnimation1.play();
+	
+	@Override
+	public void updateRevertPlayer() {
+		revertPlayer();
 	}
 
-	private void initRevertChien(Duration duration){
-		revertChienAnimation1 = new Timeline();
-		revertChienAnimation2 = new Timeline();
-
-		revertChienKVRevertCard1 = new KeyValue(cardViews.get(model.getChienCards().get(chienIndex).getName()).getView().rotateProperty(), 270);
-		revertChienKVRevertCard2 = new KeyValue(cardViews.get(model.getChienCards().get(chienIndex).getName()).getView().rotateProperty(), 360);
-
-		revertChienKeyFrame1 = new KeyFrame(duration, revertChienOnFinished1, revertChienKVRevertCard1);
-		revertChienKeyFrame2 = new KeyFrame(duration, revertChienOnFinished2, revertChienKVRevertCard2);
-
-		revertChienAnimation1.getKeyFrames().add(revertChienKeyFrame1);
-		revertChienAnimation2.getKeyFrames().add(revertChienKeyFrame2);
-	}
-
-	private Timeline revertPlayerAnimation1;
-	private Timeline revertPlayerAnimation2;
 	private int playerIndex = 0;
-	private KeyValue revertPlayerKVRevertCard1;
-	private KeyValue revertPlayerKVRevertCard2;
-	private KeyFrame revertPlayerKeyFrame1;
-	private KeyFrame revertPlayerKeyFrame2;
-	private EventHandler<ActionEvent> revertPlayerOnFinished1;
-	private EventHandler<ActionEvent> revertPlayerOnFinished2;
+	private EventHandler<ActionEvent> revertPlayerOnFinished;
 	public void revertPlayer() {
-		Duration duration0P4S = Duration.seconds(0.4);
-
-		revertPlayerOnFinished1 = new EventHandler<ActionEvent>() {
+		
+		revertPlayerOnFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				revertPlayerAnimation2.play();
-				
 				playerIndex++;
 				if(playerIndex < Model.PLAYER_NB_CARDS){
-					initRevertPlayer(duration0P4S);
-					revertPlayerAnimation1.play();
+					returnCard(cardViews.get(model.getMyCards().get(playerIndex).getName()), true, revertPlayerOnFinished);
 				}
-			}
-		};
-
-		revertPlayerOnFinished2 = new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent t) {
-				if(playerIndex == Model.PLAYER_NB_CARDS){
+				else{
 					doNextAction();
 				}
 			}
 		};
-
-		initRevertPlayer(duration0P4S);
-		revertPlayerAnimation1.play();
-	}
-
-	private void initRevertPlayer(Duration duration){
-		revertPlayerAnimation1 = new Timeline();
-		revertPlayerAnimation2 = new Timeline();
-
-		revertPlayerKVRevertCard1 = new KeyValue(cardViews.get(model.getMyCards().get(playerIndex).getName()).getView().rotateProperty(), 270);
-		revertPlayerKVRevertCard2 = new KeyValue(cardViews.get(model.getMyCards().get(playerIndex).getName()).getView().rotateProperty(), 360);
-
-		revertPlayerKeyFrame1 = new KeyFrame(duration, revertPlayerOnFinished1, revertPlayerKVRevertCard1);
-		revertPlayerKeyFrame2 = new KeyFrame(duration, revertPlayerOnFinished2, revertPlayerKVRevertCard2);
-
-		revertPlayerAnimation1.getKeyFrames().add(revertPlayerKeyFrame1);
-		revertPlayerAnimation2.getKeyFrames().add(revertPlayerKeyFrame2);
-		
-		//en fonction de la position x modifier le temps à attendre avant de changer d'image.
-		double delta = model.getMyCards().get(playerIndex).getX() + CardModel.CARD_W/2 - Model.SCREEN_W/2;
-		changeImage(duration.toSeconds() + duration.toSeconds()*(delta/2500), playerIndex);
+		returnCard(cardViews.get(model.getMyCards().get(playerIndex).getName()), true, revertPlayerOnFinished);
 	}
 	
-	private Timeline changeImageAnimation;
-	private KeyFrame changeImageKeyFrame;
-	private EventHandler<ActionEvent> changeImageOnFinished;
-	public void changeImage(double time, int playerIndex) {
-		changeImageAnimation = new Timeline();
+	private void returnCard(CardView cardView, boolean toFront, EventHandler<ActionEvent> onFinished){
+		returnCardMoveX(cardView,  toFront);
 		
-		Duration duration0S = Duration.seconds(time);
+		Timeline revertPlayerAnimation = new Timeline();
 		
-		changeImageOnFinished = new EventHandler<ActionEvent>() {
+		KeyValue kVRevertCardB;
+		KeyValue kVRevertCardF;
+		if(toFront){
+			kVRevertCardB = new KeyValue(cardView.getBack().rotateProperty(), 360);
+			kVRevertCardF = new KeyValue(cardView.getFront().rotateProperty(), 360);
+		}
+		else{
+			kVRevertCardB = new KeyValue(cardView.getBack().rotateProperty(), 180);
+			kVRevertCardF = new KeyValue(cardView.getFront().rotateProperty(), 180);
+		}
+		
+		KeyValue kVMoveCardB = new KeyValue(cardView.getBack().translateZProperty(), 1.1);
+		KeyValue kVMoveCardF = new KeyValue(cardView.getFront().translateZProperty(), 1);
+		
+		KeyFrame revertPlayerKeyFrame = new KeyFrame(Duration.seconds(0.6), onFinished, kVRevertCardB, kVMoveCardB, kVRevertCardF, kVMoveCardF);
+		
+		revertPlayerAnimation.getKeyFrames().add(revertPlayerKeyFrame);
+		
+		revertPlayerAnimation.play();
+	}
+	
+	private void returnCardMoveX(CardView cardView, boolean toFront){
+		Timeline moveXAnimation1 = new Timeline();
+		final Timeline moveXAnimation2 = new Timeline();
+		
+		double shift;
+		if(toFront){
+			shift = 0.1;
+		}
+		else{
+			shift = -0.1;
+		}
+		
+		KeyValue kVMoveXB = new KeyValue(cardView.getBack().xProperty(), cardView.getBack().getX()-shift);
+		KeyValue kVMoveXF = new KeyValue(cardView.getFront().xProperty(), cardView.getFront().getX()+shift);
+		
+		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				cardViews.get(model.getMyCards().get(playerIndex).getName()).changeImage();
+				moveXAnimation2.play();
 			}
 		};
 		
-		changeImageKeyFrame = new KeyFrame(duration0S, changeImageOnFinished);
+		KeyFrame kFMoveX1 = new KeyFrame(Duration.seconds(0.3), onFinished, kVMoveXB, kVMoveXF);
 		
-		changeImageAnimation.getKeyFrames().add(changeImageKeyFrame);
-		changeImageAnimation.play();
+		moveXAnimation1.getKeyFrames().add(kFMoveX1);
+		
+		moveXAnimation1.play();
+		
+		KeyValue kVMoveXB2 = new KeyValue(cardView.getBack().xProperty(), cardView.getBack().getX()+shift);
+		KeyValue kVMoveXF2 = new KeyValue(cardView.getFront().xProperty(), cardView.getFront().getX()-shift);
+		
+		KeyFrame kFMoveX2 = new KeyFrame(Duration.seconds(0.3), kVMoveXB2, kVMoveXF2);
+		
+		moveXAnimation2.getKeyFrames().add(kFMoveX2);
 	}
 
 	@Override
 	public void updatePlayerCardsOrganized() {
-		Timeline animationOrganizePlayerCards = new Timeline();
-
-		KeyValue[] kVMoveCards = new KeyValue[2*Model.NB_CARDS_PLAYER];
-
-		int i = 0;
-		for(CardModel card : model.getMyCards()){
-			kVMoveCards[i] = new KeyValue(cardViews.get(card.getName()).getView().xProperty(), card.getX());
-			kVMoveCards[i+1] = new KeyValue(cardViews.get(card.getName()).getView().yProperty(), card.getY());
-			i += 2;
+		CardModel card;
+		for(int i =0; i<model.getMyCards().size(); i++){
+			card = model.getMyCards().get(i);
+			moveCardTo(cardViews.get(card.getName()), card, null);
 		}
-
-		Duration duration1S = Duration.seconds(1);
-
-		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
+		
+		EventHandler<ActionEvent> nextAction = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
 				doNextAction();
 			}
 		};
-
-		KeyFrame keyFrame = new KeyFrame(duration1S, onFinished, kVMoveCards);
-		animationOrganizePlayerCards.getKeyFrames().add(keyFrame);
-
-		animationOrganizePlayerCards.play();
+		waiter(1, nextAction);
+	}
+	
+	private void waiter(double duration, EventHandler<ActionEvent> event){
+		Timeline timeLine = new Timeline();
+		KeyFrame keyFrame = new KeyFrame(Duration.seconds(duration), event);
+		timeLine.getKeyFrames().add(keyFrame);
+		timeLine.play();
 	}
 	
 	@Override
@@ -349,7 +317,6 @@ public class View implements Observer{
 		group.getChildren().remove(gardeSansBut);
 		group.getChildren().remove(gardeContreBut);
 
-		revertChien();
 		if(action == PlayerAction.PRISE || action == PlayerAction.GARDE){
 			doGap();
 		}
@@ -359,27 +326,52 @@ public class View implements Observer{
 		}
 	}
 	
+	@Override
+	public void updateRevertChien() {
+		revertChien();
+		doNextAction();
+	}
+	
+	private int chienIndex = 0;
+	private EventHandler<ActionEvent> revertChienOnFinished;
+	public void revertChien() {
+
+		revertChienOnFinished = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent t) {
+				chienIndex++;
+				if(chienIndex < Model.CHIEN_SIZE){
+					returnCard(cardViews.get(model.getChienCards().get(chienIndex).getName()), true, revertChienOnFinished);
+				}
+			}
+		};
+		
+		returnCard(cardViews.get(model.getChienCards().get(chienIndex).getName()), true, revertChienOnFinished);
+	}
+	
 	private int selectedCardXStart = 0;
 	private int selectedCardYStart = 0;
 	private void doGap(){
 		for(CardModel card : model.getMyCards()){
-			cardViews.get(card.getName()).getView().setOnMousePressed(new EventHandler<MouseEvent>() {
+			cardViews.get(card.getName()).getFront().setOnMousePressed(new EventHandler<MouseEvent>() {
 				@Override public void handle(MouseEvent event) {
-					putOnFirstGround(cardViews.get(card.getName()).getView());
-					selectedCardXStart = (int) cardViews.get(card.getName()).getView().getX();
-					selectedCardYStart = (int) cardViews.get(card.getName()).getView().getY();
+					selectedCardXStart = (int) card.getX();
+					selectedCardYStart = (int) card.getY();
 				}
 			});
-			cardViews.get(card.getName()).getView().setOnMouseDragged(new EventHandler<MouseEvent>() {
+			cardViews.get(card.getName()).getFront().setOnMouseDragged(new EventHandler<MouseEvent>() {
 				@Override public void handle(MouseEvent event) {
-					cardViews.get(card.getName()).getView().setX(event.getSceneX() - CardModel.CARD_W/2);
-					cardViews.get(card.getName()).getView().setY(event.getSceneY() - CardModel.CARD_H/2);
+					cardViews.get(card.getName()).getFront().setX(event.getSceneX() - CardModel.CARD_W/2);
+					cardViews.get(card.getName()).getFront().setY(event.getSceneY() - CardModel.CARD_H/2);
+					
+					cardViews.get(card.getName()).getBack().setX(event.getSceneX() - CardModel.CARD_W/2);
+					cardViews.get(card.getName()).getBack().setY(event.getSceneY() - CardModel.CARD_H/2);
 				}
 			});
-			cardViews.get(card.getName()).getView().setOnMouseReleased(new EventHandler<MouseEvent>() {
+			cardViews.get(card.getName()).getFront().setOnMouseReleased(new EventHandler<MouseEvent>() {
 				@Override public void handle(MouseEvent event) {
-					if(model.ungapableCards().contains(card.getName()) || cardViews.get(card.getName()).getView().getY() < Model.GAP_Y){
-						moveCardTo(cardViews.get(card.getName()), selectedCardXStart, selectedCardYStart);
+					if(model.ungapableCards().contains(card.getName()) || cardViews.get(card.getName()).getFront().getY() < Model.GAP_Y){
+						CardModel tmp = new CardModel(selectedCardXStart, selectedCardYStart, card.getZ(), true);
+						moveCardTo(cardViews.get(card.getName()), tmp, null);
 					}
 					else{
 						controller.addCardToGap(card);
@@ -388,11 +380,6 @@ public class View implements Observer{
 				}
 			});
 		}
-	}
-	
-	private void putOnFirstGround(Node node){
-		group.getChildren().remove(node);
-		group.getChildren().add(node);
 	}
 
 	@Override
@@ -403,8 +390,8 @@ public class View implements Observer{
 	}
 	
 	private void removeListeners(CardView cardView){
-		cardView.getView().setOnMousePressed(null);
-		cardView.getView().setOnMouseDragged(null);
-		cardView.getView().setOnMouseReleased(null);
+		//cardView.getView().setOnMousePressed(null);
+		//cardView.getView().setOnMouseDragged(null);
+		//cardView.getView().setOnMouseReleased(null);
 	}
 }

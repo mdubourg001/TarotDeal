@@ -8,12 +8,22 @@ public class CardModel implements Comparable<CardModel> {
 	private String path;
 	private int x;
 	private int y;
+	private double z;
+	public boolean onFront = false;
+	
 	private int order;
 	
 	public CardModel(String name, String path, int order){
 		this.name = name;
 		this.path = path;
 		this.order = order;
+	}
+	
+	public CardModel(int x, int y, double z, boolean onFront){
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.onFront = onFront;
 	}
 	
 	public String getName() {
@@ -32,6 +42,10 @@ public class CardModel implements Comparable<CardModel> {
 		return y;
 	}
 	
+	public double getZ() {
+		return z;
+	}
+	
 	public void setX(int x) {
 		this.x = x;
 	}
@@ -40,9 +54,14 @@ public class CardModel implements Comparable<CardModel> {
 		this.y = y;
 	}
 	
-	public void moveTo(int x, int y){
+	public void setZ(double z) {
+		this.z = z;
+	}
+	
+	public void moveTo(int x, int y, int z){
 		this.x = x;
 		this.y = y;
+		this.z = z;
 	}
 	
 	@Override

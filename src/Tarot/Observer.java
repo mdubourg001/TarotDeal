@@ -8,4 +8,6 @@ public interface Observer {
 	public void updatePetitSec(boolean petitSec);
 	public void updateActionChosen(PlayerAction action);
 	public void updateGapDone();
+	public void updateRevertPlayer();
+	public void updateRevertChien();
 }

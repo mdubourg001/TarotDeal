@@ -8,28 +8,40 @@ public class CardView{
 	private static Image back = new Image("file:./cards/back.jpg");
 	
 	private Image image;
-	private ImageView view;
+	private ImageView backIV;
+	private ImageView frontIV;
 	
-	public CardView(String file, int x, int y) {
+	public CardView(String file, int x, int y, double z) {
 		this.image = new Image(file);
-		this.view = new ImageView(CardView.back);
-		this.view.setFitWidth(CardModel.CARD_W);
-		this.view.setFitHeight(CardModel.CARD_H);
-		this.view.setX(x);
-		this.view.setY(y);
-		this.view.setRotationAxis(new Point3D(0,1,0));
-		this.view.setRotate(180);
+		
+		this.backIV = new ImageView(this.back);
+		this.backIV.setFitWidth(CardModel.CARD_W);
+		this.backIV.setFitHeight(CardModel.CARD_H);
+		this.backIV.setX(x);
+		this.backIV.setY(y);
+		this.backIV.setTranslateZ(z);
+		this.backIV.setRotationAxis(new Point3D(0,1,0));
+		this.backIV.setRotate(180);
+		
+		this.frontIV = new ImageView(this.image);
+		this.frontIV.setFitWidth(CardModel.CARD_W);
+		this.frontIV.setFitHeight(CardModel.CARD_H);
+		this.frontIV.setX(x);
+		this.frontIV.setY(y);
+		this.frontIV.setTranslateZ(z + 0.1);
+		this.frontIV.setRotationAxis(new Point3D(0,1,0));
+		this.frontIV.setRotate(180);
+	}
+	
+	public ImageView getBack() {
+		return backIV;
 	}
 
-	public ImageView getView() {
-		return view;
+	public ImageView getFront() {
+		return frontIV;
 	}
 	
 	public Image getImage() {
 		return image;
-	}
-	
-	public void changeImage(){
-		view.setImage(image);
 	}
 }
