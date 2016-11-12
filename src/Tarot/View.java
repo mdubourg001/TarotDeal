@@ -2,6 +2,8 @@ package Tarot;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -23,6 +25,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
+import javafx.util.Pair;
 
 public class View implements Observer{
 	private Controller controller;
@@ -89,8 +92,40 @@ public class View implements Observer{
 			break;
 		}
 	}
-
+	
 	@Override
+	public void update(Observable arg0, Object arg1) {
+		switch(((Pair<TarotAction, Object>)arg1).getKey()){
+			case MIX_DECK :
+				updateDeckMixed();
+				break;
+			case DISTRIBUTE_3_CARDS :
+				update3CardsDistributed(((Pair<TarotAction, Pair<Boolean, CardModel[]>>)arg1).getValue());
+				break;
+			case MOVE_CARD :
+				updateCardMoved(((Pair<TarotAction, CardModel>)arg1).getValue());
+				break;
+			case REVERT_PLAYER :
+				revertPlayer();
+				break;
+			case ORGANIZE_PLAYER :
+				updatePlayerCardsOrganized();
+				break;
+			case DETECT_PETIT_SEC :
+				updatePetitSec(((Pair<TarotAction, Boolean>)arg1).getValue());
+				break;
+			case CHOOSE_ACTION :
+				updateActionChosen(((Pair<TarotAction, PlayerAction>)arg1).getValue());
+				break;
+			case REVERT_CHIEN :
+				updateRevertChien();
+				break;
+			case GAP_DONE :
+				updateGapDone();
+				break;
+		}
+	}
+	
 	public void updateDeckMixed() {
 		for(CardModel card : model.getDeckCards()){
 			cardViews.put(card.getName(), new CardView(card.getPath(), card.getX(), card.getY(), card.getZ()));
@@ -99,13 +134,18 @@ public class View implements Observer{
 		}
 		doNextAction();
 	}
+	
+	public void updateGapDone() {
+		for(CardModel card : model.getMyCards()){
+			removeListeners(cardViews.get(card.getName()));
+		}
+	}
 
-	@Override
-	public void update3CardsDistributed(CardModel card1, CardModel card2,CardModel card3, boolean dealFinished) {
+	public void update3CardsDistributed(Pair<Boolean, CardModel[]> arg) {
 		
 		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				if(!dealFinished){
+				if(!arg.getKey()){
 					model.distributeCards();
 				}
 				else{
@@ -114,12 +154,11 @@ public class View implements Observer{
 			}
 		};
 		
-		moveCardTo(cardViews.get(card1.getName()), card1, null);
-		moveCardTo(cardViews.get(card2.getName()), card2, null);
-		moveCardTo(cardViews.get(card3.getName()), card3, onFinished);
+		moveCardTo(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
+		moveCardTo(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
+		moveCardTo(cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], onFinished);
 	}
 
-	@Override
 	public void updateCardMoved(CardModel card) {
 		moveCardTo(cardViews.get(card.getName()), card, null);
 	}
@@ -155,11 +194,6 @@ public class View implements Observer{
 		animationMoveCard.getKeyFrames().add(keyFrame);
 
 		animationMoveCard.play();
-	}
-	
-	@Override
-	public void updateRevertPlayer() {
-		revertPlayer();
 	}
 
 	private int playerIndex = 0;
@@ -241,7 +275,6 @@ public class View implements Observer{
 		moveXAnimation2.getKeyFrames().add(kFMoveX2);
 	}
 
-	@Override
 	public void updatePlayerCardsOrganized() {
 		CardModel card;
 		for(int i =0; i<model.getMyCards().size(); i++){
@@ -264,8 +297,7 @@ public class View implements Observer{
 		timeLine.play();
 	}
 	
-	@Override
-	public void updatePetitSec(boolean petitSec) {
+	public void updatePetitSec(Boolean petitSec) {
 		if(!petitSec){
 			doNextAction();
 		}
@@ -307,10 +339,11 @@ public class View implements Observer{
 		button.setLayoutY(y);
 		button.setTextAlignment(TextAlignment.CENTER);
 		button.setPrefSize(BUTTON_W, BUTTON_H);
+		button.setRotationAxis(new Point3D(1,0,0));
+		button.setRotate(20);
 		group.getChildren().add(button);
 	}
 
-	@Override
 	public void updateActionChosen(PlayerAction action) {
 		group.getChildren().remove(priseBut);
 		group.getChildren().remove(gardeBut);
@@ -326,7 +359,6 @@ public class View implements Observer{
 		}
 	}
 	
-	@Override
 	public void updateRevertChien() {
 		revertChien();
 		doNextAction();
@@ -381,17 +413,10 @@ public class View implements Observer{
 			});
 		}
 	}
-
-	@Override
-	public void updateGapDone() {
-		for(CardModel card : model.getMyCards()){
-			removeListeners(cardViews.get(card.getName()));
-		}
-	}
 	
 	private void removeListeners(CardView cardView){
-		//cardView.getView().setOnMousePressed(null);
-		//cardView.getView().setOnMouseDragged(null);
-		//cardView.getView().setOnMouseReleased(null);
+		cardView.getFront().setOnMousePressed(null);
+		cardView.getFront().setOnMouseDragged(null);
+		cardView.getFront().setOnMouseReleased(null);
 	}
 }

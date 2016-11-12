@@ -2,8 +2,12 @@ package Tarot;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Observable;
+import java.util.Observer;
 
-public class Model implements Observable {
+import javafx.util.Pair;
+
+public class Model extends Observable {
 	public static final int SCREEN_W = 1280;
 	public static final int SCREEN_H = 900;
 	
@@ -34,8 +38,6 @@ public class Model implements Observable {
 	private static final int PLAYERS_2_4_Y2 = 0;
 	private static final int PLAYERS_2_4_Y3 = 200;
 	
-	private ArrayList<Observer> listObserver = new ArrayList<Observer>();
-	
 	private ArrayList<CardModel> deckCards = new ArrayList<CardModel>();
 	private ArrayList<CardModel> myCards = new ArrayList<CardModel>();
 	private ArrayList<CardModel> othersCards = new ArrayList<CardModel>();
@@ -56,16 +58,6 @@ public class Model implements Observable {
 	
 	public Model(){
 		loadCards();
-	}
-	
-	@Override
-	public void addObserver(Observer obs) {
-		this.listObserver.add(obs);
-	}
-
-	@Override
-	public void removeObserver() {
-		listObserver = new ArrayList<Observer>();
 	}
 
 	public ArrayList<CardModel> getDeckCards() {
@@ -149,14 +141,9 @@ public class Model implements Observable {
 			card.setZ(z);
 			z += 0.5;
 		}
-		notifyDeckMixed();
-	}
-	
-	@Override
-	public void notifyDeckMixed(){
-		for(Observer obs : listObserver){
-			obs.updateDeckMixed();
-		}
+		setChanged();
+		Pair<TarotAction, Object> arg = new Pair<TarotAction, Object>(TarotAction.MIX_DECK, null);
+		notifyObservers(arg);
 	}
 	
 	public void distributeCards(){
@@ -203,9 +190,11 @@ public class Model implements Observable {
 			deckCards.remove(0);
 		}
 		changePlayer();
-		notify3CardsDistributed(myCards.get(myIndexCard), 
-				myCards.get(myIndexCard+1), 
-				myCards.get(myIndexCard+2));
+		
+		setChanged();
+		Pair<TarotAction, Pair<Boolean, CardModel[]>> arg = new Pair<TarotAction, Pair<Boolean, CardModel[]>>(TarotAction.DISTRIBUTE_3_CARDS,
+				new Pair<Boolean, CardModel[]>(deckCards.isEmpty(), new CardModel[]{myCards.get(myIndexCard), myCards.get(myIndexCard+1), myCards.get(myIndexCard+2)}));
+		notifyObservers(arg);
 	}
 	
 	private void move3CardsToOther(int x[], int y[]){
@@ -216,22 +205,17 @@ public class Model implements Observable {
 			deckCards.remove(0);
 		}
 		changePlayer();
-		notify3CardsDistributed(othersCards.get(othersIndexCard), 
-				othersCards.get(othersIndexCard+1), 
-				othersCards.get(othersIndexCard+2));
+		
+		setChanged();
+		Pair<TarotAction, Pair<Boolean, CardModel[]>> arg = new Pair<TarotAction, Pair<Boolean, CardModel[]>>(TarotAction.DISTRIBUTE_3_CARDS,
+				new Pair<Boolean, CardModel[]>(deckCards.isEmpty(), new CardModel[]{othersCards.get(othersIndexCard), othersCards.get(othersIndexCard+1), othersCards.get(othersIndexCard+2)}));
+		notifyObservers(arg);
 	}
 	
 	private void changePlayer(){
 		currentPlayer++;
 		if(currentPlayer > NB_PLAYERS){
 			currentPlayer = 1;
-		}
-	}
-
-	@Override
-	public void notify3CardsDistributed(CardModel card1, CardModel card2,CardModel card3) {
-		for(Observer obs : listObserver){
-			obs.update3CardsDistributed(card1, card2, card3, distributedCards == NB_CARDS);
 		}
 	}
 	
@@ -247,14 +231,10 @@ public class Model implements Observable {
 		chienCards.get(chienIndexCard).moveTo(chienCardX, CHIEN_CARD_Y, 1);
 		chienCardX += DIST_CARD_X_DIFF;
 		deckCards.remove(0);
-		notifyCardMoved(chienCards.get(chienIndexCard));
-	}
-
-	@Override
-	public void notifyCardMoved(CardModel card) {
-		for(Observer obs : listObserver){
-			obs.updateCardMoved(card);
-		}
+		
+		setChanged();
+		Pair<TarotAction, CardModel> arg = new Pair<TarotAction, CardModel>(TarotAction.MOVE_CARD, chienCards.get(chienIndexCard));
+		notifyObservers(arg);
 	}
 	
 	public void organizePlayerCards(){
@@ -271,18 +251,14 @@ public class Model implements Observable {
 				newY = DIST_CARD_Y2;
 			}
 		}
-		notifyPlayerCardsOrganized();
-	}
-
-	@Override
-	public void notifyPlayerCardsOrganized() {
-		for(Observer obs : listObserver){
-			obs.updatePlayerCardsOrganized();
-		}
+		
+		setChanged();
+		Pair<TarotAction, Object> arg = new Pair<TarotAction, Object>(TarotAction.ORGANIZE_PLAYER, null);
+		notifyObservers(arg);
 	}
 	
 	public void detectPetitSec(){
-		boolean petitSec = false;
+		Boolean petitSec = false;
 		for(CardModel card : myCards){
 			if(card.getName().contentEquals("Trump1")){
 				petitSec = true;
@@ -292,7 +268,10 @@ public class Model implements Observable {
 				break;
 			}
 		}
-		notifyPetitSec(petitSec);
+		
+		setChanged();
+		Pair<TarotAction, Boolean> arg = new Pair<TarotAction, Boolean>(TarotAction.DETECT_PETIT_SEC, petitSec);
+		notifyObservers(arg);
 	}
 	
 	private ArrayList<String> othersTrumps(){
@@ -303,24 +282,13 @@ public class Model implements Observable {
 		return othersTrumps;
 	}
 	
-	@Override
-	public void notifyPetitSec(boolean petitSec) {
-		for(Observer obs : listObserver){
-			obs.updatePetitSec(petitSec);
-		}
-	}
-	
 	private PlayerAction myAction;
 	public void chooseAction(PlayerAction action){
 		myAction = action;
-		notifyActionChosen(myAction);
-	}
-
-	@Override
-	public void notifyActionChosen(PlayerAction action) {
-		for(Observer obs : listObserver){
-			obs.updateActionChosen(action);
-		}
+		
+		setChanged();
+		Pair<TarotAction, PlayerAction> arg = new Pair<TarotAction, PlayerAction>(TarotAction.CHOOSE_ACTION, myAction);
+		notifyObservers(arg);
 	}
 	
 	public static final int NB_CARD_GAP = 6;
@@ -334,21 +302,22 @@ public class Model implements Observable {
 		card.setX(GAP_X_START + nbCardInGap*DIST_CARD_X_DIFF);
 		card.setY(GAP_Y);
 		nbCardInGap++;
-		notifyCardMoved(card);
+		
+		setChanged();
+		Pair<TarotAction, CardModel> argCardMoved = new Pair<TarotAction, CardModel>(TarotAction.MOVE_CARD, card);
+		notifyObservers(argCardMoved);
+		
 		if(nbCardInGap == NB_CARD_GAP){
 			while(chienCards.size() != 0){
 				myCards.add(chienCards.get(0));
 				chienCards.remove(0);
 			}
 			organizePlayerCards();
-			notifyGapDone();
-		}
-	}
-	
-	@Override
-	public void notifyGapDone() {
-		for(Observer obs : listObserver){
-			obs.updateGapDone();
+
+
+			setChanged();
+			Pair<TarotAction, Object> argGapDone = new Pair<TarotAction, Object>(TarotAction.GAP_DONE, null);
+			notifyObservers(argGapDone);
 		}
 	}
 	
@@ -356,27 +325,17 @@ public class Model implements Observable {
 		for(CardModel card : myCards){
 			card.onFront = true;
 		}
-		notifyRevertPlayer();
-	}
-
-	@Override
-	public void notifyRevertPlayer() {
-		for(Observer obs : listObserver){
-			obs.updateRevertPlayer();
-		}
+		setChanged();
+		Pair<TarotAction, Object> argGapDone = new Pair<TarotAction, Object>(TarotAction.REVERT_PLAYER, null);
+		notifyObservers(argGapDone);
 	}
 	
 	public void revertChien() {
 		for(CardModel card : chienCards){
 			card.onFront = true;
 		}
-		notifyRevertChien();
-	}
-
-	@Override
-	public void notifyRevertChien() {
-		for(Observer obs : listObserver){
-			obs.updateRevertChien();
-		}
+		setChanged();
+		Pair<TarotAction, Object> argGapDone = new Pair<TarotAction, Object>(TarotAction.REVERT_CHIEN, null);
+		notifyObservers(argGapDone);
 	}
 }
