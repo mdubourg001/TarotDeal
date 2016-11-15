@@ -8,10 +8,13 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Point3D;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.*;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
@@ -217,17 +220,22 @@ public class View implements Observer{
 		
 		KeyValue kVRevertCardB;
 		KeyValue kVRevertCardF;
+		KeyValue kVMoveCardB;
+		KeyValue kVMoveCardF;
 		if(toFront){
 			kVRevertCardB = new KeyValue(cardView.getBack().rotateProperty(), 360);
 			kVRevertCardF = new KeyValue(cardView.getFront().rotateProperty(), 360);
+
+			kVMoveCardB = new KeyValue(cardView.getBack().translateZProperty(), 1.1);
+			kVMoveCardF = new KeyValue(cardView.getFront().translateZProperty(), 1);
 		}
 		else{
 			kVRevertCardB = new KeyValue(cardView.getBack().rotateProperty(), 180);
 			kVRevertCardF = new KeyValue(cardView.getFront().rotateProperty(), 180);
+
+			kVMoveCardB = new KeyValue(cardView.getBack().translateZProperty(), 1);
+			kVMoveCardF = new KeyValue(cardView.getFront().translateZProperty(), 1.1);
 		}
-		
-		KeyValue kVMoveCardB = new KeyValue(cardView.getBack().translateZProperty(), 1.1);
-		KeyValue kVMoveCardF = new KeyValue(cardView.getFront().translateZProperty(), 1);
 		
 		KeyFrame revertPlayerKeyFrame = new KeyFrame(Duration.seconds(RETURN_CARD_DURATION), onFinished, kVRevertCardB, kVMoveCardB, kVRevertCardF, kVMoveCardF);
 		
@@ -340,6 +348,13 @@ public class View implements Observer{
 		group.getChildren().add(button);
 	}
 
+	public static final int ECART_ZONE_X = Model.GAP_X_START-40;
+	public static final int ECART_ZONE_Y = Model.GAP_Y-40;
+	public static final int ECART_ZONE_W = CardModel.CARD_W + 5*Model.DIST_CARD_X_DIFF+80;
+	public static final int ECART_ZONE_H = CardModel.CARD_H + 80;
+
+
+	private Rectangle ecartArea = new Rectangle(ECART_ZONE_X, ECART_ZONE_Y, ECART_ZONE_W, ECART_ZONE_H);
 	public void updateActionChosen(PlayerAction action) {
 		group.getChildren().remove(priseBut);
 		group.getChildren().remove(gardeBut);
@@ -348,6 +363,9 @@ public class View implements Observer{
 
 		if(action == PlayerAction.PRISE || action == PlayerAction.GARDE){
 			doGap();
+			ecartArea.setFill(Color.BLUE);
+			ecartArea.setTranslateZ(1.2);
+			group.getChildren().add(ecartArea);
 		}
 		else{
 			currentAction++;
@@ -397,7 +415,11 @@ public class View implements Observer{
 			});
 			cardViews.get(card.getName()).getFront().setOnMouseReleased(new EventHandler<MouseEvent>() {
 				@Override public void handle(MouseEvent event) {
-					if(model.ungapableCards().contains(card.getName()) || cardViews.get(card.getName()).getFront().getY() < Model.GAP_Y){
+					if(model.ungapableCards().contains(card.getName())
+							|| cardViews.get(card.getName()).getFront().getX() + CardModel.CARD_W/2 < ECART_ZONE_X
+							|| cardViews.get(card.getName()).getFront().getX() + CardModel.CARD_W/2 > ECART_ZONE_X + ECART_ZONE_W
+							|| cardViews.get(card.getName()).getFront().getY() + CardModel.CARD_H/2 < ECART_ZONE_Y
+							|| cardViews.get(card.getName()).getFront().getY() + CardModel.CARD_H/2 > ECART_ZONE_Y + ECART_ZONE_H){
 						CardModel tmp = new CardModel(selectedCardXStart, selectedCardYStart, card.getZ(), true);
 						moveCardTo(cardViews.get(card.getName()), tmp, null);
 					}

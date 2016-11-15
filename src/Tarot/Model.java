@@ -22,7 +22,7 @@ public class Model extends Observable {
 	private static final int NB_PLAYERS = 4;
 	
 	public static final int DECK_X_START = (SCREEN_W / 2) - CardModel.CARD_W / 2 ;
-	public static final int DECK_Y_START = SCREEN_H / 10;
+	public static final int DECK_Y_START = SCREEN_H / 20;
 
 	public static final int DIST_CARD_X_DIFF = SCREEN_W / 14;
 
@@ -295,7 +295,7 @@ public class Model extends Observable {
 	
 	public static final int NB_CARD_GAP = 6;
 	public static final int GAP_X_START = CHIEN_CARD_X_START;
-	public static final int GAP_Y = View.BUTTON_Y;
+	public static final int GAP_Y = DIST_CARD_Y2 + CardModel.CARD_H + 100;
 	private int nbCardInGap = 0;
 	
 	public void addCardToGap(CardModel card){
