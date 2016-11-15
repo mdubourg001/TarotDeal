@@ -5,6 +5,7 @@ import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Observable;
 
 public class Model extends Observable {
@@ -144,9 +145,26 @@ public class Model extends Observable {
 			z += 0.5;
 		}
 		setChanged();
-		Pair<TarotAction, Object> arg = new Pair<TarotAction, Object>(TarotAction.MIX_DECK, null);
+		Pair<TarotAction, Object> arg = new Pair<TarotAction, Object>(TarotAction.DECK_MIXED, null);
 		notifyObservers(arg);
 	}
+
+	public void cutDeck(){
+	    Integer indexHalf;
+        indexHalf = NB_CARDS/2;
+
+        ArrayList<CardModel> firstHalf = (ArrayList<CardModel>)deckCards.subList(0, indexHalf);
+        ArrayList<CardModel> secondHalf = (ArrayList<CardModel>)deckCards.subList(indexHalf, NB_CARDS);
+
+        firstHalf.addAll(secondHalf);
+        deckCards = firstHalf;
+
+        //changer les Z
+
+        setChanged();
+        Pair<TarotAction, Integer> arg = new Pair<TarotAction, Integer>(TarotAction.DECK_CUT, indexHalf);
+        notifyObservers(arg);
+    }
 	
 	public void distributeCards(){
 		if(distributedCards > 0 && nbCardsInChien < 6){

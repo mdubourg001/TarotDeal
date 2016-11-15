@@ -8,12 +8,10 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Point3D;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.*;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
@@ -65,27 +63,31 @@ public class View implements Observer{
 			model.mixDeck();
 			break;
 		case 1 :
-			model.distributeCards();
+			doNextAction();
+			//model.cutDeck();
 			break;
 		case 2 :
-			model.revertPlayer();
+			model.distributeCards();
 			break;
 		case 3 :
-			model.organizePlayerCards();
+			model.revertPlayer();
 			break;
 		case 4 :
-			model.detectPetitSec();
+			model.organizePlayerCards();
 			break;
 		case 5 :
-			model.revertChien();
+			model.detectPetitSec();
 			break;
 		case 6 :
-			drawChoseButtons();
+			model.revertChien();
 			break;
 		case 7 :
-			model.organizePlayerCards();//Only if it use gap
+			drawChoseButtons();
 			break;
 		case 8 :
+			model.organizePlayerCards();//Only if it use gap
+			break;
+		case 9 :
 			//continue
 			break;
 		}
@@ -94,9 +96,11 @@ public class View implements Observer{
 	@Override
 	public void update(Observable arg0, Object arg1) {
 		switch(((Pair<TarotAction, Object>)arg1).getKey()){
-			case MIX_DECK :
+			case DECK_MIXED:
 				updateDeckMixed();
 				break;
+			case DECK_CUT:
+				//updateDeckCUt();
 			case DISTRIBUTE_3_CARDS :
 				update3CardsDistributed(((Pair<TarotAction, Pair<Boolean, CardModel[]>>)arg1).getValue());
 				break;

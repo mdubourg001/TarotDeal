@@ -4,7 +4,8 @@ package Tarot;
  * Created by cmartinez005 on 15/11/16.
  */
 public enum TarotAction {
-    MIX_DECK,
+    DECK_MIXED,
+    DECK_CUT,
     DISTRIBUTE_3_CARDS,
     MOVE_CARD,
     REVERT_PLAYER,
