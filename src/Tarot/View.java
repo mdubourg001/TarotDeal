@@ -63,8 +63,7 @@ public class View implements Observer{
 			model.mixDeck();
 			break;
 		case 1 :
-			doNextAction();
-			//model.cutDeck();
+			model.cutDeck();
 			break;
 		case 2 :
 			model.distributeCards();
@@ -100,7 +99,12 @@ public class View implements Observer{
 				updateDeckMixed();
 				break;
 			case DECK_CUT:
-				//updateDeckCUt();
+				waiter(0.5, new EventHandler<ActionEvent>() {
+					public void handle(ActionEvent t) {
+						updateDeckCut1(((Pair<TarotAction, Integer>)arg1).getValue());
+					}
+				});
+				break;
 			case DISTRIBUTE_3_CARDS :
 				update3CardsDistributed(((Pair<TarotAction, Pair<Boolean, CardModel[]>>)arg1).getValue());
 				break;
@@ -137,9 +141,86 @@ public class View implements Observer{
 		doNextAction();
 	}
 	
-	public void updateGapDone() {
-		for(CardModel card : model.getMyCards()){
-			removeListeners(cardViews.get(card.getName()));
+	public void updateDeckCut1(Integer indexHalf){
+		CardModel card;
+		int xShift;
+		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent t) {
+				updateDeckCut2(indexHalf);
+			}
+		};
+		
+		for(int i = 0; i < model.getDeckCards().size(); i++){
+			card = model.getDeckCards().get(i);
+			if(i < indexHalf){
+				xShift = - CardModel.CARD_W/2;
+			}
+			else{
+				xShift = CardModel.CARD_W/2;
+			}
+			if(i != model.getDeckCards().size()-1){
+				moveCardTo(8, cardViews.get(card.getName()),
+						card.getX() + xShift, card.getY(), cardViews.get(card.getName()).getFront().getTranslateZ(),
+						false, null);
+			}
+			else{
+				moveCardTo(8, cardViews.get(card.getName()),
+						card.getX() + xShift, card.getY(), cardViews.get(card.getName()).getFront().getTranslateZ(),
+						false, onFinished);
+			}
+		}
+	}
+	
+	public void updateDeckCut2(Integer indexHalf){
+		CardModel card;
+		int xShift;
+		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent t) {
+				updateDeckCut3(indexHalf);
+			}
+		};
+		
+		for(int i = 0; i < model.getDeckCards().size(); i++){
+			card = model.getDeckCards().get(i);
+			if(i < indexHalf){
+				xShift = - CardModel.CARD_W/2;
+			}
+			else{
+				xShift = CardModel.CARD_W/2;
+			}
+			if(i != model.getDeckCards().size()-1){
+				moveCardTo(8, cardViews.get(card.getName()),
+						card.getX() + xShift, card.getY(), card.getZ(),
+						false, null);
+			}
+			else{
+				moveCardTo(8, cardViews.get(card.getName()),
+						card.getX() + xShift, card.getY(), card.getZ(),
+						false, onFinished);
+			}
+		}
+	}
+	
+	public void updateDeckCut3(Integer indexHalf){
+		CardModel card;
+		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent t) {
+				doNextAction();
+			}
+		};
+		
+		for(int i = 0; i < model.getDeckCards().size(); i++){
+			card = model.getDeckCards().get(i);
+			if(i != model.getDeckCards().size()-1){
+				moveCardTo(8, cardViews.get(card.getName()),
+						card.getX(), card.getY(), card.getZ(),
+						false, null);
+			}
+			else{
+				moveCardTo(8, cardViews.get(card.getName()),
+						card.getX(), card.getY(), card.getZ(),
+						false, onFinished);
+			}
 		}
 	}
 
@@ -165,30 +246,50 @@ public class View implements Observer{
 		moveCardTo(cardViews.get(card.getName()), card, null);
 	}
 	
+	public void updateGapDone() {
+		for(CardModel card : model.getMyCards()){
+			removeListeners(cardViews.get(card.getName()));
+		}
+	}
+	
 	private void moveCardTo(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
+		moveCardTo(cardView, card.getX(), card.getY(), card.getZ(), card.onFront, onFinished);
+	}
+	
+	private void moveCardTo(int speed, CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
+		moveCardTo(speed, cardView, card.getX(), card.getY(), card.getZ(), card.onFront, onFinished);
+	}
+	
+	private void moveCardTo(CardView cardView, int x, int y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
+		moveCardTo(1, cardView, x, y, z, onFront, onFinished);
+	}
+	
+	private void moveCardTo(int speed, CardView cardView, int x, int y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
 		Timeline animationMoveCard = new Timeline();
 
-		KeyValue kVMoveXCardB = new KeyValue(cardView.getBack().xProperty(), card.getX());
-		KeyValue kVMoveXCardF = new KeyValue(cardView.getFront().xProperty(), card.getX());
+		KeyValue kVMoveXCardB = new KeyValue(cardView.getBack().xProperty(), x);
+		KeyValue kVMoveXCardF = new KeyValue(cardView.getFront().xProperty(), x);
 		
-		KeyValue kVMoveYCardB = new KeyValue(cardView.getBack().yProperty(), card.getY());
-		KeyValue kVMoveYCardF = new KeyValue(cardView.getFront().yProperty(), card.getY());
+		KeyValue kVMoveYCardB = new KeyValue(cardView.getBack().yProperty(), y);
+		KeyValue kVMoveYCardF = new KeyValue(cardView.getFront().yProperty(), y);
 		
 		KeyValue kVMoveZCardB;
 		KeyValue kVMoveZCardF;
-		if(!card.onFront){
-			kVMoveZCardB = new KeyValue(cardView.getBack().translateZProperty(), card.getZ());
-			kVMoveZCardF = new KeyValue(cardView.getFront().translateZProperty(), card.getZ()+0.1);
+		if(!onFront){
+			kVMoveZCardB = new KeyValue(cardView.getBack().translateZProperty(), z);
+			kVMoveZCardF = new KeyValue(cardView.getFront().translateZProperty(), z+0.1);
 		}
 		else{
-			kVMoveZCardB = new KeyValue(cardView.getBack().translateZProperty(), card.getZ()+0.1);
-			kVMoveZCardF = new KeyValue(cardView.getFront().translateZProperty(), card.getZ());
+			kVMoveZCardB = new KeyValue(cardView.getBack().translateZProperty(), z+0.1);
+			kVMoveZCardF = new KeyValue(cardView.getFront().translateZProperty(), z);
 		}
 		
-		double delta = Math.abs(cardView.getBack().getX() - card.getX());
-		delta += Math.abs(cardView.getBack().getY() - card.getY());
+		double delta = Math.abs(cardView.getBack().getX() - x);
+		delta += Math.abs(cardView.getBack().getY() - y);
+		delta += Math.abs(cardView.getBack().getTranslateZ() - z);
+		delta *= speed;
 		
-		Duration duration = Duration.seconds(delta/6000); // TODO REMETTRE 1500
+		Duration duration = Duration.seconds(delta/1500); // TODO REMETTRE 1500
 
 		KeyFrame keyFrame = new KeyFrame(duration, onFinished, 
 				kVMoveXCardB, kVMoveYCardB, kVMoveZCardB,
@@ -424,8 +525,7 @@ public class View implements Observer{
 							|| cardViews.get(card.getName()).getFront().getX() + CardModel.CARD_W/2 > ECART_ZONE_X + ECART_ZONE_W
 							|| cardViews.get(card.getName()).getFront().getY() + CardModel.CARD_H/2 < ECART_ZONE_Y
 							|| cardViews.get(card.getName()).getFront().getY() + CardModel.CARD_H/2 > ECART_ZONE_Y + ECART_ZONE_H){
-						CardModel tmp = new CardModel(selectedCardXStart, selectedCardYStart, card.getZ(), true);
-						moveCardTo(cardViews.get(card.getName()), tmp, null);
+						moveCardTo(cardViews.get(card.getName()), selectedCardXStart, selectedCardYStart, card.getZ(), true, null);
 					}
 					else{
 						controller.addCardToGap(card);

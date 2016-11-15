@@ -11,8 +11,8 @@ public class CardView {
     private ImageView backIV;
     private ImageView frontIV;
 
-    public CardView(String file, int x, int y, double z) {
-        this.image = new Image(file);
+    public CardView(String path, int x, int y, double z) {
+        this.image = new Image("file:./" + path);
 
         this.backIV = new ImageView(this.back);
         this.backIV.setFitWidth(CardModel.CARD_W);
