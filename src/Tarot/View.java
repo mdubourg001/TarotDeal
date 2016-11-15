@@ -1,10 +1,5 @@
 package Tarot;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -13,12 +8,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Point3D;
-import javafx.scene.DepthTest;
-import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.PerspectiveCamera;
-import javafx.scene.Scene;
-import javafx.scene.SceneAntialiasing;
+import javafx.scene.*;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -27,12 +17,17 @@ import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+
 public class View implements Observer{
 	private Controller controller;
 	private Model model;
 
 	private Group group = new Group();
-	private Scene scene = new Scene(group, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.BALANCED);
+	private Scene scene = new Scene(group, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.DISABLED);
 	private PerspectiveCamera camera = new PerspectiveCamera();
 	
 	private Map<String, CardView> cardViews = new HashMap<String, CardView>();
@@ -186,7 +181,7 @@ public class View implements Observer{
 		double delta = Math.abs(cardView.getBack().getX() - card.getX());
 		delta += Math.abs(cardView.getBack().getY() - card.getY());
 		
-		Duration duration = Duration.seconds(delta/1500);
+		Duration duration = Duration.seconds(delta/6000); // TODO REMETTRE 1500
 
 		KeyFrame keyFrame = new KeyFrame(duration, onFinished, 
 				kVMoveXCardB, kVMoveYCardB, kVMoveZCardB,
@@ -213,7 +208,8 @@ public class View implements Observer{
 		};
 		returnCard(cardViews.get(model.getMyCards().get(playerIndex).getName()), true, revertPlayerOnFinished);
 	}
-	
+
+	private final static double RETURN_CARD_DURATION = 0.2; // TODO REMETTRE A 0.6
 	private void returnCard(CardView cardView, boolean toFront, EventHandler<ActionEvent> onFinished){
 		returnCardMoveX(cardView,  toFront);
 		
@@ -233,7 +229,7 @@ public class View implements Observer{
 		KeyValue kVMoveCardB = new KeyValue(cardView.getBack().translateZProperty(), 1.1);
 		KeyValue kVMoveCardF = new KeyValue(cardView.getFront().translateZProperty(), 1);
 		
-		KeyFrame revertPlayerKeyFrame = new KeyFrame(Duration.seconds(0.6), onFinished, kVRevertCardB, kVMoveCardB, kVRevertCardF, kVMoveCardF);
+		KeyFrame revertPlayerKeyFrame = new KeyFrame(Duration.seconds(RETURN_CARD_DURATION), onFinished, kVRevertCardB, kVMoveCardB, kVRevertCardF, kVMoveCardF);
 		
 		revertPlayerAnimation.getKeyFrames().add(revertPlayerKeyFrame);
 		
@@ -261,7 +257,7 @@ public class View implements Observer{
 			}
 		};
 		
-		KeyFrame kFMoveX1 = new KeyFrame(Duration.seconds(0.3), onFinished, kVMoveXB, kVMoveXF);
+		KeyFrame kFMoveX1 = new KeyFrame(Duration.seconds(RETURN_CARD_DURATION / 2), onFinished, kVMoveXB, kVMoveXF);
 		
 		moveXAnimation1.getKeyFrames().add(kFMoveX1);
 		
@@ -270,7 +266,7 @@ public class View implements Observer{
 		KeyValue kVMoveXB2 = new KeyValue(cardView.getBack().xProperty(), cardView.getBack().getX()+shift);
 		KeyValue kVMoveXF2 = new KeyValue(cardView.getFront().xProperty(), cardView.getFront().getX()-shift);
 		
-		KeyFrame kFMoveX2 = new KeyFrame(Duration.seconds(0.3), kVMoveXB2, kVMoveXF2);
+		KeyFrame kFMoveX2 = new KeyFrame(Duration.seconds(RETURN_CARD_DURATION / 2), kVMoveXB2, kVMoveXF2);
 		
 		moveXAnimation2.getKeyFrames().add(kFMoveX2);
 	}
@@ -306,11 +302,11 @@ public class View implements Observer{
 		}
 	}
 
-	private static final int BUTTON_X_START = 50;
 	private static final int BUTTON_X_DIFF = 210;
-	private static final int BUTTON_Y = 750;
+	public static final int BUTTON_Y = Model.DIST_CARD_Y2 + CardModel.CARD_H + 50;
 	private static final int BUTTON_W = 200;
 	private static final int BUTTON_H = 100;
+	public static final int BUTTON_X_START = (int)(Model.SCREEN_W/2 - (BUTTON_W + BUTTON_X_DIFF * 3)/2);
 
 	private Button priseBut = new Button("Prise");
 	private Button gardeBut = new Button("Garde");
@@ -392,11 +388,11 @@ public class View implements Observer{
 			});
 			cardViews.get(card.getName()).getFront().setOnMouseDragged(new EventHandler<MouseEvent>() {
 				@Override public void handle(MouseEvent event) {
-					cardViews.get(card.getName()).getFront().setX(event.getSceneX() - CardModel.CARD_W/2);
-					cardViews.get(card.getName()).getFront().setY(event.getSceneY() - CardModel.CARD_H/2);
+					cardViews.get(card.getName()).getFront().setX(event.getX() - CardModel.CARD_W/2);
+					cardViews.get(card.getName()).getFront().setY(event.getY() - CardModel.CARD_H/2);
 					
-					cardViews.get(card.getName()).getBack().setX(event.getSceneX() - CardModel.CARD_W/2);
-					cardViews.get(card.getName()).getBack().setY(event.getSceneY() - CardModel.CARD_H/2);
+					cardViews.get(card.getName()).getBack().setX(event.getX() - CardModel.CARD_W/2);
+					cardViews.get(card.getName()).getBack().setY(event.getY() - CardModel.CARD_H/2);
 				}
 			});
 			cardViews.get(card.getName()).getFront().setOnMouseReleased(new EventHandler<MouseEvent>() {

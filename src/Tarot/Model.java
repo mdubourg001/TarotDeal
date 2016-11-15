@@ -1,15 +1,15 @@
 package Tarot;
 
+import javafx.stage.Screen;
+import javafx.util.Pair;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Observable;
-import java.util.Observer;
-
-import javafx.util.Pair;
 
 public class Model extends Observable {
-	public static final int SCREEN_W = 1280;
-	public static final int SCREEN_H = 900;
+	public static final int SCREEN_W = (int)Screen.getPrimary().getBounds().getWidth();
+	public static final int SCREEN_H = (int)Screen.getPrimary().getBounds().getHeight();
 	
 	public static final int FIRST_TRUMP = 1;
 	public static final int LAST_TRUMP = 21;
@@ -21,17 +21,19 @@ public class Model extends Observable {
 	
 	private static final int NB_PLAYERS = 4;
 	
-	private static final int DECK_X_START = 150;
-	private static final int DECK_Y_START = 50;
+	public static final int DECK_X_START = (SCREEN_W / 2) - CardModel.CARD_W / 2 ;
+	public static final int DECK_Y_START = SCREEN_H / 10;
+
+	public static final int DIST_CARD_X_DIFF = SCREEN_W / 14;
+
+	public static final int CHIEN_CARD_X_START = (int)((SCREEN_W / 2) - (CardModel.CARD_W + 5 * DIST_CARD_X_DIFF) / 2);
+	public static final int CHIEN_CARD_Y = DECK_Y_START + CardModel.CARD_H + 50;
+
+	public static final int DIST_CARD_X_START = (int)((SCREEN_W / 2) - (CardModel.CARD_W + 8 * DIST_CARD_X_DIFF) / 2);
+	public static final int DIST_CARD_Y1 = CHIEN_CARD_Y + CardModel.CARD_H + 50;
+	public static final int DIST_CARD_Y2 = DIST_CARD_Y1 + CardModel.CARD_H + 50;
 	
-	private static final int DIST_CARD_X_START = 50;
-	private static final int DIST_CARD_Y1 = 300;
-	private static final int DIST_CARD_Y2 = 500;
-	private static final int DIST_CARD_X_DIFF = 135;
-	
-	private static final int CHIEN_CARD_X_START = 320;
-	private static final int CHIEN_CARD_Y = 50;
-	
+
 	private static final int PLAYER_3_Y = -400;
 	private static final int PLAYERS_2_4_X_SHIFT = 200;
 	private static final int PLAYERS_2_4_Y1 = -200;
@@ -292,8 +294,8 @@ public class Model extends Observable {
 	}
 	
 	public static final int NB_CARD_GAP = 6;
-	public static final int GAP_X_START = 320;
-	public static final int GAP_Y = 700;
+	public static final int GAP_X_START = CHIEN_CARD_X_START;
+	public static final int GAP_Y = View.BUTTON_Y;
 	private int nbCardInGap = 0;
 	
 	public void addCardToGap(CardModel card){
