@@ -24,6 +24,10 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class View implements Observer{
+	public final static int CAMERA_SHIFT_Y = -300;
+	public final static int CAMERA_ROTATE = 20;
+	public final static int CAMERA_SHIFT_Z = 200;
+
 	private Controller controller;
 	private Model model;
 
@@ -32,6 +36,8 @@ public class View implements Observer{
 	private PerspectiveCamera camera = new PerspectiveCamera();
 	
 	private Map<String, CardView> cardViews = new HashMap<String, CardView>();
+
+	private Rectangle ground = new Rectangle(0, 0, Model.SCREEN_W, Model.SCREEN_H);
 
 	public View(Controller controller){
 		this.controller = controller;
@@ -46,9 +52,14 @@ public class View implements Observer{
 		scene.setFill(Color.BLACK);
 		scene.setCamera(camera);
 		camera.setRotationAxis(new Point3D(1,0,0));
-		camera.setRotate(20);
-		camera.setTranslateZ(-300);
-		camera.setTranslateY(200);
+		camera.setRotate(CAMERA_ROTATE);
+		camera.setTranslateZ(CAMERA_SHIFT_Y);
+		camera.setTranslateY(CAMERA_SHIFT_Z);
+
+		ground.setFill(Color.GREEN);
+		ground.setY(-CAMERA_SHIFT_Y);
+		ground.setTranslateZ(1.3);
+		group.getChildren().add(ground);
 	}
 
 	public Scene getScene(){
@@ -183,10 +194,10 @@ public class View implements Observer{
 		for(int i = 0; i < model.getDeckCards().size(); i++){
 			card = model.getDeckCards().get(i);
 			if(i < indexHalf){
-				xShift = - CardModel.CARD_W/2;
+				xShift = - CardModel.CARD_W/2 - 10;
 			}
 			else{
-				xShift = CardModel.CARD_W/2;
+				xShift = CardModel.CARD_W/2 + 10;
 			}
 			if(i != model.getDeckCards().size()-1){
 				moveCardTo(8, cardViews.get(card.getName()),
@@ -449,7 +460,7 @@ public class View implements Observer{
 		button.setTextAlignment(TextAlignment.CENTER);
 		button.setPrefSize(BUTTON_W, BUTTON_H);
 		button.setRotationAxis(new Point3D(1,0,0));
-		button.setRotate(20);
+		button.setRotate(CAMERA_ROTATE);
 		group.getChildren().add(button);
 	}
 
