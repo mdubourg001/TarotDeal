@@ -25,6 +25,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
@@ -72,6 +73,13 @@ public class View implements Observer{
 		return scene;
 	}
 	
+	private void waiter(double duration, EventHandler<ActionEvent> event){
+		Timeline timeLine = new Timeline();
+		KeyFrame keyFrame = new KeyFrame(Duration.seconds(duration), event);
+		timeLine.getKeyFrames().add(keyFrame);
+		timeLine.play();
+	}
+	
 	private int currentAction = -1;
 	public void doNextAction(){
 		currentAction++;
@@ -109,6 +117,14 @@ public class View implements Observer{
 		}
 	}
 	
+	public EventHandler<ActionEvent> doNextActionEvent(){
+		return new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent t) {
+				doNextAction();
+			}
+		};
+	}
+	
 	@Override
 	public void update(Observable arg0, Object arg1) {
 		switch(((Pair<TarotAction, Object>)arg1).getKey()){
@@ -116,11 +132,7 @@ public class View implements Observer{
 				updateDeckMixed();
 				break;
 			case DECK_CUT:
-				waiter(0.5, new EventHandler<ActionEvent>() {
-					public void handle(ActionEvent t) {
-						updateDeckCut1(((Pair<TarotAction, Integer>)arg1).getValue());
-					}
-				});
+				updateDeckCut(((Pair<TarotAction, Integer>)arg1).getValue(), 1);
 				break;
 			case CARDS_DISTRIBUTED :
 				update3CardsDistributed(((Pair<TarotAction, Pair<Boolean, CardModel[]>>)arg1).getValue());
@@ -129,7 +141,7 @@ public class View implements Observer{
 				updateCardMoved(((Pair<TarotAction, CardModel>)arg1).getValue());
 				break;
 			case PLAYER_REVERTED :
-				revertPlayer();
+				revertDeck(model.getMyCards(), Model.NB_CARDS_PLAYER);
 				break;
 			case PLAYER_ORGANIZED :
 				updatePlayerCardsOrganized();
@@ -141,7 +153,7 @@ public class View implements Observer{
 				updateActionChosen(((Pair<TarotAction, PlayerAction>)arg1).getValue());
 				break;
 			case CHIEN_REVERTED :
-				updateRevertChien();
+				revertDeck(model.getChienCards(), Model.CHIEN_SIZE);
 				break;
 			case GAP_DONE :
 				updateGapDone();
@@ -158,85 +170,50 @@ public class View implements Observer{
 		doNextAction();
 	}
 	
-	public void updateDeckCut1(Integer indexHalf){
-		CardModel card;
-		int xShift;
+	public void updateDeckCut(Integer indexHalf, int iteration){
 		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				updateDeckCut2(indexHalf);
+				updateDeckCut(indexHalf, iteration+1);
 			}
 		};
-		
-		for(int i = 0; i < model.getDeckCards().size(); i++){
-			card = model.getDeckCards().get(i);
-			if(i < indexHalf){
-				xShift = - CardModel.CARD_W/2;
-			}
-			else{
-				xShift = CardModel.CARD_W/2;
-			}
-			if(i != model.getDeckCards().size()-1){
-				moveCardTo(8, cardViews.get(card.getName()),
-						card.getX() + xShift, card.getY(), cardViews.get(card.getName()).getFront().getTranslateZ(),
-						false, null);
-			}
-			else{
-				moveCardTo(8, cardViews.get(card.getName()),
-						card.getX() + xShift, card.getY(), cardViews.get(card.getName()).getFront().getTranslateZ(),
-						false, onFinished);
-			}
+		switch(iteration){
+		case 1:
+			moveCutDeck(CardModel.CARD_W/2 + 10, false, indexHalf, onFinished);
+			break;
+		case 2:
+			moveCutDeck(CardModel.CARD_W/2 + 10, true, indexHalf, onFinished);
+			break;
+		case 3:
+			moveCutDeck(0, true, indexHalf, doNextActionEvent());
+			break;
 		}
 	}
 	
-	public void updateDeckCut2(Integer indexHalf){
+	private void moveCutDeck(int xShiftValue, boolean trueZ, Integer indexHalf, EventHandler<ActionEvent> onFinished){
 		CardModel card;
 		int xShift;
-		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent t) {
-				updateDeckCut3(indexHalf);
-			}
-		};
-		
+		double z;
 		for(int i = 0; i < model.getDeckCards().size(); i++){
 			card = model.getDeckCards().get(i);
 			if(i < indexHalf){
-				xShift = - CardModel.CARD_W/2 - 10;
+				xShift = - xShiftValue;
 			}
 			else{
-				xShift = CardModel.CARD_W/2 + 10;
+				xShift = xShiftValue;
 			}
+			
+			if(trueZ){
+				z = card.getZ();
+			}
+			else{
+				z = cardViews.get(card.getName()).getFront().getTranslateZ();
+			}
+			
 			if(i != model.getDeckCards().size()-1){
-				moveCardTo(8, cardViews.get(card.getName()),
-						card.getX() + xShift, card.getY(), card.getZ(),
-						false, null);
+				moveCard(8, cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, false, null);
 			}
 			else{
-				moveCardTo(8, cardViews.get(card.getName()),
-						card.getX() + xShift, card.getY(), card.getZ(),
-						false, onFinished);
-			}
-		}
-	}
-	
-	public void updateDeckCut3(Integer indexHalf){
-		CardModel card;
-		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent t) {
-				doNextAction();
-			}
-		};
-		
-		for(int i = 0; i < model.getDeckCards().size(); i++){
-			card = model.getDeckCards().get(i);
-			if(i != model.getDeckCards().size()-1){
-				moveCardTo(8, cardViews.get(card.getName()),
-						card.getX(), card.getY(), card.getZ(),
-						false, null);
-			}
-			else{
-				moveCardTo(8, cardViews.get(card.getName()),
-						card.getX(), card.getY(), card.getZ(),
-						false, onFinished);
+				moveCard(8, cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, false, onFinished);
 			}
 		}
 	}
@@ -254,13 +231,13 @@ public class View implements Observer{
 			}
 		};
 		
-		moveCardTo(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
-		moveCardTo(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
-		moveCardTo(cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], onFinished);
+		moveCard(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
+		moveCard(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
+		moveCard(cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], onFinished);
 	}
 
 	public void updateCardMoved(CardModel card) {
-		moveCardTo(cardViews.get(card.getName()), card, null);
+		moveCard(cardViews.get(card.getName()), card, null);
 	}
 	
 	public void updateGapDone() {
@@ -269,19 +246,19 @@ public class View implements Observer{
 		}
 	}
 	
-	private void moveCardTo(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
-		moveCardTo(cardView, card.getX(), card.getY(), card.getZ(), card.onFront, onFinished);
+	private void moveCard(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
+		moveCard(cardView, card.getX(), card.getY(), card.getZ(), card.onFront, onFinished);
 	}
 	
-	private void moveCardTo(int speed, CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
-		moveCardTo(speed, cardView, card.getX(), card.getY(), card.getZ(), card.onFront, onFinished);
+	private void moveCard(int speedDivider, CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
+		moveCard(speedDivider, cardView, card.getX(), card.getY(), card.getZ(), card.onFront, onFinished);
 	}
 	
-	private void moveCardTo(CardView cardView, int x, int y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
-		moveCardTo(1, cardView, x, y, z, onFront, onFinished);
+	private void moveCard(CardView cardView, int x, int y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
+		moveCard(1, cardView, x, y, z, onFront, onFinished);
 	}
 	
-	private void moveCardTo(int speed, CardView cardView, int x, int y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
+	private void moveCard(int speedDivider, CardView cardView, int x, int y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
 		Timeline animationMoveCard = new Timeline();
 
 		KeyValue kVMoveXCardB = new KeyValue(cardView.getBack().xProperty(), x);
@@ -304,7 +281,7 @@ public class View implements Observer{
 		double delta = Math.abs(cardView.getBack().getX() - x);
 		delta += Math.abs(cardView.getBack().getY() - y);
 		delta += Math.abs(cardView.getBack().getTranslateZ() - z);
-		delta *= speed;
+		delta *= speedDivider;
 		
 		Duration duration = Duration.seconds(delta/6000); // TODO REMETTRE 1500
 
@@ -315,28 +292,26 @@ public class View implements Observer{
 
 		animationMoveCard.play();
 	}
-
-	private int playerIndex = 0;
-	private EventHandler<ActionEvent> revertPlayerOnFinished;
-	public void revertPlayer() {
-		
-		revertPlayerOnFinished = new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent t) {
-				playerIndex++;
-				if(playerIndex < Model.PLAYER_NB_CARDS){
-					returnCard(cardViews.get(model.getMyCards().get(playerIndex).getName()), revertPlayerOnFinished);
+	
+	public void revertDeck(ArrayList<CardModel> deck, int size) {
+		int i = 1;
+		for(CardModel card : deck){
+			waiter(0.1*i, new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent t) {
+					if(deck.indexOf(card) != size-1)
+						revertCard(cardViews.get(card.getName()), null);
+					else{
+						revertCard(cardViews.get(card.getName()), doNextActionEvent());
+					}
 				}
-				else{
-					doNextAction();
-				}
-			}
-		};
-		returnCard(cardViews.get(model.getMyCards().get(playerIndex).getName()), revertPlayerOnFinished);
+			});
+			i++;
+		}
 	}
 
-	private final static double RETURN_CARD_DURATION = 0.2; // TODO REMETTRE A 0.6
-	private void returnCard(CardView cardView, EventHandler<ActionEvent> onFinished){
-		returnCardMove(cardView, true);
+	private final static double RETURN_CARD_DURATION = 0.6; // TODO REMETTRE A 0.6
+	private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished){
+		revertCardMove(cardView, true);
 		
 		Timeline revertPlayerAnimation = new Timeline();
 		
@@ -350,7 +325,7 @@ public class View implements Observer{
 		revertPlayerAnimation.play();
 	}
 	
-	private void returnCardMove(CardView cardView, boolean pursue){
+	private void revertCardMove(CardView cardView, boolean pursue){
 		Timeline moveXAnimation = new Timeline();
 		
 		double shiftX ,shiftZF ,shiftZB;
@@ -374,7 +349,7 @@ public class View implements Observer{
 		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
 				if(pursue)
-					returnCardMove(cardView, false);
+					revertCardMove(cardView, false);
 			}
 		};
 		
@@ -389,22 +364,9 @@ public class View implements Observer{
 		CardModel card;
 		for(int i =0; i<model.getMyCards().size(); i++){
 			card = model.getMyCards().get(i);
-			moveCardTo(cardViews.get(card.getName()), card, null);
+			moveCard(cardViews.get(card.getName()), card, null);
 		}
-		
-		EventHandler<ActionEvent> nextAction = new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent t) {
-				doNextAction();
-			}
-		};
-		waiter(1, nextAction);
-	}
-	
-	private void waiter(double duration, EventHandler<ActionEvent> event){
-		Timeline timeLine = new Timeline();
-		KeyFrame keyFrame = new KeyFrame(Duration.seconds(duration), event);
-		timeLine.getKeyFrames().add(keyFrame);
-		timeLine.play();
+		waiter(0.5, doNextActionEvent());
 	}
 	
 	public void updatePetitSec(Boolean petitSec) {
@@ -412,16 +374,17 @@ public class View implements Observer{
 			doNextAction();
 		}
 		else{
-			//cancel the game
+			nouvelleDonne();
 		}
 	}
 
-	private static final int BUTTON_X_DIFF = 10;
-	public static final int BUTTON_X_START = Model.SCREEN_W/20;
-	public static final int BUTTON_Y = Model.SCREEN_H/10;
 	private static final int BUTTON_W = 350;
 	private static final int BUTTON_H = 150;
-
+	private static final int BUTTON_X_DIFF = 10;
+	public static final int BUTTON_X_START = (Model.SCREEN_W - (5*BUTTON_W + 4*BUTTON_X_DIFF))/2;
+	public static final int BUTTON_Y = Model.SCREEN_H/10;
+	
+	private Button passeBut = new Button("Passe");
 	private Button priseBut = new Button("Prise");
 	private Button gardeBut = new Button("Garde");
 	private Button gardeSansBut = new Button("Garde\nsans chien");
@@ -430,20 +393,14 @@ public class View implements Observer{
 	private Font buttonsFont = new Font(40);
 
 	public void drawChoseButtons(){
-		initButton(priseBut, BUTTON_X_START, BUTTON_Y, -50);
-		priseBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.PRISE));
-
-		initButton(gardeBut, BUTTON_X_START + (BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50);
-		gardeBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.GARDE));
-
-		initButton(gardeSansBut, BUTTON_X_START + 2*(BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50);
-		gardeSansBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.GARDE_SANS));
-
-		initButton(gardeContreBut, BUTTON_X_START + 3*(BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50);
-		gardeContreBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.GARDE_CONTRE));
+		initButton(passeBut, BUTTON_X_START, BUTTON_Y, -50, PlayerAction.PASSE);
+		initButton(priseBut, BUTTON_X_START + (BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.PRISE);
+		initButton(gardeBut, BUTTON_X_START + 2*(BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE);
+		initButton(gardeSansBut, BUTTON_X_START + 3*(BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE_SANS);
+		initButton(gardeContreBut, BUTTON_X_START + 4*(BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE_CONTRE);
 	}
 
-	private void initButton(Button button, int x, int y, int z){
+	private void initButton(Button button, int x, int y, int z, PlayerAction action){
 		button.setFont(buttonsFont);
 		button.setLayoutX(x);
 		button.setLayoutY(y);
@@ -452,23 +409,23 @@ public class View implements Observer{
 		button.setPrefSize(BUTTON_W, BUTTON_H);
 		button.setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(50), null)));
 		button.setTextFill(Color.WHITE);
-		button.setOnMouseEntered(new EventHandler<MouseEvent>() {
-					@Override
-					public void handle(MouseEvent arg0) {
-						button.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, new CornerRadii(50), null)));
-						button.setTextFill(Color.BLACK);
-					}
-				});
-		button.setOnMouseExited(new EventHandler<MouseEvent>() {
-					@Override
-					public void handle(MouseEvent arg0) {
-						button.setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(50), null)));
-						button.setTextFill(Color.WHITE);
-					}
-				});
+		button.setOnMouseEntered(mouseEvent -> changeColorButton(button, true));
+		button.setOnMouseExited(mouseEvent -> changeColorButton(button, false));
 		button.setRotationAxis(new Point3D(1,0,0));
 		button.setRotate(CAMERA_ROTATE);
+		button.setOnMouseClicked(mouseEvent -> controller.chooseAction(action));
 		group.getChildren().add(button);
+	}
+	
+	private void changeColorButton(Button button, boolean toGray){
+		if(toGray){
+			button.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, new CornerRadii(50), null)));
+			button.setTextFill(Color.BLACK);
+		}
+		else{
+			button.setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(50), null)));
+			button.setTextFill(Color.WHITE);
+		}
 	}
 
 	public static final int ECART_ZONE_X = Model.GAP_X1-40;
@@ -476,15 +433,18 @@ public class View implements Observer{
 	public static final int ECART_ZONE_W = 2 * CardModel.CARD_W + Model.DIST_CARD_X_DIFF + 80;
 	public static final int ECART_ZONE_H = 3 * (CardModel.CARD_H + Model.DIST_CARD_Y_DIFF) + 80;
 
-
 	private Rectangle ecartArea = new Rectangle(ECART_ZONE_X, ECART_ZONE_Y, ECART_ZONE_W, ECART_ZONE_H);
 	public void updateActionChosen(PlayerAction action) {
+		group.getChildren().remove(passeBut);
 		group.getChildren().remove(priseBut);
 		group.getChildren().remove(gardeBut);
 		group.getChildren().remove(gardeSansBut);
 		group.getChildren().remove(gardeContreBut);
-
-		if(action == PlayerAction.PRISE || action == PlayerAction.GARDE){
+		
+		if(action == PlayerAction.PASSE){
+			nouvelleDonne();
+		}
+		else if(action == PlayerAction.PRISE || action == PlayerAction.GARDE){
 			doGap();
 			ecartArea.setFill(Color.BLUE);
 			ecartArea.setTranslateZ(1.2);
@@ -494,27 +454,6 @@ public class View implements Observer{
 			currentAction++;
 			doNextAction();
 		}
-	}
-	
-	public void updateRevertChien() {
-		revertChien();
-		doNextAction();
-	}
-	
-	private int chienIndex = 0;
-	private EventHandler<ActionEvent> revertChienOnFinished;
-	public void revertChien() {
-
-		revertChienOnFinished = new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent t) {
-				chienIndex++;
-				if(chienIndex < Model.CHIEN_SIZE){
-					returnCard(cardViews.get(model.getChienCards().get(chienIndex).getName()), revertChienOnFinished);
-				}
-			}
-		};
-		
-		returnCard(cardViews.get(model.getChienCards().get(chienIndex).getName()), revertChienOnFinished);
 	}
 	
 	private int selectedCardXStart = 0;
@@ -543,7 +482,7 @@ public class View implements Observer{
 							|| cardViews.get(card.getName()).getFront().getX() + CardModel.CARD_W/2 > ECART_ZONE_X + ECART_ZONE_W
 							|| cardViews.get(card.getName()).getFront().getY() + CardModel.CARD_H/2 < ECART_ZONE_Y
 							|| cardViews.get(card.getName()).getFront().getY() + CardModel.CARD_H/2 > ECART_ZONE_Y + ECART_ZONE_H){
-						moveCardTo(cardViews.get(card.getName()), selectedCardXStart, selectedCardYStart, card.getZ(), true, null);
+						moveCard(cardViews.get(card.getName()), selectedCardXStart, selectedCardYStart, card.getZ(), true, null);
 					}
 					else{
 						controller.addCardToGap(card);
@@ -558,5 +497,16 @@ public class View implements Observer{
 		cardView.getFront().setOnMousePressed(null);
 		cardView.getFront().setOnMouseDragged(null);
 		cardView.getFront().setOnMouseReleased(null);
+	}
+	
+	private void nouvelleDonne(){
+		model.nouvelleDonne();
+		
+		currentAction = -1;
+		
+		group.getChildren().clear();
+		group.getChildren().add(ground);
+		
+		doNextAction();
 	}
 }

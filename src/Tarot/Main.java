@@ -4,9 +4,9 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 
 public class Main extends Application{
-	private Model model;
-	private Controller controller;
-	private View view;
+	private static Model model;
+	private static Controller controller;
+	private static View view;
 	
 	public static void main (String[] args){
 		launch(args);
@@ -20,11 +20,20 @@ public class Main extends Application{
 		view = new View(controller);
 		model.addObserver(view);
 		
-		view.doNextAction();
-		
 		stage.setTitle("Martinez Dubourg S3D");
 		stage.setScene(view.getScene());
 		stage.sizeToScene();
 		stage.show();
+		
+		view.doNextAction();
+	}
+	
+	public void nouvelleDonne(){
+		model = new Model();
+		controller = new Controller(model);
+		view = new View(controller);
+		model.addObserver(view);
+		
+		view.doNextAction();
 	}
 }

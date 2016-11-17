@@ -352,7 +352,6 @@ public class Model extends Observable {
 			}
 			organizePlayerCards();
 
-
 			setChanged();
 			Pair<TarotAction, Object> argGapDone = new Pair<TarotAction, Object>(TarotAction.GAP_DONE, null);
 			notifyObservers(argGapDone);
@@ -375,5 +374,28 @@ public class Model extends Observable {
 		setChanged();
 		Pair<TarotAction, Object> argGapDone = new Pair<TarotAction, Object>(TarotAction.CHIEN_REVERTED, null);
 		notifyObservers(argGapDone);
+	}
+	
+	public void nouvelleDonne(){
+		deckCards.clear();
+		myCards.clear();
+		othersCards.clear();
+		chienCards.clear();
+		gapCards.clear();
+		
+		loadCards();
+		
+		distributedCards = 0;
+		nbCardsInChien = 0;
+
+		currentPlayer = 1;
+		myDistCardX = DIST_CARD_X_START;
+		myDistCardY = DIST_CARD_Y1;
+		chienCardX = CHIEN_CARD_X_START;
+		
+		myIndexCard = -3;
+		othersIndexCard = -3;
+		chienIndexCard = -1;
+		nbCardInGap = 0;
 	}
 }
