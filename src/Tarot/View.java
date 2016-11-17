@@ -37,7 +37,7 @@ public class View implements Observer{
 	
 	private Map<String, CardView> cardViews = new HashMap<String, CardView>();
 
-	private Rectangle ground = new Rectangle(0, 0, Model.SCREEN_W, Model.SCREEN_H);
+	private Rectangle ground = new Rectangle(0, 0, Model.SCREEN_W, Model.SCREEN_H - CAMERA_SHIFT_Y);
 
 	public View(Controller controller){
 		this.controller = controller;
@@ -57,7 +57,6 @@ public class View implements Observer{
 		camera.setTranslateY(CAMERA_SHIFT_Z);
 
 		ground.setFill(Color.GREEN);
-		ground.setY(-CAMERA_SHIFT_Y);
 		ground.setTranslateZ(1.3);
 		group.getChildren().add(ground);
 	}
@@ -300,7 +299,7 @@ public class View implements Observer{
 		delta += Math.abs(cardView.getBack().getTranslateZ() - z);
 		delta *= speed;
 		
-		Duration duration = Duration.seconds(delta/1500); // TODO REMETTRE 1500
+		Duration duration = Duration.seconds(delta/6000); // TODO REMETTRE 1500
 
 		KeyFrame keyFrame = new KeyFrame(duration, onFinished, 
 				kVMoveXCardB, kVMoveYCardB, kVMoveZCardB,
@@ -427,10 +426,10 @@ public class View implements Observer{
 	}
 
 	private static final int BUTTON_X_DIFF = 210;
-	public static final int BUTTON_Y = Model.DIST_CARD_Y2 + CardModel.CARD_H + 50;
+	public static final int BUTTON_Y = Model.DECK_Y + 100;
 	private static final int BUTTON_W = 200;
 	private static final int BUTTON_H = 100;
-	public static final int BUTTON_X_START = (int)(Model.SCREEN_W/2 - (BUTTON_W + BUTTON_X_DIFF * 3)/2);
+	public static final int BUTTON_X_START = Model.CHIEN_CARD_X_START;
 
 	private Button priseBut = new Button("Prise");
 	private Button gardeBut = new Button("Garde");
@@ -440,23 +439,24 @@ public class View implements Observer{
 	private Font buttonsFont = new Font(20);
 
 	public void drawChoseButtons(){
-		initButton(priseBut, BUTTON_X_START, BUTTON_Y);
+		initButton(priseBut, BUTTON_X_START, BUTTON_Y, -50);
 		priseBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.PRISE));
 
-		initButton(gardeBut, BUTTON_X_START + BUTTON_X_DIFF, BUTTON_Y);
+		initButton(gardeBut, BUTTON_X_START + BUTTON_X_DIFF, BUTTON_Y, -50);
 		gardeBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.GARDE));
 
-		initButton(gardeSansBut, BUTTON_X_START + 2*BUTTON_X_DIFF, BUTTON_Y);
+		initButton(gardeSansBut, BUTTON_X_START + 2*BUTTON_X_DIFF, BUTTON_Y, -50);
 		gardeSansBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.GARDE_SANS));
 
-		initButton(gardeContreBut, BUTTON_X_START + 3*BUTTON_X_DIFF, BUTTON_Y);
+		initButton(gardeContreBut, BUTTON_X_START + 3*BUTTON_X_DIFF, BUTTON_Y, -50);
 		gardeContreBut.setOnMouseClicked(mouseEvent -> controller.chooseAction(PlayerAction.GARDE_CONTRE));
 	}
 
-	private void initButton(Button button, int x, int y){
+	private void initButton(Button button, int x, int y, int z){
 		button.setFont(buttonsFont);
 		button.setLayoutX(x);
 		button.setLayoutY(y);
+		button.setTranslateZ(z);
 		button.setTextAlignment(TextAlignment.CENTER);
 		button.setPrefSize(BUTTON_W, BUTTON_H);
 		button.setRotationAxis(new Point3D(1,0,0));
@@ -464,10 +464,10 @@ public class View implements Observer{
 		group.getChildren().add(button);
 	}
 
-	public static final int ECART_ZONE_X = Model.GAP_X_START-40;
-	public static final int ECART_ZONE_Y = Model.GAP_Y-40;
-	public static final int ECART_ZONE_W = CardModel.CARD_W + 5*Model.DIST_CARD_X_DIFF+80;
-	public static final int ECART_ZONE_H = CardModel.CARD_H + 80;
+	public static final int ECART_ZONE_X = Model.GAP_X1-40;
+	public static final int ECART_ZONE_Y = Model.GAP_Y_START-40;
+	public static final int ECART_ZONE_W = 2 * CardModel.CARD_W + Model.DIST_CARD_X_DIFF + 80;
+	public static final int ECART_ZONE_H = 3 * (CardModel.CARD_H + Model.DIST_CARD_Y_DIFF) + 80;
 
 
 	private Rectangle ecartArea = new Rectangle(ECART_ZONE_X, ECART_ZONE_Y, ECART_ZONE_W, ECART_ZONE_H);

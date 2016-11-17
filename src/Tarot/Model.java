@@ -5,7 +5,6 @@ import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Observable;
 
 public class Model extends Observable {
@@ -22,17 +21,18 @@ public class Model extends Observable {
 	
 	private static final int NB_PLAYERS = 4;
 	
-	public static final int DECK_X_START = (SCREEN_W / 2) - CardModel.CARD_W / 2 ;
-	public static final int DECK_Y_START = SCREEN_H / 20;
+	public static final int DECK_X = (int)(SCREEN_W / 2.5) - CardModel.CARD_W / 2 ;
+	public static final int DECK_Y = SCREEN_H / 20;
 
-	public static final int DIST_CARD_X_DIFF = SCREEN_W / 14;
+	public static final int DIST_CARD_X_DIFF = 5;
+	public static final int DIST_CARD_Y_DIFF = 25;
 
-	public static final int CHIEN_CARD_X_START = (int)((SCREEN_W / 2) - (CardModel.CARD_W + 5 * DIST_CARD_X_DIFF) / 2);
-	public static final int CHIEN_CARD_Y = DECK_Y_START + CardModel.CARD_H + 50;
+	public static final int CHIEN_CARD_X_START = (int)(SCREEN_W / 2.5) - (6 * CardModel.CARD_W + 5 * DIST_CARD_X_DIFF) / 2;
+	public static final int CHIEN_CARD_Y = DECK_Y + CardModel.CARD_H + DIST_CARD_Y_DIFF;
 
-	public static final int DIST_CARD_X_START = (int)((SCREEN_W / 2) - (CardModel.CARD_W + 8 * DIST_CARD_X_DIFF) / 2);
-	public static final int DIST_CARD_Y1 = CHIEN_CARD_Y + CardModel.CARD_H + 50;
-	public static final int DIST_CARD_Y2 = DIST_CARD_Y1 + CardModel.CARD_H + 50;
+	public static final int DIST_CARD_X_START = (int)(SCREEN_W / 2.5) - (9 * CardModel.CARD_W + 8 * DIST_CARD_X_DIFF) / 2;
+	public static final int DIST_CARD_Y1 = CHIEN_CARD_Y + CardModel.CARD_H + DIST_CARD_Y_DIFF;
+	public static final int DIST_CARD_Y2 = DIST_CARD_Y1 + CardModel.CARD_H + DIST_CARD_Y_DIFF;
 	
 
 	private static final int PLAYER_3_Y = -400;
@@ -139,8 +139,8 @@ public class Model extends Observable {
 		Collections.shuffle(deckCards);
 		double z = -38;
 		for(CardModel card : deckCards){
-			card.setX(DECK_X_START);
-			card.setY(DECK_Y_START);
+			card.setX(DECK_X);
+			card.setY(DECK_Y);
 			card.setZ(z);
 			z += 0.5;
 		}
@@ -197,7 +197,7 @@ public class Model extends Observable {
 			break;
 		case 3 :
 			move3CardsToOther(
-					new int[]{(SCREEN_W-CardModel.CARD_W)/2-DIST_CARD_X_DIFF,(SCREEN_W-CardModel.CARD_W)/2,(SCREEN_W-CardModel.CARD_W)/2+DIST_CARD_X_DIFF}, 
+					new int[]{(SCREEN_W-CardModel.CARD_W)/2-(CardModel.CARD_W + DIST_CARD_X_DIFF),(SCREEN_W-CardModel.CARD_W)/2,(SCREEN_W-CardModel.CARD_W)/2+(CardModel.CARD_W + DIST_CARD_X_DIFF)},
 					new int[]{PLAYER_3_Y, PLAYER_3_Y, PLAYER_3_Y});
 			break;
 		case 4 :
@@ -213,8 +213,8 @@ public class Model extends Observable {
 		for(int i=0; i<3; i++){
 			myCards.add(deckCards.get(0));
 			myCards.get(myIndexCard+i).moveTo(myDistCardX, myDistCardY, 1);
-			myDistCardX += DIST_CARD_X_DIFF;
-			if(myDistCardX > DIST_CARD_X_START + 8*DIST_CARD_X_DIFF){
+			myDistCardX += (CardModel.CARD_W + DIST_CARD_X_DIFF);
+			if(myDistCardX > DIST_CARD_X_START + 8*(CardModel.CARD_W + DIST_CARD_X_DIFF)){
 				myDistCardX = DIST_CARD_X_START;
 				myDistCardY = DIST_CARD_Y2;
 			}
@@ -260,7 +260,7 @@ public class Model extends Observable {
 		chienIndexCard++;
 		chienCards.add(deckCards.get(0));
 		chienCards.get(chienIndexCard).moveTo(chienCardX, CHIEN_CARD_Y, 1);
-		chienCardX += DIST_CARD_X_DIFF;
+		chienCardX += (CardModel.CARD_W + DIST_CARD_X_DIFF);
 		deckCards.remove(0);
 		
 		setChanged();
@@ -276,18 +276,18 @@ public class Model extends Observable {
 		for(CardModel card : myCards){
 			card.setX(newX);
 			card.setY(newY);
-			newX += DIST_CARD_X_DIFF;
-			if(newX > DIST_CARD_X_START + 8*DIST_CARD_X_DIFF){
+			newX += (CardModel.CARD_W + DIST_CARD_X_DIFF);
+			if(newX > DIST_CARD_X_START + 8*(CardModel.CARD_W + DIST_CARD_X_DIFF)){
 				newX = DIST_CARD_X_START;
 				newY = DIST_CARD_Y2;
 			}
 		}
-		
+
 		setChanged();
 		Pair<TarotAction, Object> arg = new Pair<TarotAction, Object>(TarotAction.ORGANIZE_PLAYER, null);
 		notifyObservers(arg);
 	}
-	
+
 	public void detectPetitSec(){
 		Boolean petitSec = false;
 		for(CardModel card : myCards){
@@ -299,12 +299,12 @@ public class Model extends Observable {
 				break;
 			}
 		}
-		
+
 		setChanged();
 		Pair<TarotAction, Boolean> arg = new Pair<TarotAction, Boolean>(TarotAction.DETECT_PETIT_SEC, petitSec);
 		notifyObservers(arg);
 	}
-	
+
 	private ArrayList<String> othersTrumps(){
 		ArrayList<String> othersTrumps = new ArrayList<String>();
 		for(int i = FIRST_TRUMP+1; i <= LAST_TRUMP; i++){
@@ -312,26 +312,33 @@ public class Model extends Observable {
 		}
 		return othersTrumps;
 	}
-	
+
 	private PlayerAction myAction;
 	public void chooseAction(PlayerAction action){
 		myAction = action;
-		
+
 		setChanged();
 		Pair<TarotAction, PlayerAction> arg = new Pair<TarotAction, PlayerAction>(TarotAction.CHOOSE_ACTION, myAction);
 		notifyObservers(arg);
 	}
-	
+
 	public static final int NB_CARD_GAP = 6;
-	public static final int GAP_X_START = CHIEN_CARD_X_START;
-	public static final int GAP_Y = DIST_CARD_Y2 + CardModel.CARD_H + 100;
+	public static final int GAP_X1= 4 * (SCREEN_W / 5);
+	public static final int GAP_X2 = GAP_X1 + (CardModel.CARD_W + DIST_CARD_X_DIFF);
+	public static final int GAP_Y_START = DECK_Y;
 	private int nbCardInGap = 0;
 	
 	public void addCardToGap(CardModel card){
 		gapCards.add(card);
 		myCards.remove(card);
-		card.setX(GAP_X_START + nbCardInGap*DIST_CARD_X_DIFF);
-		card.setY(GAP_Y);
+
+		if(nbCardInGap % 2 == 0){
+			card.setX(GAP_X1);
+		}
+		else{
+			card.setX(GAP_X2);
+		}
+		card.setY(GAP_Y_START + (CardModel.CARD_H + DIST_CARD_Y_DIFF)*(nbCardInGap/2));
 		nbCardInGap++;
 		
 		setChanged();

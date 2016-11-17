@@ -1,8 +1,8 @@
 package Tarot;
 
 public class CardModel implements Comparable<CardModel> {
-    public static final int CARD_W = 100;
-    public static final int CARD_H = 174;
+    public static final int CARD_W = 150;
+    public static final int CARD_H = 261;
 
     private String name;
     private String path;
