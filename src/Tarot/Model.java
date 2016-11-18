@@ -273,14 +273,17 @@ public class Model extends Observable {
 		
 		int newX = DIST_CARD_X_START;
 		int newY = DIST_CARD_Y1;
+		double newZ = 1.0;
 		for(CardModel card : myCards){
 			card.setX(newX);
 			card.setY(newY);
+			card.setZ(newZ);
 			newX += (CardModel.CARD_W + DIST_CARD_X_DIFF);
 			if(newX > DIST_CARD_X_START + 8*(CardModel.CARD_W + DIST_CARD_X_DIFF)){
 				newX = DIST_CARD_X_START;
 				newY = DIST_CARD_Y2;
 			}
+			newZ -= 0.1;
 		}
 
 		setChanged();

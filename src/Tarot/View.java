@@ -283,7 +283,7 @@ public class View implements Observer{
 		delta += Math.abs(cardView.getBack().getTranslateZ() - z);
 		delta *= speedDivider;
 		
-		Duration duration = Duration.seconds(delta/6000); // TODO REMETTRE 1500
+		Duration duration = Duration.seconds(delta/1500); // TODO REMETTRE 1500
 
 		KeyFrame keyFrame = new KeyFrame(duration, onFinished, 
 				kVMoveXCardB, kVMoveYCardB, kVMoveZCardB,
