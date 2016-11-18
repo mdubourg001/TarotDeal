@@ -210,10 +210,10 @@ public class View implements Observer{
 			}
 			
 			if(i != model.getDeckCards().size()-1){
-				moveCard(8, cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, false, null);
+				moveCard(0.2, cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, false, null);
 			}
 			else{
-				moveCard(8, cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, false, onFinished);
+				moveCard(0.2, cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, false, onFinished);
 			}
 		}
 	}
@@ -250,15 +250,15 @@ public class View implements Observer{
 		moveCard(cardView, card.getX(), card.getY(), card.getZ(), card.onFront, onFinished);
 	}
 	
-	private void moveCard(int speedDivider, CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
-		moveCard(speedDivider, cardView, card.getX(), card.getY(), card.getZ(), card.onFront, onFinished);
+	private void moveCard(double speed, CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
+		moveCard(speed, cardView, card.getX(), card.getY(), card.getZ(), card.onFront, onFinished);
 	}
 	
 	private void moveCard(CardView cardView, int x, int y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
 		moveCard(1, cardView, x, y, z, onFront, onFinished);
 	}
 	
-	private void moveCard(int speedDivider, CardView cardView, int x, int y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
+	private void moveCard(double speed, CardView cardView, int x, int y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
 		Timeline animationMoveCard = new Timeline();
 
 		KeyValue kVMoveXCardB = new KeyValue(cardView.getBack().xProperty(), x);
@@ -278,12 +278,11 @@ public class View implements Observer{
 			kVMoveZCardF = new KeyValue(cardView.getFront().translateZProperty(), z);
 		}
 		
-		double delta = Math.abs(cardView.getBack().getX() - x);
-		delta += Math.abs(cardView.getBack().getY() - y);
-		delta += Math.abs(cardView.getBack().getTranslateZ() - z);
-		delta *= speedDivider;
+		double time = calculTime(new double[]{Math.abs(cardView.getBack().getX() - x), 
+				Math.abs(cardView.getBack().getY() - y),
+				Math.abs(cardView.getBack().getTranslateZ() - z)}, speed);
 		
-		Duration duration = Duration.seconds(delta/1500); // TODO REMETTRE 1500
+		Duration duration = Duration.seconds(time);
 
 		KeyFrame keyFrame = new KeyFrame(duration, onFinished, 
 				kVMoveXCardB, kVMoveYCardB, kVMoveZCardB,
@@ -291,6 +290,15 @@ public class View implements Observer{
 		animationMoveCard.getKeyFrames().add(keyFrame);
 
 		animationMoveCard.play();
+	}
+	
+	private double calculTime(double[] deltas, double speed){
+		double time = 0;
+		for(double d : deltas){
+			time += d;
+		}
+		time /= (3000*speed);
+		return time;
 	}
 	
 	public void revertDeck(ArrayList<CardModel> deck, int size) {
@@ -462,6 +470,7 @@ public class View implements Observer{
 		for(CardModel card : model.getMyCards()){
 			cardViews.get(card.getName()).getFront().setOnMousePressed(new EventHandler<MouseEvent>() {
 				@Override public void handle(MouseEvent event) {
+					riseCard(cardViews.get(card.getName()), -300, true, null);
 					selectedCardXStart = (int) card.getX();
 					selectedCardYStart = (int) card.getY();
 				}
@@ -491,6 +500,35 @@ public class View implements Observer{
 				}
 			});
 		}
+	}
+	
+	private void riseCard(CardView cardView, double z, boolean onFront, EventHandler<ActionEvent> onFinished){
+		riseCard(1, cardView, z, onFront, onFinished);
+	}
+	
+	private void riseCard(int speed, CardView cardView, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
+		Timeline animationMoveCard = new Timeline();
+		
+		KeyValue kVMoveZCardB;
+		KeyValue kVMoveZCardF;
+		if(!onFront){
+			kVMoveZCardB = new KeyValue(cardView.getBack().translateZProperty(), z);
+			kVMoveZCardF = new KeyValue(cardView.getFront().translateZProperty(), z+0.1);
+		}
+		else{
+			kVMoveZCardB = new KeyValue(cardView.getBack().translateZProperty(), z+0.1);
+			kVMoveZCardF = new KeyValue(cardView.getFront().translateZProperty(), z);
+		}
+		
+		double delta = Math.abs(cardView.getBack().getTranslateZ() - z);
+		delta *= speed;
+		
+		Duration duration = Duration.seconds(delta/1500);
+
+		KeyFrame keyFrame = new KeyFrame(duration, onFinished, kVMoveZCardB, kVMoveZCardF);
+		animationMoveCard.getKeyFrames().add(keyFrame);
+		
+		animationMoveCard.play();
 	}
 	
 	private void removeListeners(CardView cardView){
