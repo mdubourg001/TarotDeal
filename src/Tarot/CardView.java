@@ -11,7 +11,7 @@ public class CardView {
     private ImageView backIV;
     private ImageView frontIV;
 
-    public CardView(String path, int x, int y, double z) {
+    public CardView(String path, double x, double y, double z) {
         this.image = new Image("file:./" + path);
 
         this.backIV = new ImageView(this.back);

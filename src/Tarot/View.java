@@ -7,9 +7,11 @@ import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.*;
 import javafx.scene.control.Button;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -40,7 +42,7 @@ public class View implements Observer{
 	private Model model;
 
 	private Group group = new Group();
-	private Scene scene = new Scene(group, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.DISABLED);
+	private Scene scene = new Scene(group, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.BALANCED);
 	private PerspectiveCamera camera = new PerspectiveCamera();
 	
 	private Map<String, CardView> cardViews = new HashMap<String, CardView>();
@@ -65,7 +67,7 @@ public class View implements Observer{
 		camera.setTranslateY(CAMERA_SHIFT_Z);
 
 		ground.setFill(Color.GREEN);
-		ground.setTranslateZ(1.3);
+		ground.setTranslateZ(2.1);
 		group.getChildren().add(ground);
 	}
 
@@ -137,8 +139,13 @@ public class View implements Observer{
 			case CARDS_DISTRIBUTED :
 				update3CardsDistributed(((Pair<TarotAction, Pair<Boolean, CardModel[]>>)arg1).getValue());
 				break;
+			case CARD_MOVED_FROM_DECK :
+				moveCardFromDeck(cardViews.get(((Pair<TarotAction, CardModel>)arg1).getValue().getName()), 
+						((Pair<TarotAction, CardModel>)arg1).getValue(), null);
+				break;
 			case CARD_MOVED :
-				updateCardMoved(((Pair<TarotAction, CardModel>)arg1).getValue());
+				moveCard(cardViews.get(((Pair<TarotAction, CardModel>)arg1).getValue().getName()), 
+						((Pair<TarotAction, CardModel>)arg1).getValue(), null);
 				break;
 			case PLAYER_REVERTED :
 				revertDeck(model.getMyCards(), Model.NB_CARDS_PLAYER);
@@ -189,9 +196,9 @@ public class View implements Observer{
 		}
 	}
 	
-	private void moveCutDeck(int xShiftValue, boolean trueZ, Integer indexHalf, EventHandler<ActionEvent> onFinished){
+	private void moveCutDeck(double xShiftValue, boolean trueZ, Integer indexHalf, EventHandler<ActionEvent> onFinished){
 		CardModel card;
-		int xShift;
+		double xShift;
 		double z;
 		for(int i = 0; i < model.getDeckCards().size(); i++){
 			card = model.getDeckCards().get(i);
@@ -210,15 +217,17 @@ public class View implements Observer{
 			}
 			
 			if(i != model.getDeckCards().size()-1){
-				moveCard(0.2, cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, false, null);
+				moveCard(cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, 0.2, false, null);
 			}
 			else{
-				moveCard(0.2, cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, false, onFinished);
+				moveCard(cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, 0.2, false, onFinished);
 			}
 		}
 	}
-
+	
+	private int currentPlayer = -1;
 	public void update3CardsDistributed(Pair<Boolean, CardModel[]> arg) {
+		currentPlayer++;
 		
 		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
@@ -231,13 +240,16 @@ public class View implements Observer{
 			}
 		};
 		
-		moveCard(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
-		moveCard(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
-		moveCard(cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], onFinished);
-	}
-
-	public void updateCardMoved(CardModel card) {
-		moveCard(cardViews.get(card.getName()), card, null);
+		if(currentPlayer%4 == 0){
+			moveCardFromDeck(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
+			moveCardFromDeck(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
+			moveCardFromDeck(cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], onFinished);
+		}
+		else{
+			moveCardXY(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
+			moveCardXY(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
+			moveCardXY(cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], onFinished);
+		}
 	}
 	
 	public void updateGapDone() {
@@ -250,43 +262,43 @@ public class View implements Observer{
 		moveCard(cardView, card.getX(), card.getY(), card.getZ(), card.onFront, onFinished);
 	}
 	
-	private void moveCard(double speed, CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
-		moveCard(speed, cardView, card.getX(), card.getY(), card.getZ(), card.onFront, onFinished);
+	private void moveCardXY(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
+		moveCard(cardView, card.getX(), card.getY(), cardView.getBack().getTranslateZ(), card.onFront, onFinished);
 	}
 	
-	private void moveCard(CardView cardView, int x, int y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
-		moveCard(1, cardView, x, y, z, onFront, onFinished);
+	private void moveCard(CardView cardView, CardModel card, double speed, EventHandler<ActionEvent> onFinished) {
+		moveCard(cardView, card.getX(), card.getY(), card.getZ(), speed, card.onFront, onFinished);
 	}
 	
-	private void moveCard(double speed, CardView cardView, int x, int y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
-		Timeline animationMoveCard = new Timeline();
-
-		KeyValue kVMoveXCardB = new KeyValue(cardView.getBack().xProperty(), x);
-		KeyValue kVMoveXCardF = new KeyValue(cardView.getFront().xProperty(), x);
-		
-		KeyValue kVMoveYCardB = new KeyValue(cardView.getBack().yProperty(), y);
-		KeyValue kVMoveYCardF = new KeyValue(cardView.getFront().yProperty(), y);
-		
-		KeyValue kVMoveZCardB;
-		KeyValue kVMoveZCardF;
-		if(!onFront){
-			kVMoveZCardB = new KeyValue(cardView.getBack().translateZProperty(), z);
-			kVMoveZCardF = new KeyValue(cardView.getFront().translateZProperty(), z+0.1);
-		}
-		else{
-			kVMoveZCardB = new KeyValue(cardView.getBack().translateZProperty(), z+0.1);
-			kVMoveZCardF = new KeyValue(cardView.getFront().translateZProperty(), z);
-		}
-		
+	private void moveCard(CardView cardView, double x, double y, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
+		moveCard(cardView, x, y, z, 1, onFront, onFinished);
+	}
+	
+	private void moveCard(CardView cardView, double x, double y, double z, double speed, boolean onFront, EventHandler<ActionEvent> onFinished) {
 		double time = calculTime(new double[]{Math.abs(cardView.getBack().getX() - x), 
 				Math.abs(cardView.getBack().getY() - y),
 				Math.abs(cardView.getBack().getTranslateZ() - z)}, speed);
 		
+		if(!onFront){
+			moveImageView(cardView.getBack(), x, y, z, time, null);
+			moveImageView(cardView.getFront(), x, y, z+0.5, time, onFinished);
+		}
+		else{
+			moveImageView(cardView.getBack(), x, y, z+0.5, time, null);
+			moveImageView(cardView.getFront(), x, y, z, time, onFinished);
+		}
+	}
+	
+	private void moveImageView(ImageView view, double x, double y, double z, double time, EventHandler<ActionEvent> onFinished){
+		Timeline animationMoveCard = new Timeline();
+
+		KeyValue kVMoveX = new KeyValue(view.xProperty(), x);
+		KeyValue kVMoveY = new KeyValue(view.yProperty(), y);
+		KeyValue kVMoveZ = new KeyValue(view.translateZProperty(), z);
+		
 		Duration duration = Duration.seconds(time);
 
-		KeyFrame keyFrame = new KeyFrame(duration, onFinished, 
-				kVMoveXCardB, kVMoveYCardB, kVMoveZCardB,
-				kVMoveXCardF, kVMoveYCardF, kVMoveZCardF);
+		KeyFrame keyFrame = new KeyFrame(duration, onFinished, kVMoveX, kVMoveY, kVMoveZ);
 		animationMoveCard.getKeyFrames().add(keyFrame);
 
 		animationMoveCard.play();
@@ -297,8 +309,73 @@ public class View implements Observer{
 		for(double d : deltas){
 			time += d;
 		}
-		time /= (3000*speed);
+		time /= (2000*speed); // TODO je sais plus
 		return time;
+	}
+	
+	private void moveCardFromDeck(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished2){
+		Point2D firstDest = calculFirstDest(cardView, card);
+		
+		EventHandler<ActionEvent> onFinished1 = new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent t) {
+				moveCard(cardView, card, onFinished2);
+			}
+		};
+		moveCard(cardView, firstDest.getX(), firstDest.getY(), cardView.getBack().getTranslateZ(), card.onFront, onFinished1);
+	}
+	
+	private Point2D calculFirstDest(CardView cardView, CardModel card){
+		Point2D viewP = new Point2D(cardView.getBack().getX(), cardView.getBack().getY());
+		Point2D cardP = new Point2D(card.getX(), card.getY());
+		
+		if((viewP.getX() - cardP.getX()) != 0){
+			double a = calculCoef(viewP, cardP);
+			if(a != 0){
+				double b = viewP.getY() - a*viewP.getX();
+				if(cardP.getX() - viewP.getX() < 0)
+					return getIntersectionsLigneCircle(a, b, viewP.getX(), viewP.getY(), CardModel.CARD_DIAG).get(0);
+				else
+					return getIntersectionsLigneCircle(a, b, viewP.getX(), viewP.getY(), CardModel.CARD_DIAG).get(1);
+			}
+			else{
+				return new Point2D(viewP.getX(), viewP.getY()-CardModel.CARD_DIAG);
+			}
+		}
+		else{
+			return new Point2D(viewP.getX(), Model.DECK_Y + CardModel.CARD_H);
+		}
+	}
+	
+	private double calculCoef(Point2D a, Point2D b){
+		return (b.getY() - a.getY())/(b.getX() - a.getX());
+	}
+	
+	private ArrayList<Point2D> getIntersectionsLigneCircle(double a, double b, double cx, double cy, double r){
+		ArrayList<Point2D> intersections = new ArrayList<Point2D>();
+		
+		double A = 1 + a * a;
+		double B = 2 * (-cx + a * b - a * cy);
+		double C = cx * cx + cy * cy + b * b - 2 * b * cy - r * r;
+		double delta = B * B - 4 * A * C;
+	 
+	    if (delta > 0)
+	    {
+	    	double x = (-B - (float)Math.sqrt(delta)) / (2 * A);
+	    	double y = a * x + b;
+	    	intersections.add(new Point2D(x, y));
+	                 
+	        x = (-B + (float)Math.sqrt(delta)) / (2 * A);
+	        y = a * x + b;
+	        intersections.add(new Point2D(x, y));
+	    }
+	    else if (delta == 0)
+	    {
+	    	double x = -B / (2 * A);
+	    	double y = a * x + b;
+	 
+	    	intersections.add(new Point2D(x, y));
+	    }	
+		return intersections;
 	}
 	
 	public void revertDeck(ArrayList<CardModel> deck, int size) {
@@ -455,7 +532,7 @@ public class View implements Observer{
 		else if(action == PlayerAction.PRISE || action == PlayerAction.GARDE){
 			doGap();
 			ecartArea.setFill(Color.BLUE);
-			ecartArea.setTranslateZ(1.2);
+			ecartArea.setTranslateZ(2);
 			group.getChildren().add(ecartArea);
 		}
 		else{

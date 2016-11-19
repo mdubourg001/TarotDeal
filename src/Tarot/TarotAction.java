@@ -7,6 +7,7 @@ public enum TarotAction {
     DECK_MIXED,
     DECK_CUT,
     CARDS_DISTRIBUTED,
+    CARD_MOVED_FROM_DECK,
     CARD_MOVED,
     PLAYER_REVERTED,
     PLAYER_ORGANIZED,

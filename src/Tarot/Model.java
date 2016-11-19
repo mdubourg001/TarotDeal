@@ -135,14 +135,17 @@ public class Model extends Observable {
 		return values;
 	}
 	
+	public static final double DECK_Z_TOP = -76;
+	public static final double DECK_Z_DIFF = 1;
+	
 	public void mixDeck(){
 		Collections.shuffle(deckCards);
-		double z = -38;
+		double z = DECK_Z_TOP;
 		for(CardModel card : deckCards){
 			card.setX(DECK_X);
 			card.setY(DECK_Y);
 			card.setZ(z);
-			z += 0.5;
+			z += DECK_Z_DIFF;
 		}
 		setChanged();
 		Pair<TarotAction, Object> arg = new Pair<TarotAction, Object>(TarotAction.DECK_MIXED, null);
@@ -166,10 +169,10 @@ public class Model extends Observable {
         secondHalf.addAll(firstHalf);
         deckCards = secondHalf;
         
-        double z = -38;
+        double z = DECK_Z_TOP;
         for(CardModel card : deckCards){
         	card.setZ(z);
-			z += 0.5;
+			z += DECK_Z_DIFF;
         }
 
         setChanged();
@@ -178,8 +181,16 @@ public class Model extends Observable {
     }
 	
 	public void distributeCards(){
-		if(distributedCards > 0 && nbCardsInChien < 6){
+		System.out.println(distributedCards);
+		switch(distributedCards){
+		case 3:
+		case 7:
+		case 11:
+		case 18:
+		case 22:
+		case 26:
 			addCardToChien();
+			break;
 		}
 		distribute3Cards();
 	}
@@ -210,15 +221,27 @@ public class Model extends Observable {
 	
 	private void move3CardsToMe(){
 		myIndexCard += 3;
+		
+		int[] cardOrders = new int[3];
+		if(myIndexCard%9 == 0){
+			cardOrders[0] = 0; cardOrders[1] = 0; cardOrders[2] = 0;
+		}
+		else if(myIndexCard%9 == 3){
+			cardOrders[0] = 0; cardOrders[1] = 1; cardOrders[2] = 0;
+		}
+		else{
+			cardOrders[0] = 2; cardOrders[1] = 1; cardOrders[2] = 0;
+		}
+		
 		for(int i=0; i<3; i++){
-			myCards.add(deckCards.get(0));
+			myCards.add(deckCards.get(cardOrders[i]));
 			myCards.get(myIndexCard+i).moveTo(myDistCardX, myDistCardY, 1);
 			myDistCardX += (CardModel.CARD_W + DIST_CARD_X_DIFF);
 			if(myDistCardX > DIST_CARD_X_START + 8*(CardModel.CARD_W + DIST_CARD_X_DIFF)){
 				myDistCardX = DIST_CARD_X_START;
 				myDistCardY = DIST_CARD_Y2;
 			}
-			deckCards.remove(0);
+			deckCards.remove(cardOrders[i]);
 		}
 		changePlayer();
 		
@@ -264,7 +287,7 @@ public class Model extends Observable {
 		deckCards.remove(0);
 		
 		setChanged();
-		Pair<TarotAction, CardModel> arg = new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED, chienCards.get(chienIndexCard));
+		Pair<TarotAction, CardModel> arg = new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED_FROM_DECK, chienCards.get(chienIndexCard));
 		notifyObservers(arg);
 	}
 	
