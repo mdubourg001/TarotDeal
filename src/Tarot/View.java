@@ -69,6 +69,8 @@ public class View implements Observer{
 		ground.setFill(Color.GREEN);
 		ground.setTranslateZ(2.1);
 		group.getChildren().add(ground);
+		
+		initActionButtons();
 	}
 
 	public Scene getScene(){
@@ -108,7 +110,7 @@ public class View implements Observer{
 			model.revertChien();
 			break;
 		case 7 :
-			drawChoseButtons();
+			drawActionButtons();
 			break;
 		case 8 :
 			model.organizePlayerCards();//Only if it use gap
@@ -469,23 +471,20 @@ public class View implements Observer{
 	public static final int BUTTON_X_START = (Model.SCREEN_W - (5*BUTTON_W + 4*BUTTON_X_DIFF))/2;
 	public static final int BUTTON_Y = Model.SCREEN_H/10;
 	
-	private Button passeBut = new Button("Passe");
-	private Button priseBut = new Button("Prise");
-	private Button gardeBut = new Button("Garde");
-	private Button gardeSansBut = new Button("Garde\nsans chien");
-	private Button gardeContreBut = new Button("Garde contre\nle chien");
-
+	
+	private Map<String, Button> actionButtons = new HashMap<String, Button>();
 	private Font buttonsFont = new Font(40);
 
-	public void drawChoseButtons(){
-		initButton(passeBut, BUTTON_X_START, BUTTON_Y, -50, PlayerAction.PASSE);
-		initButton(priseBut, BUTTON_X_START + (BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.PRISE);
-		initButton(gardeBut, BUTTON_X_START + 2*(BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE);
-		initButton(gardeSansBut, BUTTON_X_START + 3*(BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE_SANS);
-		initButton(gardeContreBut, BUTTON_X_START + 4*(BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE_CONTRE);
+	public void initActionButtons(){
+		actionButtons.put("passe", actionButton("Passe", BUTTON_X_START, BUTTON_Y, -50, PlayerAction.PASSE));
+		actionButtons.put("prise", actionButton("Prise", BUTTON_X_START + (BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.PRISE));
+		actionButtons.put("garde", actionButton("Garde", BUTTON_X_START + 2*(BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE));
+		actionButtons.put("gardeSans", actionButton("Garde\nsans chien", BUTTON_X_START + 3*(BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE_SANS));
+		actionButtons.put("gardeContre", actionButton("Garde contre\nle chien", BUTTON_X_START + 4*(BUTTON_W+BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE_CONTRE));
 	}
 
-	private void initButton(Button button, int x, int y, int z, PlayerAction action){
+	private Button actionButton(String name, int x, int y, int z, PlayerAction action){
+		Button button = new Button(name);
 		button.setFont(buttonsFont);
 		button.setLayoutX(x);
 		button.setLayoutY(y);
@@ -499,7 +498,7 @@ public class View implements Observer{
 		button.setRotationAxis(new Point3D(1,0,0));
 		button.setRotate(CAMERA_ROTATE);
 		button.setOnMouseClicked(mouseEvent -> controller.chooseAction(action));
-		group.getChildren().add(button);
+		return button;
 	}
 	
 	private void changeColorButton(Button button, boolean toGray){
@@ -512,6 +511,12 @@ public class View implements Observer{
 			button.setTextFill(Color.WHITE);
 		}
 	}
+	
+	public void drawActionButtons(){
+		for(Button b : actionButtons.values()){
+			group.getChildren().add(b);
+		}
+	}
 
 	public static final int ECART_ZONE_X = Model.GAP_X1-40;
 	public static final int ECART_ZONE_Y = Model.GAP_Y_START-40;
@@ -520,11 +525,9 @@ public class View implements Observer{
 
 	private Rectangle ecartArea = new Rectangle(ECART_ZONE_X, ECART_ZONE_Y, ECART_ZONE_W, ECART_ZONE_H);
 	public void updateActionChosen(PlayerAction action) {
-		group.getChildren().remove(passeBut);
-		group.getChildren().remove(priseBut);
-		group.getChildren().remove(gardeBut);
-		group.getChildren().remove(gardeSansBut);
-		group.getChildren().remove(gardeContreBut);
+		for(Button b : actionButtons.values()){
+			group.getChildren().remove(b);
+		}
 		
 		if(action == PlayerAction.PASSE){
 			nouvelleDonne();
@@ -541,42 +544,57 @@ public class View implements Observer{
 		}
 	}
 	
-	private int selectedCardXStart = 0;
-	private int selectedCardYStart = 0;
+	private double selectedCardXSave = 0;
+	private double selectedCardYSave = 0;
 	private void doGap(){
 		for(CardModel card : model.getMyCards()){
-			cardViews.get(card.getName()).getFront().setOnMousePressed(new EventHandler<MouseEvent>() {
-				@Override public void handle(MouseEvent event) {
-					riseCard(cardViews.get(card.getName()), -300, true, null);
-					selectedCardXStart = (int) card.getX();
-					selectedCardYStart = (int) card.getY();
-				}
-			});
-			cardViews.get(card.getName()).getFront().setOnMouseDragged(new EventHandler<MouseEvent>() {
-				@Override public void handle(MouseEvent event) {
-					cardViews.get(card.getName()).getFront().setX(event.getX() - CardModel.CARD_W/2);
-					cardViews.get(card.getName()).getFront().setY(event.getY() - CardModel.CARD_H/2);
-					
-					cardViews.get(card.getName()).getBack().setX(event.getX() - CardModel.CARD_W/2);
-					cardViews.get(card.getName()).getBack().setY(event.getY() - CardModel.CARD_H/2);
-				}
-			});
-			cardViews.get(card.getName()).getFront().setOnMouseReleased(new EventHandler<MouseEvent>() {
-				@Override public void handle(MouseEvent event) {
-					if(model.ungapableCards().contains(card.getName())
-							|| cardViews.get(card.getName()).getFront().getX() + CardModel.CARD_W/2 < ECART_ZONE_X
-							|| cardViews.get(card.getName()).getFront().getX() + CardModel.CARD_W/2 > ECART_ZONE_X + ECART_ZONE_W
-							|| cardViews.get(card.getName()).getFront().getY() + CardModel.CARD_H/2 < ECART_ZONE_Y
-							|| cardViews.get(card.getName()).getFront().getY() + CardModel.CARD_H/2 > ECART_ZONE_Y + ECART_ZONE_H){
-						moveCard(cardViews.get(card.getName()), selectedCardXStart, selectedCardYStart, card.getZ(), true, null);
-					}
-					else{
-						controller.addCardToGap(card);
-						removeListeners(cardViews.get(card.getName()));
-					}
-				}
-			});
+			cardViews.get(card.getName()).getFront().setOnMousePressed(selectCard(cardViews.get(card.getName())));
+			cardViews.get(card.getName()).getFront().setOnMouseDragged(followMouse(cardViews.get(card.getName())));
+			cardViews.get(card.getName()).getFront().setOnMouseReleased(tryAddCardToGap(cardViews.get(card.getName()), card));
 		}
+	}
+	
+	private EventHandler<MouseEvent> selectCard(CardView view){
+		return new EventHandler<MouseEvent>() {
+			@Override public void handle(MouseEvent event) {
+				riseCard(view, -2, true, null);
+				selectedCardXSave = (int) view.getBack().getX();
+				selectedCardYSave = (int) view.getBack().getY();
+			}
+		};
+	}
+	
+	private EventHandler<MouseEvent> followMouse(CardView view){
+		return new EventHandler<MouseEvent>() {
+			@Override public void handle(MouseEvent event) {
+				view.getFront().setX(event.getX() - CardModel.CARD_W/2);
+				view.getFront().setY(event.getY() - CardModel.CARD_H/2);
+				
+				view.getBack().setX(event.getX() - CardModel.CARD_W/2);
+				view.getBack().setY(event.getY() - CardModel.CARD_H/2);
+			}
+		};
+	}
+	
+	private EventHandler<MouseEvent> tryAddCardToGap(CardView view, CardModel card){
+		return new EventHandler<MouseEvent>() {
+			@Override public void handle(MouseEvent event) {
+				if(model.ungapableCards().contains(card.getName()) || cardViewInEcart(cardViews.get(card.getName()))){
+					moveCard(cardViews.get(card.getName()), selectedCardXSave, selectedCardYSave, card.getZ(), true, null);
+				}
+				else{
+					controller.addCardToGap(card);
+					removeListeners(cardViews.get(card.getName()));
+				}
+			}
+		};
+	}
+	
+	private boolean cardViewInEcart(CardView view){
+		return view.getFront().getX() + CardModel.CARD_W/2 < ECART_ZONE_X
+				|| view.getFront().getX() + CardModel.CARD_W/2 > ECART_ZONE_X + ECART_ZONE_W
+				|| view.getFront().getY() + CardModel.CARD_H/2 < ECART_ZONE_Y
+				|| view.getFront().getY() + CardModel.CARD_H/2 > ECART_ZONE_Y + ECART_ZONE_H;
 	}
 	
 	private void riseCard(CardView cardView, double z, boolean onFront, EventHandler<ActionEvent> onFinished){

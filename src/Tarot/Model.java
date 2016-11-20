@@ -181,7 +181,6 @@ public class Model extends Observable {
     }
 	
 	public void distributeCards(){
-		System.out.println(distributedCards);
 		switch(distributedCards){
 		case 3:
 		case 7:
