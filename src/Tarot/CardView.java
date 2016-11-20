@@ -5,6 +5,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class CardView {
+	public static final double SHIFT = 0.5; 
+	
     private static Image back = new Image("file:./cards/back.jpg");
 
     private Image image;
@@ -28,7 +30,7 @@ public class CardView {
         this.frontIV.setFitHeight(CardModel.CARD_H);
         this.frontIV.setX(x);
         this.frontIV.setY(y);
-        this.frontIV.setTranslateZ(z + 0.1);
+        this.frontIV.setTranslateZ(z + SHIFT);
         this.frontIV.setRotationAxis(new Point3D(0, 1, 0));
         this.frontIV.setRotate(180);
     }

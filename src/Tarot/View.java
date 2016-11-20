@@ -281,12 +281,16 @@ public class View implements Observer{
 				Math.abs(cardView.getBack().getY() - y),
 				Math.abs(cardView.getBack().getTranslateZ() - z)}, speed);
 		
+		 moveCardTimed(cardView, x, y, z, time, onFront, onFinished);
+	}
+	
+	private void moveCardTimed(CardView cardView, double x, double y, double z, double time, boolean onFront, EventHandler<ActionEvent> onFinished) {
 		if(!onFront){
 			moveImageView(cardView.getBack(), x, y, z, time, null);
-			moveImageView(cardView.getFront(), x, y, z+0.5, time, onFinished);
+			moveImageView(cardView.getFront(), x, y, z + CardView.SHIFT, time, onFinished);
 		}
 		else{
-			moveImageView(cardView.getBack(), x, y, z+0.5, time, null);
+			moveImageView(cardView.getBack(), x, y, z + CardView.SHIFT, time, null);
 			moveImageView(cardView.getFront(), x, y, z, time, onFinished);
 		}
 	}
@@ -311,7 +315,7 @@ public class View implements Observer{
 		for(double d : deltas){
 			time += d;
 		}
-		time /= (2000*speed); // TODO je sais plus
+		time /= (2000*speed); // TODO REMETTRE A 2000
 		return time;
 	}
 	
@@ -340,7 +344,7 @@ public class View implements Observer{
 					return getIntersectionsLigneCircle(a, b, viewP.getX(), viewP.getY(), CardModel.CARD_DIAG).get(1);
 			}
 			else{
-				return new Point2D(viewP.getX(), viewP.getY()-CardModel.CARD_DIAG);
+				return new Point2D(viewP.getX(), viewP.getY()+CardModel.CARD_DIAG);
 			}
 		}
 		else{
@@ -398,7 +402,7 @@ public class View implements Observer{
 
 	private final static double RETURN_CARD_DURATION = 0.6; // TODO REMETTRE A 0.6
 	private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished){
-		revertCardMove(cardView, true);
+		revertCardMove(cardView);
 		
 		Timeline revertPlayerAnimation = new Timeline();
 		
@@ -412,39 +416,20 @@ public class View implements Observer{
 		revertPlayerAnimation.play();
 	}
 	
-	private void revertCardMove(CardView cardView, boolean pursue){
-		Timeline moveXAnimation = new Timeline();
-		
-		double shiftX ,shiftZF ,shiftZB;
-		
-		if(pursue){
-			shiftX = 0.1;
-			shiftZF = shiftZB = -300;
-		}
-		else{
-			shiftX = -0.1;
-			shiftZF = 1;
-			shiftZB = 1.1;
-		}
-		
-		KeyValue kVMoveXB = new KeyValue(cardView.getBack().xProperty(), cardView.getBack().getX()-shiftX);
-		KeyValue kVMoveXF = new KeyValue(cardView.getFront().xProperty(), cardView.getFront().getX()+shiftX);
-		
-		KeyValue kVMoveZB = new KeyValue(cardView.getBack().translateZProperty(), shiftZB);
-		KeyValue kVMoveZF = new KeyValue(cardView.getFront().translateZProperty(), shiftZF);
-		
+	private void revertCardMove(CardView cardView){
 		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				if(pursue)
-					revertCardMove(cardView, false);
+				moveImageView(cardView.getFront(), cardView.getFront().getX() - CardView.SHIFT/2, cardView.getFront().getY(), 
+						1.0, RETURN_CARD_DURATION / 2, null);
+				moveImageView(cardView.getBack(), cardView.getBack().getX() + CardView.SHIFT/2, cardView.getBack().getY(), 
+						1.0 + CardView.SHIFT, RETURN_CARD_DURATION / 2, null);
 			}
 		};
 		
-		KeyFrame kFMoveX = new KeyFrame(Duration.seconds(RETURN_CARD_DURATION / 2), onFinished, kVMoveXB, kVMoveXF, kVMoveZB, kVMoveZF);
-		
-		moveXAnimation.getKeyFrames().add(kFMoveX);
-		
-		moveXAnimation.play();
+		moveImageView(cardView.getFront(), cardView.getFront().getX() + CardView.SHIFT/2, cardView.getFront().getY(), 
+				-300, RETURN_CARD_DURATION / 2, null);
+		moveImageView(cardView.getBack(), cardView.getBack().getX() - CardView.SHIFT/2, cardView.getBack().getY(), 
+				-300, RETURN_CARD_DURATION / 2, onFinished);
 	}
 
 	public void updatePlayerCardsOrganized() {
