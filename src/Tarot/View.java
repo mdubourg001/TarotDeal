@@ -15,10 +15,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -197,6 +193,8 @@ public class View implements Observer{
 			break;
 		}
 	}
+
+	private static final double CUT_SPEED = 0.2;
 	
 	private void moveCutDeck(double xShiftValue, boolean trueZ, Integer indexHalf, EventHandler<ActionEvent> onFinished){
 		CardModel card;
@@ -219,10 +217,10 @@ public class View implements Observer{
 			}
 			
 			if(i != model.getDeckCards().size()-1){
-				moveCard(cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, 0.2, false, null);
+				moveCard(cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, CUT_SPEED, false, null);
 			}
 			else{
-				moveCard(cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, 0.2, false, onFinished);
+				moveCard(cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, CUT_SPEED, false, onFinished);
 			}
 		}
 	}
@@ -230,10 +228,16 @@ public class View implements Observer{
 	private int currentPlayer = -1;
 	public void update3CardsDistributed(Pair<Boolean, CardModel[]> arg) {
 		currentPlayer++;
-		
-		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
+
+		moveCardFromDeck(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
+		moveCardFromDeck(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
+		moveCardFromDeck(cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], continueCardDistribution(arg.getKey()));
+	}
+
+	private EventHandler<ActionEvent> continueCardDistribution(boolean nextAction){
+		return new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				if(!arg.getKey()){
+				if(!nextAction){
 					model.distributeCards();
 				}
 				else{
@@ -241,17 +245,6 @@ public class View implements Observer{
 				}
 			}
 		};
-		
-		if(currentPlayer%4 == 0){
-			moveCardFromDeck(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
-			moveCardFromDeck(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
-			moveCardFromDeck(cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], onFinished);
-		}
-		else{
-			moveCardXY(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
-			moveCardXY(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
-			moveCardXY(cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], onFinished);
-		}
 	}
 	
 	public void updateGapDone() {
@@ -309,13 +302,14 @@ public class View implements Observer{
 
 		animationMoveCard.play();
 	}
-	
+
+	public static final double TIME_MULTIPLIER = 2000; // TODO REMETTRE A 2000
 	private double calculTime(double[] deltas, double speed){
 		double time = 0;
 		for(double d : deltas){
 			time += d;
 		}
-		time /= (2000*speed); // TODO REMETTRE A 2000
+		time /= (TIME_MULTIPLIER*speed);
 		return time;
 	}
 	
@@ -344,11 +338,21 @@ public class View implements Observer{
 					return getIntersectionsLigneCircle(a, b, viewP.getX(), viewP.getY(), CardModel.CARD_DIAG).get(1);
 			}
 			else{
-				return new Point2D(viewP.getX(), viewP.getY()+CardModel.CARD_DIAG);
+				if(cardP.getX() - viewP.getX() > 0){
+					return new Point2D(viewP.getX() + CardModel.CARD_DIAG, viewP.getY());
+				}
+				else{
+					return new Point2D(viewP.getX() - CardModel.CARD_DIAG, viewP.getY());
+				}
 			}
 		}
 		else{
-			return new Point2D(viewP.getX(), Model.DECK_Y + CardModel.CARD_H);
+			if(cardP.getY() - viewP.getY() > 0){
+				return new Point2D(viewP.getX(), Model.DECK_Y + CardModel.CARD_DIAG);
+			}
+			else{
+				return new Point2D(viewP.getX(), Model.DECK_Y - CardModel.CARD_DIAG);
+			}
 		}
 	}
 	
@@ -400,7 +404,8 @@ public class View implements Observer{
 		}
 	}
 
-	private final static double RETURN_CARD_DURATION = 0.6; // TODO REMETTRE A 0.6
+	private final static double REVERT_CARD_DURATION = 0.6; // TODO REMETTRE A 0.6
+	private final static double REVERT_CARD_Z = -300;
 	private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished){
 		revertCardMove(cardView);
 		
@@ -409,7 +414,7 @@ public class View implements Observer{
 		KeyValue kVRevertB = new KeyValue(cardView.getBack().rotateProperty(), 360);
 		KeyValue kVRevertF = new KeyValue(cardView.getFront().rotateProperty(), 360);
 		
-		KeyFrame revertPlayerKeyFrame = new KeyFrame(Duration.seconds(RETURN_CARD_DURATION), onFinished, kVRevertB, kVRevertF);
+		KeyFrame revertPlayerKeyFrame = new KeyFrame(Duration.seconds(REVERT_CARD_DURATION), onFinished, kVRevertB, kVRevertF);
 		
 		revertPlayerAnimation.getKeyFrames().add(revertPlayerKeyFrame);
 		
@@ -420,25 +425,26 @@ public class View implements Observer{
 		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
 				moveImageView(cardView.getFront(), cardView.getFront().getX() - CardView.SHIFT/2, cardView.getFront().getY(), 
-						1.0, RETURN_CARD_DURATION / 2, null);
+						1.0, REVERT_CARD_DURATION / 2, null);
 				moveImageView(cardView.getBack(), cardView.getBack().getX() + CardView.SHIFT/2, cardView.getBack().getY(), 
-						1.0 + CardView.SHIFT, RETURN_CARD_DURATION / 2, null);
+						1.0 + CardView.SHIFT, REVERT_CARD_DURATION / 2, null);
 			}
 		};
 		
-		moveImageView(cardView.getFront(), cardView.getFront().getX() + CardView.SHIFT/2, cardView.getFront().getY(), 
-				-300, RETURN_CARD_DURATION / 2, null);
-		moveImageView(cardView.getBack(), cardView.getBack().getX() - CardView.SHIFT/2, cardView.getBack().getY(), 
-				-300, RETURN_CARD_DURATION / 2, onFinished);
+		moveImageView(cardView.getFront(), cardView.getFront().getX() + CardView.SHIFT/2, cardView.getFront().getY(),
+				REVERT_CARD_Z, REVERT_CARD_DURATION / 2, null);
+		moveImageView(cardView.getBack(), cardView.getBack().getX() - CardView.SHIFT/2, cardView.getBack().getY(),
+				REVERT_CARD_Z, REVERT_CARD_DURATION / 2, onFinished);
 	}
 
+	private final static double ORGANIZE_CARD_TIME = 0.5;
 	public void updatePlayerCardsOrganized() {
 		CardModel card;
 		for(int i =0; i<model.getMyCards().size(); i++){
 			card = model.getMyCards().get(i);
 			moveCard(cardViews.get(card.getName()), card, null);
 		}
-		waiter(0.5, doNextActionEvent());
+		waiter(ORGANIZE_CARD_TIME, doNextActionEvent());
 	}
 	
 	public void updatePetitSec(Boolean petitSec) {
