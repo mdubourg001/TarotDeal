@@ -1,15 +1,18 @@
 package Tarot;
 
-import javafx.stage.Screen;
 import javafx.util.Pair;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Observable;
 
 public class Model extends Observable {
-	public static final int SCREEN_W = (int)Screen.getPrimary().getBounds().getWidth();
-	public static final int SCREEN_H = (int)Screen.getPrimary().getBounds().getHeight();
+
+	private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+	public static final int SCREEN_W = (int)screenSize.getWidth();
+	public static final int SCREEN_H = (int)screenSize.getHeight();
 	
 	public static final int FIRST_TRUMP = 1;
 	public static final int LAST_TRUMP = 21;

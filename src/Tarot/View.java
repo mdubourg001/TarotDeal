@@ -54,7 +54,7 @@ public class View implements Observer{
 		this.model = controller.getModel();
 		
 		group.setDepthTest(DepthTest.ENABLE); 
-		
+
 		if(!Platform.isSupported(ConditionalFeature.SCENE3D)){
 			throw new RuntimeException("SCENE3D not supported");
 		}
