@@ -42,7 +42,7 @@ public class View implements Observer{
 	private Model model;
 
 	private Group group = new Group();
-	private Scene scene = new Scene(group, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.BALANCED);
+	private Scene scene = new Scene(group, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.DISABLED);
 	private PerspectiveCamera camera = new PerspectiveCamera();
 	
 	private Map<String, CardView> cardViews = new HashMap<String, CardView>();
