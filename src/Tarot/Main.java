@@ -25,7 +25,7 @@ public class Main extends Application{
 		stage.sizeToScene();
 		stage.show();
 		
-		view.doNextAction();
+		view.displayMenu();
 	}
 	
 	public void nouvelleDonne(){

@@ -7,7 +7,7 @@ import javafx.scene.image.ImageView;
 public class CardView {
 	public static final double SHIFT = 0.5; 
 	
-    private static Image back = new Image("file:./cards/back.jpg");
+    private static Image back = new Image("file:./res/back.jpg");
 
     private Image image;
     private ImageView backIV;

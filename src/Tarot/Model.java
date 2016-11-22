@@ -90,7 +90,7 @@ public class Model extends Observable {
 	private void loadTrumps(){
 		String fullName;
 		for(int i = FIRST_TRUMP; i <= LAST_TRUMP; i++){
-			fullName = "cards/Tarot_nouveau_-_Grimaud_-_1898_-_Trumps_-_";
+			fullName = "res/Tarot_nouveau_-_Grimaud_-_1898_-_Trumps_-_";
 			if(i < 10){
 				fullName += "0";
 			}
@@ -98,7 +98,7 @@ public class Model extends Observable {
 			deckCards.add(new CardModel("Trump" + Integer.toString(i), fullName, currentCardOrder));
 			currentCardOrder++;
 		}
-		fullName = "cards/Tarot_nouveau_-_Grimaud_-_1898_-_Trumps_-_Excuse.jpg";
+		fullName = "res/Tarot_nouveau_-_Grimaud_-_1898_-_Trumps_-_Excuse.jpg";
 		deckCards.add(new CardModel("Excuse", fullName, currentCardOrder));
 		currentCardOrder++;
 	}
@@ -106,7 +106,7 @@ public class Model extends Observable {
 	private void loadColoredCards(String color){
 		String fullName;
 		for(String value : cardValues()){
-			fullName = "cards/Tarot_nouveau_-_Grimaud_-_1898_-_" + color + "_-_" + value + ".jpg";
+			fullName = "res/Tarot_nouveau_-_Grimaud_-_1898_-_" + color + "_-_" + value + ".jpg";
 			deckCards.add(new CardModel(color + value, fullName, currentCardOrder));
 			currentCardOrder++;
 		}
