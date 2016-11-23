@@ -436,7 +436,7 @@ public class View implements Observer {
         animationMoveCard.play();
     }
 
-    public static final double TIME_MULTIPLIER = 2000; // TODO REMETTRE A 2000
+    public static final double TIME_MULTIPLIER = 6000; // TODO REMETTRE A 2000
 
     private double calculTime(double[] deltas, double speed) {
         double time = 0;
@@ -534,7 +534,7 @@ public class View implements Observer {
         }
     }
 
-    private final static double REVERT_CARD_DURATION = 0.6; // TODO REMETTRE A 0.6
+    private final static double REVERT_CARD_DURATION = 0.2; // TODO REMETTRE A 0.6
     private final static double REVERT_CARD_Z = -300;
 
     private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished) {
@@ -709,10 +709,10 @@ public class View implements Observer {
 				view.getBack().setTranslateX(event.getX() - CardModel.CARD_W/2);
 				view.getBack().setTranslateY(event.getY() - CardModel.CARD_H/2);*/
 
+                view.getMeshView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2) + (event.getSceneX()-Model.SCREEN_W/2)*0.15*(1-event.getSceneY()/Model.SCREEN_H));
+                view.getMeshView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2)*(1+event.getSceneY()/(5*Model.SCREEN_H)));
 
-                System.out.println(event.getX() - CardModel.CARD_W / 2);
-                view.getMeshView().setTranslateX(event.getX() - CardModel.CARD_W / 2);
-                view.getMeshView().setTranslateY(event.getY() - CardModel.CARD_H / 2);
+
             }
         };
     }
