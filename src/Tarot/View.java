@@ -219,6 +219,10 @@ public class View implements Observer{
 		group.getChildren().remove(playButton);
 		group.getChildren().remove(settingsButton);
 		group.getChildren().remove(quitButton);
+		group.getChildren().remove(playImage);
+		group.getChildren().remove(settingsImage);
+		group.getChildren().remove(quitImage);
+		group.getChildren().remove(menuTitle);
 		camera.setRotate(CAMERA_ROTATE);
 		camera.setTranslateZ(CAMERA_SHIFT_Y);
 		camera.setTranslateY(CAMERA_SHIFT_Z);
