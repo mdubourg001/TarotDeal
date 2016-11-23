@@ -49,6 +49,10 @@ public class CardModel implements Comparable<CardModel> {
     public double getZ() {
         return z;
     }
+    
+    public int getOrder() {
+        return order;
+    }
 
     public void setX(double x) {
         this.x = x;

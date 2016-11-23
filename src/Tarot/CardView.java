@@ -18,7 +18,7 @@ public class CardView {
     private ImageView frontIV;*/
 
     //Mesh
-    private static Image cardsTexture = new Image("file:./mosasaure.jpg");
+    private static Image cardsTexture = new Image("file:./res/textureCards.jpg");
 
     private TriangleMesh mesh = new TriangleMesh();
     private MeshView meshView = new MeshView(mesh);
@@ -54,17 +54,21 @@ public class CardView {
                 0, CardModel.CARD_H, 0,
                 CardModel.CARD_W, CardModel.CARD_H, 0
         );
+        
+        int order = card.getOrder();
+        float texX = order%10;
+        float texY = order/10;
 
         mesh.getTexCoords().addAll(
-                0.0f, 0.0f,
-                0.5f, 0.0f,
-                0.0f, 1.0f,
-                0.5f, 1.0f, //Front (depend of card order)
+        		texX*0.1f, texY*0.125f,
+        		(texX+1)*0.1f, texY*0.125f,
+                texX*0.1f, (texY+1)*0.125f,
+                (texX+1)*0.1f, (texY+1)*0.125f, //Front (depend of card order)
 
-                0.5f, 0.0f,
-                1.0f, 0.0f,
-                0.5f, 1.0f,
-                1.0f, 1.0f  //Back
+                0.8f, 0.875f,
+                0.9f, 0.875f,
+                0.8f, 1.0f,
+                0.9f, 1.0f  //Back
         );
 
         mesh.getFaces().addAll(

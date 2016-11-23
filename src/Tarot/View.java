@@ -1,6 +1,5 @@
 package Tarot;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
