@@ -18,6 +18,7 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
@@ -89,9 +90,14 @@ public class View implements Observer{
 	}
 
 	public void displayMenu() {
-		// TODO FACTORISER CI DESSOUS
+		group.getChildren().clear();
 		initMenuBackground();
 		initMenuButtons();
+	}
+
+	public void displaySettings() {
+		group.getChildren().clear();
+
 	}
 
 	private int currentAction = -1;
@@ -215,14 +221,7 @@ public class View implements Observer{
 	}
 
 	private void initGameView() {
-		group.getChildren().remove(menuBackground);
-		group.getChildren().remove(playButton);
-		group.getChildren().remove(settingsButton);
-		group.getChildren().remove(quitButton);
-		group.getChildren().remove(playImage);
-		group.getChildren().remove(settingsImage);
-		group.getChildren().remove(quitImage);
-		group.getChildren().remove(menuTitle);
+		group.getChildren().clear();
 		camera.setRotate(CAMERA_ROTATE);
 		camera.setTranslateZ(CAMERA_SHIFT_Y);
 		camera.setTranslateY(CAMERA_SHIFT_Z);
@@ -272,9 +271,10 @@ public class View implements Observer{
 	
 	public void updateDeckMixed() {
 		for(CardModel card : model.getDeckCards()){
-			cardViews.put(card.getName(), new CardView(card.getPath(), card.getX(), card.getY(), card.getZ()));
-			group.getChildren().add(cardViews.get(card.getName()).getBack());
-			group.getChildren().add(cardViews.get(card.getName()).getFront());
+			cardViews.put(card.getName(), new CardView(card));
+			/*group.getChildren().add(cardViews.get(card.getName()).getBack());
+			group.getChildren().add(cardViews.get(card.getName()).getFront());*/
+			group.getChildren().add(cardViews.get(card.getName()).getMeshView());
 		}
 		doNextAction();
 	}
@@ -317,7 +317,8 @@ public class View implements Observer{
 				z = card.getZ();
 			}
 			else{
-				z = cardViews.get(card.getName()).getFront().getTranslateZ();
+				//z = cardViews.get(card.getName()).getFront().getTranslateZ();
+				z = cardViews.get(card.getName()).getMeshView().getTranslateZ();
 			}
 			
 			if(i != model.getDeckCards().size()-1){
@@ -362,7 +363,8 @@ public class View implements Observer{
 	}
 	
 	private void moveCardXY(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
-		moveCard(cardView, card.getX(), card.getY(), cardView.getBack().getTranslateZ(), card.onFront, onFinished);
+		//moveCard(cardView, card.getX(), card.getY(), cardView.getBack().getTranslateZ(), card.onFront, onFinished);
+		moveCard(cardView, card.getX(), card.getY(), cardView.getMeshView().getTranslateZ(), card.onFront, onFinished);
 	}
 	
 	private void moveCard(CardView cardView, CardModel card, double speed, EventHandler<ActionEvent> onFinished) {
@@ -374,31 +376,50 @@ public class View implements Observer{
 	}
 	
 	private void moveCard(CardView cardView, double x, double y, double z, double speed, boolean onFront, EventHandler<ActionEvent> onFinished) {
-		double time = calculTime(new double[]{Math.abs(cardView.getBack().getX() - x), 
-				Math.abs(cardView.getBack().getY() - y),
-				Math.abs(cardView.getBack().getTranslateZ() - z)}, speed);
+		/*double time = calculTime(new double[]{Math.abs(cardView.getBack().getTranslateX() - x),
+				Math.abs(cardView.getBack().getTranslateY() - y),
+				Math.abs(cardView.getBack().getTranslateZ() - z)}, speed);*/
+		double time = calculTime(new double[]{Math.abs(cardView.getMeshView().getTranslateX() - x),
+				Math.abs(cardView.getMeshView().getTranslateY() - y),
+				Math.abs(cardView.getMeshView().getTranslateZ() - z)}, speed);
 		
 		 moveCardTimed(cardView, x, y, z, time, onFront, onFinished);
 	}
 	
 	private void moveCardTimed(CardView cardView, double x, double y, double z, double time, boolean onFront, EventHandler<ActionEvent> onFinished) {
-		if(!onFront){
+		/*if(!onFront){
 			moveImageView(cardView.getBack(), x, y, z, time, null);
 			moveImageView(cardView.getFront(), x, y, z + CardView.SHIFT, time, onFinished);
 		}
 		else{
 			moveImageView(cardView.getBack(), x, y, z + CardView.SHIFT, time, null);
 			moveImageView(cardView.getFront(), x, y, z, time, onFinished);
-		}
+		}*/
+		moveMeshView(cardView.getMeshView(), x, y, z, time, onFinished);
 	}
 	
-	private void moveImageView(ImageView view, double x, double y, double z, double time, EventHandler<ActionEvent> onFinished){
+	/*private void moveImageView(ImageView view, double x, double y, double z, double time, EventHandler<ActionEvent> onFinished){
 		Timeline animationMoveCard = new Timeline();
 
-		KeyValue kVMoveX = new KeyValue(view.xProperty(), x);
-		KeyValue kVMoveY = new KeyValue(view.yProperty(), y);
+		KeyValue kVMoveX = new KeyValue(view.translateXProperty(), x);
+		KeyValue kVMoveY = new KeyValue(view.translateYProperty(), y);
 		KeyValue kVMoveZ = new KeyValue(view.translateZProperty(), z);
 		
+		Duration duration = Duration.seconds(time);
+
+		KeyFrame keyFrame = new KeyFrame(duration, onFinished, kVMoveX, kVMoveY, kVMoveZ);
+		animationMoveCard.getKeyFrames().add(keyFrame);
+
+		animationMoveCard.play();
+	}*/
+
+	private void moveMeshView(MeshView view, double x, double y, double z, double time, EventHandler<ActionEvent> onFinished){
+		Timeline animationMoveCard = new Timeline();
+
+		KeyValue kVMoveX = new KeyValue(view.translateXProperty(), x);
+		KeyValue kVMoveY = new KeyValue(view.translateYProperty(), y);
+		KeyValue kVMoveZ = new KeyValue(view.translateZProperty(), z);
+
 		Duration duration = Duration.seconds(time);
 
 		KeyFrame keyFrame = new KeyFrame(duration, onFinished, kVMoveX, kVMoveY, kVMoveZ);
@@ -425,11 +446,14 @@ public class View implements Observer{
 				moveCard(cardView, card, onFinished2);
 			}
 		};
-		moveCard(cardView, firstDest.getX(), firstDest.getY(), cardView.getBack().getTranslateZ(), card.onFront, onFinished1);
+		//moveCard(cardView, firstDest.getX(), firstDest.getY(), cardView.getBack().getTranslateZ(), card.onFront, onFinished1);
+		moveCard(cardView, firstDest.getX(), firstDest.getY(), cardView.getMeshView().getTranslateZ(), card.onFront, onFinished1);
 	}
 	
 	private Point2D calculFirstDest(CardView cardView, CardModel card){
-		Point2D viewP = new Point2D(cardView.getBack().getX(), cardView.getBack().getY());
+		//Point2D viewP = new Point2D(cardView.getBack().getTranslateX(), cardView.getBack().getTranslateY());
+		//Point2D cardP = new Point2D(card.getX(), card.getY());
+		Point2D viewP = new Point2D(cardView.getMeshView().getTranslateX(), cardView.getMeshView().getTranslateY());
 		Point2D cardP = new Point2D(card.getX(), card.getY());
 		
 		if((viewP.getX() - cardP.getX()) != 0){
@@ -515,10 +539,12 @@ public class View implements Observer{
 		
 		Timeline revertPlayerAnimation = new Timeline();
 		
-		KeyValue kVRevertB = new KeyValue(cardView.getBack().rotateProperty(), 360);
-		KeyValue kVRevertF = new KeyValue(cardView.getFront().rotateProperty(), 360);
+		//KeyValue kVRevertB = new KeyValue(cardView.getBack().rotateProperty(), 360);
+		//KeyValue kVRevertF = new KeyValue(cardView.getFront().rotateProperty(), 360);
+		KeyValue kVRevert = new KeyValue(cardView.getMeshView().rotateProperty(), 360);
 		
-		KeyFrame revertPlayerKeyFrame = new KeyFrame(Duration.seconds(REVERT_CARD_DURATION), onFinished, kVRevertB, kVRevertF);
+		//KeyFrame revertPlayerKeyFrame = new KeyFrame(Duration.seconds(REVERT_CARD_DURATION), onFinished, kVRevertB, kVRevertF);
+		KeyFrame revertPlayerKeyFrame = new KeyFrame(Duration.seconds(REVERT_CARD_DURATION), onFinished, kVRevert);
 		
 		revertPlayerAnimation.getKeyFrames().add(revertPlayerKeyFrame);
 		
@@ -528,16 +554,21 @@ public class View implements Observer{
 	private void revertCardMove(CardView cardView){
 		EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
-				moveImageView(cardView.getFront(), cardView.getFront().getX() - CardView.SHIFT/2, cardView.getFront().getY(), 
+				/*moveImageView(cardView.getFront(), cardView.getFront().getTranslateX() - CardView.SHIFT/2, cardView.getFront().getTranslateY(),
 						1.0, REVERT_CARD_DURATION / 2, null);
-				moveImageView(cardView.getBack(), cardView.getBack().getX() + CardView.SHIFT/2, cardView.getBack().getY(), 
-						1.0 + CardView.SHIFT, REVERT_CARD_DURATION / 2, null);
+				moveImageView(cardView.getBack(), cardView.getBack().getTranslateX() + CardView.SHIFT/2, cardView.getBack().getTranslateY(),
+						1.0 + CardView.SHIFT, REVERT_CARD_DURATION / 2, null);*/
+
+				moveMeshView(cardView.getMeshView(), cardView.getMeshView().getTranslateX(), cardView.getMeshView().getTranslateY(),
+						1.0, REVERT_CARD_DURATION / 2, null);
 			}
 		};
 		
-		moveImageView(cardView.getFront(), cardView.getFront().getX() + CardView.SHIFT/2, cardView.getFront().getY(),
+		/*moveImageView(cardView.getFront(), cardView.getFront().getTranslateX() + CardView.SHIFT/2, cardView.getFront().getTranslateY(),
 				REVERT_CARD_Z, REVERT_CARD_DURATION / 2, null);
-		moveImageView(cardView.getBack(), cardView.getBack().getX() - CardView.SHIFT/2, cardView.getBack().getY(),
+		moveImageView(cardView.getBack(), cardView.getBack().getTranslateX() - CardView.SHIFT/2, cardView.getBack().getTranslateY(),
+				REVERT_CARD_Z, REVERT_CARD_DURATION / 2, onFinished);*/
+		moveMeshView(cardView.getMeshView(), cardView.getMeshView().getTranslateX(), cardView.getMeshView().getTranslateY(),
 				REVERT_CARD_Z, REVERT_CARD_DURATION / 2, onFinished);
 	}
 
@@ -643,18 +674,24 @@ public class View implements Observer{
 	private double selectedCardYSave = 0;
 	private void doGap(){
 		for(CardModel card : model.getMyCards()){
-			cardViews.get(card.getName()).getFront().setOnMousePressed(selectCard(cardViews.get(card.getName())));
+			/*cardViews.get(card.getName()).getFront().setOnMousePressed(selectCard(cardViews.get(card.getName())));
 			cardViews.get(card.getName()).getFront().setOnMouseDragged(followMouse(cardViews.get(card.getName())));
-			cardViews.get(card.getName()).getFront().setOnMouseReleased(tryAddCardToGap(cardViews.get(card.getName()), card));
+			cardViews.get(card.getName()).getFront().setOnMouseReleased(tryAddCardToGap(cardViews.get(card.getName()), card));*/
+
+			cardViews.get(card.getName()).getMeshView().setOnMousePressed(selectCard(cardViews.get(card.getName())));
+			cardViews.get(card.getName()).getMeshView().setOnMouseDragged(followMouse(cardViews.get(card.getName())));
+			cardViews.get(card.getName()).getMeshView().setOnMouseReleased(tryAddCardToGap(cardViews.get(card.getName()), card));
 		}
 	}
 	
 	private EventHandler<MouseEvent> selectCard(CardView view){
 		return new EventHandler<MouseEvent>() {
 			@Override public void handle(MouseEvent event) {
-				riseCard(view, -2, true, null);
-				selectedCardXSave = (int) view.getBack().getX();
-				selectedCardYSave = (int) view.getBack().getY();
+				//riseCard(view, -2, true, null);
+				//selectedCardXSave = (int) view.getBack().getTranslateX();
+				//selectedCardYSave = (int) view.getBack().getTranslateY();
+				selectedCardXSave = (int) view.getMeshView().getTranslateX();
+				selectedCardYSave = (int) view.getMeshView().getTranslateY();
 			}
 		};
 	}
@@ -662,11 +699,16 @@ public class View implements Observer{
 	private EventHandler<MouseEvent> followMouse(CardView view){
 		return new EventHandler<MouseEvent>() {
 			@Override public void handle(MouseEvent event) {
-				view.getFront().setX(event.getX() - CardModel.CARD_W/2);
-				view.getFront().setY(event.getY() - CardModel.CARD_H/2);
+				/*view.getFront().setTranslateX(event.getX() - CardModel.CARD_W/2);
+				view.getFront().setTranslateY(event.getY() - CardModel.CARD_H/2);
 				
-				view.getBack().setX(event.getX() - CardModel.CARD_W/2);
-				view.getBack().setY(event.getY() - CardModel.CARD_H/2);
+				view.getBack().setTranslateX(event.getX() - CardModel.CARD_W/2);
+				view.getBack().setTranslateY(event.getY() - CardModel.CARD_H/2);*/
+
+
+				System.out.println(event.getX() - CardModel.CARD_W/2);
+				view.getMeshView().setTranslateX(event.getX() - CardModel.CARD_W/2);
+				view.getMeshView().setTranslateY(event.getY() - CardModel.CARD_H/2);
 			}
 		};
 	}
@@ -686,17 +728,21 @@ public class View implements Observer{
 	}
 	
 	private boolean cardViewInEcart(CardView view){
-		return view.getFront().getX() + CardModel.CARD_W/2 < ECART_ZONE_X
-				|| view.getFront().getX() + CardModel.CARD_W/2 > ECART_ZONE_X + ECART_ZONE_W
-				|| view.getFront().getY() + CardModel.CARD_H/2 < ECART_ZONE_Y
-				|| view.getFront().getY() + CardModel.CARD_H/2 > ECART_ZONE_Y + ECART_ZONE_H;
+		/*return view.getFront().getTranslateX() + CardModel.CARD_W/2 < ECART_ZONE_X
+				|| view.getFront().getTranslateX() + CardModel.CARD_W/2 > ECART_ZONE_X + ECART_ZONE_W
+				|| view.getFront().getTranslateY() + CardModel.CARD_H/2 < ECART_ZONE_Y
+				|| view.getFront().getTranslateY() + CardModel.CARD_H/2 > ECART_ZONE_Y + ECART_ZONE_H;*/
+		return view.getMeshView().getTranslateX() + CardModel.CARD_W/2 < ECART_ZONE_X
+				|| view.getMeshView().getTranslateX() + CardModel.CARD_W/2 > ECART_ZONE_X + ECART_ZONE_W
+				|| view.getMeshView().getTranslateY() + CardModel.CARD_H/2 < ECART_ZONE_Y
+				|| view.getMeshView().getTranslateY() + CardModel.CARD_H/2 > ECART_ZONE_Y + ECART_ZONE_H;
 	}
 	
-	private void riseCard(CardView cardView, double z, boolean onFront, EventHandler<ActionEvent> onFinished){
+	/*private void riseCard(CardView cardView, double z, boolean onFront, EventHandler<ActionEvent> onFinished){
 		riseCard(1, cardView, z, onFront, onFinished);
-	}
+	}*/
 	
-	private void riseCard(int speed, CardView cardView, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
+	/*private void riseCard(int speed, CardView cardView, double z, boolean onFront, EventHandler<ActionEvent> onFinished) {
 		Timeline animationMoveCard = new Timeline();
 		
 		KeyValue kVMoveZCardB;
@@ -719,12 +765,15 @@ public class View implements Observer{
 		animationMoveCard.getKeyFrames().add(keyFrame);
 		
 		animationMoveCard.play();
-	}
+	}*/
 	
 	private void removeListeners(CardView cardView){
-		cardView.getFront().setOnMousePressed(null);
+		/*cardView.getFront().setOnMousePressed(null);
 		cardView.getFront().setOnMouseDragged(null);
-		cardView.getFront().setOnMouseReleased(null);
+		cardView.getFront().setOnMouseReleased(null);*/
+		cardView.getMeshView().setOnMousePressed(null);
+		cardView.getMeshView().setOnMouseDragged(null);
+		cardView.getMeshView().setOnMouseReleased(null);
 	}
 	
 	private void nouvelleDonne(){

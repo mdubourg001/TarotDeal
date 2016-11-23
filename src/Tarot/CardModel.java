@@ -15,11 +15,12 @@ public class CardModel implements Comparable<CardModel> {
     public boolean onFront = false;
 
     private int order;
+    private static int orderCpt = 0;
 
-    public CardModel(String name, String path, int order) {
+    public CardModel(String name, String path) {
         this.name = name;
         this.path = path;
-        this.order = order;
+        this.order = orderCpt++;
     }
 
     public CardModel(double x, double y, double z, boolean onFront) {
