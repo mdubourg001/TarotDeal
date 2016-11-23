@@ -77,8 +77,7 @@ public class Model extends Observable {
 	public ArrayList<CardModel> getChienCards() {
 		return chienCards;
 	}
-	
-	private int currentCardOrder = 0;
+
 	private void loadCards(){
 		loadColoredCards("Clubs");
 		loadColoredCards("Diamonds");
@@ -95,20 +94,17 @@ public class Model extends Observable {
 				fullName += "0";
 			}
 			fullName += Integer.toString(i) + ".jpg";
-			deckCards.add(new CardModel("Trump" + Integer.toString(i), fullName, currentCardOrder));
-			currentCardOrder++;
+			deckCards.add(new CardModel("Trump" + Integer.toString(i), fullName));
 		}
 		fullName = "cards/Tarot_nouveau_-_Grimaud_-_1898_-_Trumps_-_Excuse.jpg";
-		deckCards.add(new CardModel("Excuse", fullName, currentCardOrder));
-		currentCardOrder++;
+		deckCards.add(new CardModel("Excuse", fullName));
 	}
 
 	private void loadColoredCards(String color){
 		String fullName;
 		for(String value : cardValues()){
 			fullName = "cards/Tarot_nouveau_-_Grimaud_-_1898_-_" + color + "_-_" + value + ".jpg";
-			deckCards.add(new CardModel(color + value, fullName, currentCardOrder));
-			currentCardOrder++;
+			deckCards.add(new CardModel(color + value, fullName));
 		}
 	}
 

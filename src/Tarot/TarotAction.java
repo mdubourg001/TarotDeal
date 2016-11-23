@@ -1,8 +1,5 @@
 package Tarot;
 
-/**
- * Created by cmartinez005 on 15/11/16.
- */
 public enum TarotAction {
     DECK_MIXED,
     DECK_CUT,
