@@ -1,5 +1,6 @@
 package Tarot;
 
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -45,6 +46,17 @@ public class View implements Observer{
 
 	private Rectangle ground = new Rectangle(0, 0, Model.SCREEN_W, Model.SCREEN_H - CAMERA_SHIFT_Y);
 
+	private ImageView menuBackground = new ImageView("file:./res/menu_background.jpg");
+	private ImageView menuTitle = new ImageView("file:./res/title.png");
+
+	private Button playButton;
+	private ImageView playImage = new ImageView("file:./res/play.png");
+	private Button settingsButton;
+	private ImageView settingsImage = new ImageView("file:./res/settings.png");
+	private Button quitButton;
+	private ImageView quitImage = new ImageView("file:./res/quit.png");
+	private Font menuButtonFont = new Font("Martyric_PersonalUse.ttf", 40);
+
 	public View(Controller controller){
 		this.controller = controller;
 		this.model = controller.getModel();
@@ -58,14 +70,10 @@ public class View implements Observer{
 		scene.setFill(Color.BLACK);
 		scene.setCamera(camera);
 		camera.setRotationAxis(new Point3D(1,0,0));
-		camera.setRotate(CAMERA_ROTATE);
-		camera.setTranslateZ(CAMERA_SHIFT_Y);
-		camera.setTranslateY(CAMERA_SHIFT_Z);
 
 		ground.setFill(Color.GREEN);
 		ground.setTranslateZ(2.1);
-		group.getChildren().add(ground);
-		
+
 		initActionButtons();
 	}
 
@@ -79,12 +87,19 @@ public class View implements Observer{
 		timeLine.getKeyFrames().add(keyFrame);
 		timeLine.play();
 	}
-	
+
+	public void displayMenu() {
+		// TODO FACTORISER CI DESSOUS
+		initMenuBackground();
+		initMenuButtons();
+	}
+
 	private int currentAction = -1;
 	public void doNextAction(){
 		currentAction++;
 		switch(currentAction){
 		case 0 :
+			initGameView();
 			model.mixDeck();
 			break;
 		case 1 :
@@ -123,6 +138,95 @@ public class View implements Observer{
 				doNextAction();
 			}
 		};
+	}
+
+	private void initMenuBackground() {
+		group.getChildren().add(menuBackground);
+		group.getChildren().add(menuTitle);
+
+		double ratioBackImage = Model.SCREEN_H / menuBackground.getImage().getHeight();
+		menuBackground.setScaleY(ratioBackImage);
+		menuBackground.setScaleX(ratioBackImage);
+
+		menuBackground.setX(model.SCREEN_W / 2 - menuBackground.getImage().getWidth() / 2);
+		menuBackground.setY(model.SCREEN_H / 2 - menuBackground.getImage().getHeight() / 2);
+
+		menuTitle.setX(Model.SCREEN_W / 2 - menuTitle.getImage().getWidth() / 2);
+		menuTitle.setY(Model.SCREEN_H / 10);
+	}
+
+	private Button menuButton(String name, double x, double y){
+		Button button = new Button(name);
+		button.setFont(menuButtonFont);
+		button.setLayoutX(x);
+		button.setLayoutY(y);
+		button.setTextAlignment(TextAlignment.CENTER);
+		button.setPrefSize(BUTTON_W, BUTTON_H);
+		button.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(50), null)));
+		button.setTextFill(Color.WHITE);
+		return button;
+	}
+
+	private void initMenuButtons() {
+		playButton = menuButton("", Model.SCREEN_W / 2 - this.BUTTON_W / 2, Model.SCREEN_H / 3);
+		settingsButton = menuButton("", Model.SCREEN_W / 2 - this.BUTTON_W / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20);
+		quitButton = menuButton("", Model.SCREEN_W / 2 - this.BUTTON_W / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.4);
+
+		playImage.setFitWidth(Model.SCREEN_W / 5);
+		playImage.setFitHeight(Model.SCREEN_H / 5);
+		playImage.setX(Model.SCREEN_W / 2 - playImage.getImage().getWidth() / 4);
+		playImage.setY(Model.SCREEN_H / 4 + playImage.getImage().getHeight() / 5);
+
+		settingsImage.setFitWidth(Model.SCREEN_W / 4);
+		settingsImage.setFitHeight(Model.SCREEN_H / 4);
+		settingsImage.setX(Model.SCREEN_W / 2 - settingsImage.getImage().getWidth() / 4);
+		settingsImage.setY(Model.SCREEN_H / 2);
+
+		quitImage.setFitWidth(Model.SCREEN_W / 5);
+		quitImage.setFitHeight(Model.SCREEN_H / 5);
+		quitImage.setX(Model.SCREEN_W / 2 - quitImage.getImage().getWidth() / 4);
+		quitImage.setY(Model.SCREEN_H / 2 + Model.SCREEN_H / 4);
+
+		playButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				doNextAction();
+			}
+		});
+		settingsButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				//TODO
+			}
+		});
+		quitButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				System.exit(0);
+			}
+		});
+
+		group.getChildren().add(playButton);
+		group.getChildren().add(settingsButton);
+		group.getChildren().add(quitButton);
+		group.getChildren().add(playImage);
+		group.getChildren().add(settingsImage);
+		group.getChildren().add(quitImage);
+	}
+
+	private void initGameView() {
+		group.getChildren().remove(menuBackground);
+		group.getChildren().remove(playButton);
+		group.getChildren().remove(settingsButton);
+		group.getChildren().remove(quitButton);
+		group.getChildren().remove(playImage);
+		group.getChildren().remove(settingsImage);
+		group.getChildren().remove(quitImage);
+		group.getChildren().remove(menuTitle);
+		camera.setRotate(CAMERA_ROTATE);
+		camera.setTranslateZ(CAMERA_SHIFT_Y);
+		camera.setTranslateY(CAMERA_SHIFT_Z);
+		group.getChildren().add(ground);
 	}
 	
 	@Override
