@@ -15,6 +15,7 @@ public class Main extends Application{
 	@Override
 	public void start(Stage stage) throws Exception {
 		stage.setFullScreen(true);
+		stage.setFullScreenExitHint("");
 		model = new Model();
 		controller = new Controller(model);
 		view = new View(controller);
