@@ -12,6 +12,8 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.*;
 import javafx.scene.control.Button;
+import javafx.scene.effect.Light;
+import javafx.scene.effect.Lighting;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -103,53 +105,13 @@ public class View implements Observer {
 
     }
 
-    private int currentAction = -1;
-
-    public void doNextAction() {
-        currentAction++;
-        switch (currentAction) {
-            case 0:
-                initGameView();
-                model.mixDeck();
-                break;
-            case 1:
-                model.cutDeck();
-                break;
-            case 2:
-                model.distributeCards();
-                break;
-            case 3:
-                model.revertPlayer();
-                break;
-            case 4:
-                model.organizePlayerCards();
-                break;
-            case 5:
-                model.detectPetitSec();
-                break;
-            case 6:
-                model.revertChien();
-                break;
-            case 7:
-                drawActionButtons();
-                break;
-            case 8:
-                model.organizePlayerCards();//Only if it use gap
-                break;
-            case 9:
-                //continue
-                break;
-        }
-    }
-
-    public EventHandler<ActionEvent> doNextActionEvent() {
+    public EventHandler<ActionEvent> doNexTActionEvent() {
         return new EventHandler<ActionEvent>() {
             public void handle(ActionEvent t) {
-                doNextAction();
+                controller.doNextAction();
             }
         };
     }
-
     private void initMenuBackground() {
         group.getChildren().add(menuBackground);
         group.getChildren().add(menuTitle);
@@ -205,7 +167,7 @@ public class View implements Observer {
         playButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                doNextAction();
+                initGameView();
             }
         });
         settingsButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -237,6 +199,7 @@ public class View implements Observer {
         camera.setTranslateZ(CAMERA_SHIFT_Y);
         camera.setTranslateY(CAMERA_SHIFT_Z);
         group.getChildren().add(ground);
+        controller.doNextAction();
     }
 
     @Override
@@ -273,7 +236,7 @@ public class View implements Observer {
                 break;
             case CHIEN_REVERTED:
                 revertDeck(model.getChienCards(), Model.CHIEN_SIZE);
-                break;
+                drawActionButtons();
             case GAP_DONE:
                 updateGapDone();
                 break;
@@ -287,7 +250,7 @@ public class View implements Observer {
 			group.getChildren().add(cardViews.get(card.getName()).getFront());*/
             group.getChildren().add(cardViews.get(card.getName()).getMeshView());
         }
-        doNextAction();
+        controller.doNextAction();
     }
 
     public void updateDeckCut(Integer indexHalf, int iteration) {
@@ -304,7 +267,7 @@ public class View implements Observer {
                 moveCutDeck(CardModel.CARD_W / 2 + 10, true, indexHalf, onFinished);
                 break;
             case 3:
-                moveCutDeck(0, true, indexHalf, doNextActionEvent());
+                moveCutDeck(0, true, indexHalf, doNexTActionEvent());
                 break;
         }
     }
@@ -354,7 +317,7 @@ public class View implements Observer {
                 if (!nextAction) {
                     model.distributeCards();
                 } else {
-                    doNextAction();
+                    controller.doNextAction();
                 }
             }
         };
@@ -526,7 +489,7 @@ public class View implements Observer {
                     if (deck.indexOf(card) != size - 1)
                         revertCard(cardViews.get(card.getName()), null);
                     else {
-                        revertCard(cardViews.get(card.getName()), doNextActionEvent());
+                        revertCard(cardViews.get(card.getName()), doNexTActionEvent());
                     }
                 }
             });
@@ -583,12 +546,12 @@ public class View implements Observer {
             card = model.getMyCards().get(i);
             moveCard(cardViews.get(card.getName()), card, null);
         }
-        waiter(ORGANIZE_CARD_TIME, doNextActionEvent());
+        waiter(ORGANIZE_CARD_TIME, doNexTActionEvent());
     }
 
     public void updatePetitSec(Boolean petitSec) {
         if (!petitSec) {
-            doNextAction();
+            controller.doNextAction();
         } else {
             nouvelleDonne();
         }
@@ -666,8 +629,8 @@ public class View implements Observer {
             ecartArea.setTranslateZ(2);
             group.getChildren().add(ecartArea);
         } else {
-            currentAction++;
-            doNextAction();
+            controller.currentAction++;
+            controller.doNextAction();
         }
     }
 
@@ -783,11 +746,11 @@ public class View implements Observer {
     private void nouvelleDonne() {
         model.nouvelleDonne();
 
-        currentAction = -1;
+        controller.currentAction = -1;
 
         group.getChildren().clear();
         group.getChildren().add(ground);
 
-        doNextAction();
+        controller.doNextAction();
     }
 }

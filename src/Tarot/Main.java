@@ -35,6 +35,6 @@ public class Main extends Application{
 		view = new View(controller);
 		model.addObserver(view);
 		
-		view.doNextAction();
+		controller.doNextAction();
 	}
 }
