@@ -11,7 +11,7 @@ public class Controller {
         return model;
     }
 
-    public int currentAction = -1;
+    private int currentAction = -1;
 
     public void doNextAction() {
         currentAction++;
@@ -35,7 +35,7 @@ public class Controller {
                 model.detectPetitSec();
                 break;
             case 6:
-                model.revertChien();
+                model.revertChien();//Only if it use gap
                 break;
             case 7:
                 model.organizePlayerCards();//Only if it use gap
@@ -52,5 +52,17 @@ public class Controller {
 
     public void addCardToGap(CardModel card) {
         model.addCardToGap(card);
+    }
+    
+    public void skipGap(){
+    	currentAction += 2;
+        doNextAction();
+    }
+    
+    public void nouvelleDonne() {
+        model.nouvelleDonne();
+
+        currentAction = -1;
+        doNextAction();
     }
 }

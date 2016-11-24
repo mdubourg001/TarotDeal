@@ -8,7 +8,6 @@ public class CardModel implements Comparable<CardModel> {
     public static final double CARD_DIAG = Math.sqrt(CARD_W*CARD_W + CARD_H*CARD_H);
 
     private String name;
-    private String path;
     private double x;
     private double y;
     private double z;
@@ -17,9 +16,8 @@ public class CardModel implements Comparable<CardModel> {
     private int order;
     private static int orderCpt = 0;
 
-    public CardModel(String name, String path) {
+    public CardModel(String name) {
         this.name = name;
-        this.path = path;
         this.order = orderCpt++;
     }
 
@@ -32,10 +30,6 @@ public class CardModel implements Comparable<CardModel> {
 
     public String getName() {
         return name;
-    }
-
-    public String getPath() {
-        return path;
     }
 
     public double getX() {
