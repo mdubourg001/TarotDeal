@@ -243,7 +243,7 @@ public class View implements Observer {
     }
 
     public void updateDeckMixed() {
-        for (CardModel card : model.getDeckCards()) {
+        for (CardModel card : model.getJeu()) {
             cardViews.put(card.getName(), new CardView(card));
             /*group.getChildren().add(cardViews.get(card.getName()).getBack());
 			group.getChildren().add(cardViews.get(card.getName()).getFront());*/
@@ -277,8 +277,8 @@ public class View implements Observer {
         CardModel card;
         double xShift;
         double z;
-        for (int i = 0; i < model.getDeckCards().size(); i++) {
-            card = model.getDeckCards().get(i);
+        for (int i = 0; i < model.getJeu().size(); i++) {
+            card = model.getJeu().get(i);
             if (i < indexHalf) {
                 xShift = -xShiftValue;
             } else {
@@ -292,7 +292,7 @@ public class View implements Observer {
                 z = cardViews.get(card.getName()).getMeshView().getTranslateZ();
             }
 
-            if (i != model.getDeckCards().size() - 1) {
+            if (i != model.getJeu().size() - 1) {
                 moveCard(cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, CUT_SPEED, false, null);
             } else {
                 moveCard(cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, CUT_SPEED, false, onFinished);
@@ -398,7 +398,7 @@ public class View implements Observer {
         animationMoveCard.play();
     }
 
-    public static final double TIME_MULTIPLIER = 6000; // TODO REMETTRE A 2000
+    public static final double TIME_MULTIPLIER = 2000; // TODO REMETTRE A 2000
 
     private double calculTime(double[] deltas, double speed) {
         double time = 0;
@@ -496,7 +496,7 @@ public class View implements Observer {
         }
     }
 
-    private final static double REVERT_CARD_DURATION = 0.2; // TODO REMETTRE A 0.6
+    private final static double REVERT_CARD_DURATION = 0.6; // TODO REMETTRE A 0.6
     private final static double REVERT_CARD_Z = -300;
 
     private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished) {
