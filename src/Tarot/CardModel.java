@@ -1,7 +1,5 @@
 package Tarot;
 
-import javafx.stage.Screen;
-
 public class CardModel implements Comparable<CardModel> {
     public static final int CARD_W = (int)(Model.SCREEN_W/12.7) ;
     public static final int CARD_H = (int)(CARD_W*1.74);

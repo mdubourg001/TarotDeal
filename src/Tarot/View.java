@@ -1,5 +1,11 @@
 package Tarot;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -9,7 +15,11 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
-import javafx.scene.*;
+import javafx.scene.DepthTest;
+import javafx.scene.Group;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.Scene;
+import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -23,8 +33,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 import javafx.util.Pair;
-
-import java.util.*;
 
 public class View implements Observer {
     public final static int CAMERA_SHIFT_Y = -300;
@@ -72,6 +80,9 @@ public class View implements Observer {
         camera.setRotationAxis(new Point3D(1, 0, 0));
 
         ground.setTranslateZ(2.1);
+        ground.setTranslateY(40);
+        ground.setScaleX(1.2);
+        ground.setScaleY(1.2);
 
         initActionButtons();
     }
@@ -115,8 +126,8 @@ public class View implements Observer {
         menuBackground.setScaleY(ratioBackImage);
         menuBackground.setScaleX(ratioBackImage);
 
-        menuBackground.setX(model.SCREEN_W / 2 - menuBackground.getImage().getWidth() / 2);
-        menuBackground.setY(model.SCREEN_H / 2 - menuBackground.getImage().getHeight() / 2);
+        menuBackground.setX(Model.SCREEN_W / 2 - menuBackground.getImage().getWidth() / 2);
+        menuBackground.setY(Model.SCREEN_H / 2 - menuBackground.getImage().getHeight() / 2);
 
         menuTitle.setTranslateX(Model.SCREEN_W / 2 - menuTitle.getImage().getWidth() / 2);
         menuTitle.setTranslateY(Model.SCREEN_H / 10);
@@ -152,9 +163,9 @@ public class View implements Observer {
     }
 
     private void initMenuButtons() {
-        playButton = menuButton("", Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 3);
-        settingsButton = menuButton("", Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20);
-        quitButton = menuButton("", Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.6);
+        playButton = menuButton("", Model.SCREEN_W / 2 - (BUTTON_W + 100) / 2, Model.SCREEN_H / 3);
+        settingsButton = menuButton("", Model.SCREEN_W / 2 - (BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20);
+        quitButton = menuButton("", Model.SCREEN_W / 2 - (BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.6);
 
         playImage.setFitWidth(Model.SCREEN_W / 5);
         playImage.setFitHeight(Model.SCREEN_H / 5);
@@ -614,8 +625,6 @@ public class View implements Observer {
     public static final int ECART_ZONE_W = 2 * CardModel.CARD_W + Model.DIST_CARD_X_DIFF + 80;
     public static final int ECART_ZONE_H = 3 * (CardModel.CARD_H + Model.DIST_CARD_Y_DIFF) + 80;
 
-    private Rectangle ecartArea = new Rectangle(ECART_ZONE_X, ECART_ZONE_Y, ECART_ZONE_W, ECART_ZONE_H);
-
     public void updateActionChosen(PlayerAction action) {
         for (Button b : actionButtons.values()) {
             group.getChildren().remove(b);
@@ -626,9 +635,6 @@ public class View implements Observer {
         } else if (action == PlayerAction.PRISE || action == PlayerAction.GARDE) {
         	controller.doNextAction();
             doGap();
-            ecartArea.setFill(Color.BLUE);
-            ecartArea.setTranslateZ(2);
-            group.getChildren().add(ecartArea);
         } else {
             controller.skipGap();
         }
@@ -651,6 +657,9 @@ public class View implements Observer {
             public void handle(MouseEvent event) {
                 selectedCardXSave = (int) view.getMeshView().getTranslateX();
                 selectedCardYSave = (int) view.getMeshView().getTranslateY();
+                view.getMeshView().setTranslateZ(-50);
+                view.getMeshView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2) + (event.getSceneX()-Model.SCREEN_W/2)*0.15*(1-event.getSceneY()/Model.SCREEN_H));
+                view.getMeshView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2)*(1+event.getSceneY()/(5*Model.SCREEN_H)));
             }
         };
     }
@@ -659,6 +668,7 @@ public class View implements Observer {
         return new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
+            	view.getMeshView().setTranslateZ(-50);
                 view.getMeshView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2) + (event.getSceneX()-Model.SCREEN_W/2)*0.15*(1-event.getSceneY()/Model.SCREEN_H));
                 view.getMeshView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2)*(1+event.getSceneY()/(5*Model.SCREEN_H)));
             }

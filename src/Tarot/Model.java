@@ -1,14 +1,15 @@
 package Tarot;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.geom.Point2D;
-import javafx.util.Pair;
-
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
+
+import javafx.util.Pair;
 
 public class Model extends Observable {
 
@@ -81,6 +82,11 @@ public class Model extends Observable {
 	public ArrayList<CardModel> getChienCards() {
 		return gameDecks.get("chien");
 	}
+	
+	private void setAndNotifyChanged(Object arg){
+		setChanged();
+		notifyObservers(arg);
+	}
 
 	private void loadCards(){
 		loadColoredCards("Clubs");
@@ -135,70 +141,56 @@ public class Model extends Observable {
 		positions[0] = new Point2D.Double(DIST_CARD_X_START, DIST_CARD_Y1);
 		
 		for(int i = 0; i<NB_CARDS_PLAYER; i++){
-			playerCardsPositions[0][i] = new Point2D.Double(positions[0].getX(), positions[0].getY());
-			updateMyDistCardPosition(positions[0]);
-			
+			playerCardsPositions[0][i] = updateMyDistCardPosition(i);
 			playerCardsPositions[1][i] = updatePlayer1CardsPositions(i);
-			
 			playerCardsPositions[2][i] = updatePlayer2CardsPositions(i);
-			
 			playerCardsPositions[3][i] = updatePlayer3CardsPositions(i);
 		}
 	}
 	
-	private void updateMyDistCardPosition(Point2D pos){
-		pos.setLocation(pos.getX() + (CardModel.CARD_W + DIST_CARD_X_DIFF), pos.getY());
-		if(pos.getX() > DIST_CARD_X_START + 8*(CardModel.CARD_W + DIST_CARD_X_DIFF)){
-			pos.setLocation(DIST_CARD_X_START, DIST_CARD_Y2);
+	private Point2D updateMyDistCardPosition(int index){
+		double x,y;
+		x = DIST_CARD_X_START + (CardModel.CARD_W + DIST_CARD_X_DIFF)*(index%9);
+		if(index < 9){
+			y = DIST_CARD_Y1;
 		}
+		else{
+			y = DIST_CARD_Y2;
+		}
+		return new Point2D.Double(x, y);
 	}
 	
 	private Point2D updatePlayer1CardsPositions(int index){
-		Point2D pos;
 		switch(index%3){
 		case 0:
-			pos = new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y1);
-			break;
+			return new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y1);
 		case 1:
-			pos = new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y2);
-			break;
+			return new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y2);
 		default:
-			pos = new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y3);
-			break;
+			return new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y3);
 		}
-		return pos;
 	}
 	
 	private Point2D updatePlayer2CardsPositions(int index){
-		Point2D pos;
 		switch(index%3){
 		case 0:
-			pos = new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2-(CardModel.CARD_W + DIST_CARD_X_DIFF), PLAYER_3_Y);
-			break;
+			return new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2-(CardModel.CARD_W + DIST_CARD_X_DIFF), PLAYER_3_Y);
 		case 1:
-			pos = new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2, PLAYER_3_Y);
-			break;
+			return new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2, PLAYER_3_Y);
 		default:
-			pos = new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2+(CardModel.CARD_W + DIST_CARD_X_DIFF), PLAYER_3_Y);
-			break;
+			return new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2+(CardModel.CARD_W + DIST_CARD_X_DIFF), PLAYER_3_Y);
 		}
-		return pos;
 	}
 	
 	private Point2D updatePlayer3CardsPositions(int index){
-		Point2D pos;
 		switch(index%3){
 		case 0:
-			pos = new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y1);
-			break;
+			return new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y1);
 		case 1:
-			pos = new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y2);
-			break;
+			return new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y2);
 		default:
-			pos = new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y3);
-			break;
+			return new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y3);
 		}
-		return pos;
 	}
 	
 	public static final double DECK_Z_TOP = -76;
@@ -213,9 +205,7 @@ public class Model extends Observable {
 			card.setZ(z);
 			z += DECK_Z_DIFF;
 		}
-		setChanged();
-		Pair<TarotAction, Object> arg = new Pair<TarotAction, Object>(TarotAction.DECK_MIXED, null);
-		notifyObservers(arg);
+		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.DECK_MIXED, null));
 	}
 
 	public void cutDeck(){
@@ -224,10 +214,8 @@ public class Model extends Observable {
 
         gameDecks.replace("jeu", mergeDecks(secondHalf, firstHalf));
         adaptZJeu();
-
-        setChanged();
-        Pair<TarotAction, Integer> arg = new Pair<TarotAction, Integer>(TarotAction.DECK_CUT, NB_CARDS/2);
-        notifyObservers(arg);
+        
+        setAndNotifyChanged(new Pair<TarotAction, Integer>(TarotAction.DECK_CUT, NB_CARDS/2));
     }
 	
 	private ArrayList<CardModel> subDeck(ArrayList<CardModel> deck, int iMin, int iMax){
@@ -270,69 +258,45 @@ public class Model extends Observable {
 		
 		switch(currentPlayer){
 		case 0 :
-			move3CardsToMe();
+			move3CardsToPlayer(currentPlayer, choose3CardsOrder());
 			break;
 		case 1 :
 		case 2 :
 		case 3 :
-			move3CardsToOther();
+			move3CardsToPlayer(currentPlayer, new int[]{0, 0, 0});
 			break;
 		}
 	}
 	
-	private void move3CardsToMe(){
-		int[] cardOrders = choose3CardsOrder();
-		
+	private void move3CardsToPlayer(int player, int[] order){
 		for(int i=0; i<3; i++){
-			playersDecks.get(0).add(gameDecks.get("jeu").get(cardOrders[i]));
-			playersDecks.get(0).get(playersDecks.get(0).size()-1).moveTo(playerCardsPositions[0][playersDecks.get(0).size()-1].getX(), 
-																		playerCardsPositions[0][playersDecks.get(0).size()-1].getY(), 1);
-			gameDecks.get("jeu").remove(cardOrders[i]);
+			playersDecks.get(player).add(gameDecks.get("jeu").get(order[i]));
+			playersDecks.get(player).get(playersDecks.get(player).size()-1).moveTo(playerCardsPositions[player][playersDecks.get(player).size()-1].getX(), 
+																			playerCardsPositions[player][playersDecks.get(player).size()-1].getY(), 1);
+			gameDecks.get("jeu").remove(order[i]);
 		}
 		changePlayer();
 		
-		setChanged();
-		Pair<TarotAction, Pair<Boolean, CardModel[]>> arg = new Pair<TarotAction, Pair<Boolean, CardModel[]>>(TarotAction.CARDS_DISTRIBUTED,
+		setAndNotifyChanged(new Pair<TarotAction, Pair<Boolean, CardModel[]>>(TarotAction.CARDS_DISTRIBUTED,
 				new Pair<Boolean, CardModel[]>(gameDecks.get("jeu").isEmpty(), 
-						new CardModel[]{playersDecks.get(0).get(playersDecks.get(0).size()-3), 
-								playersDecks.get(0).get(playersDecks.get(0).size()-2), 
-								playersDecks.get(0).get(playersDecks.get(0).size()-1)}));
-		notifyObservers(arg);
+						new CardModel[]{playersDecks.get(player).get(playersDecks.get(player).size()-3), 
+								playersDecks.get(player).get(playersDecks.get(player).size()-2), 
+								playersDecks.get(player).get(playersDecks.get(player).size()-1)})));
 	}
 	
 	//Avoid cards to pass thought each others
 	private int[] choose3CardsOrder(){
-		int[] cardOrders = new int[3];
+		int[] order = new int[3];
 		if(playersDecks.get(0).size()%9 == 0){
-			cardOrders[0] = 0; cardOrders[1] = 0; cardOrders[2] = 0;
+			order[0] = 0; order[1] = 0; order[2] = 0;
 		}
 		else if(playersDecks.get(0).size()%9 == 3){
-			cardOrders[0] = 0; cardOrders[1] = 1; cardOrders[2] = 0;
+			order[0] = 0; order[1] = 1; order[2] = 0;
 		}
 		else{
-			cardOrders[0] = 2; cardOrders[1] = 1; cardOrders[2] = 0;
+			order[0] = 2; order[1] = 1; order[2] = 0;
 		}
-		return cardOrders;
-	}
-	
-	private void move3CardsToOther(){
-		int player = currentPlayer;
-		
-		for(int i=0; i<3; i++){
-			playersDecks.get(player).add(gameDecks.get("jeu").get(0));
-			playersDecks.get(player).get(playersDecks.get(player).size()-1).moveTo(playerCardsPositions[player][playersDecks.get(player).size()-1].getX(), 
-																			playerCardsPositions[player][playersDecks.get(player).size()-1].getY(), 1);
-			gameDecks.get("jeu").remove(0);
-		}
-		changePlayer();
-		
-		setChanged();
-		Pair<TarotAction, Pair<Boolean, CardModel[]>> arg = new Pair<TarotAction, Pair<Boolean, CardModel[]>>(TarotAction.CARDS_DISTRIBUTED,
-				new Pair<Boolean, CardModel[]>(gameDecks.get("jeu").isEmpty(), 
-						new CardModel[]{playersDecks.get(player).get(playersDecks.get(player).size()-3), 
-								playersDecks.get(player).get(playersDecks.get(player).size()-2), 
-								playersDecks.get(player).get(playersDecks.get(player).size()-1)}));
-		notifyObservers(arg);
+		return order;
 	}
 	
 	private void changePlayer(){
@@ -350,33 +314,23 @@ public class Model extends Observable {
 		gameDecks.get("chien").get(gameDecks.get("chien").size()-1).moveTo(chienCardX, CHIEN_CARD_Y, 1);
 		chienCardX += (CardModel.CARD_W + DIST_CARD_X_DIFF);
 		gameDecks.get("jeu").remove(0);
-		
-		setChanged();
-		Pair<TarotAction, CardModel> arg = new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED_FROM_DECK, gameDecks.get("chien").get(gameDecks.get("chien").size()-1));
-		notifyObservers(arg);
+
+		setAndNotifyChanged(new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED_FROM_DECK, 
+				gameDecks.get("chien").get(gameDecks.get("chien").size()-1)));
 	}
 	
 	public void organizePlayerCards(){
 		Collections.sort(playersDecks.get(0));
 		
-		int newX = DIST_CARD_X_START;
-		int newY = DIST_CARD_Y1;
 		double newZ = 1.0;
-		for(CardModel card : playersDecks.get(0)){
-			card.setX(newX);
-			card.setY(newY);
-			card.setZ(newZ);
-			newX += (CardModel.CARD_W + DIST_CARD_X_DIFF);
-			if(newX > DIST_CARD_X_START + 8*(CardModel.CARD_W + DIST_CARD_X_DIFF)){
-				newX = DIST_CARD_X_START;
-				newY = DIST_CARD_Y2;
-			}
-			newZ -= 0.1;
+		for(int i = 0; i<NB_CARDS_PLAYER; i++){
+			playersDecks.get(0).get(i).setX(playerCardsPositions[0][i].getX());
+			playersDecks.get(0).get(i).setY(playerCardsPositions[0][i].getY());
+			playersDecks.get(0).get(i).setZ(newZ);
+			newZ -= 0.01;
 		}
-
-		setChanged();
-		Pair<TarotAction, Object> arg = new Pair<TarotAction, Object>(TarotAction.PLAYER_ORGANIZED, null);
-		notifyObservers(arg);
+		
+		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.PLAYER_ORGANIZED, null));
 	}
 
 	public void detectPetitSec(){
@@ -395,10 +349,8 @@ public class Model extends Observable {
 				break;
 			}
 		}
-
-		setChanged();
-		Pair<TarotAction, Boolean> arg = new Pair<TarotAction, Boolean>(TarotAction.PETIT_SEC_DETECTED, petitSec);
-		notifyObservers(arg);
+		
+		setAndNotifyChanged(new Pair<TarotAction, Boolean>(TarotAction.PETIT_SEC_DETECTED, petitSec));
 	}
 
 	private ArrayList<String> othersTrumps(){
@@ -412,10 +364,7 @@ public class Model extends Observable {
 	private PlayerAction myAction;
 	public void chooseAction(PlayerAction action){
 		myAction = action;
-
-		setChanged();
-		Pair<TarotAction, PlayerAction> arg = new Pair<TarotAction, PlayerAction>(TarotAction.ACTION_CHOSEN, myAction);
-		notifyObservers(arg);
+		setAndNotifyChanged(new Pair<TarotAction, PlayerAction>(TarotAction.ACTION_CHOSEN, myAction));
 	}
 
 	public static final int NB_CARD_GAP = 6;
@@ -437,39 +386,37 @@ public class Model extends Observable {
 		card.setY(GAP_Y_START + (CardModel.CARD_H + DIST_CARD_Y_DIFF)*(nbCardInGap/2));
 		nbCardInGap++;
 		
-		setChanged();
-		Pair<TarotAction, CardModel> argCardMoved = new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED, card);
-		notifyObservers(argCardMoved);
+		setAndNotifyChanged(new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED, card));
 		
 		if(nbCardInGap == NB_CARD_GAP){
-			while(gameDecks.get("chien").size() != 0){
-				playersDecks.get(0).add(gameDecks.get("chien").get(0));
-				gameDecks.get("chien").remove(0);
-			}
-			organizePlayerCards();
-
-			setChanged();
-			Pair<TarotAction, Object> argGapDone = new Pair<TarotAction, Object>(TarotAction.GAP_DONE, null);
-			notifyObservers(argGapDone);
+			finalizeGap();
 		}
+	}
+	
+	private void finalizeGap(){
+		while(gameDecks.get("chien").size() != 0){
+			playersDecks.get(0).add(gameDecks.get("chien").get(0));
+			gameDecks.get("chien").remove(0);
+		}
+		organizePlayerCards();
+		
+		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.GAP_DONE, null));
 	}
 	
 	public void revertPlayer() {
 		for(CardModel card : playersDecks.get(0)){
 			card.onFront = true;
 		}
-		setChanged();
-		Pair<TarotAction, Object> argGapDone = new Pair<TarotAction, Object>(TarotAction.PLAYER_REVERTED, null);
-		notifyObservers(argGapDone);
+		
+		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.PLAYER_REVERTED, null));
 	}
 	
 	public void revertChien() {
 		for(CardModel card : gameDecks.get("chien")){
 			card.onFront = true;
 		}
-		setChanged();
-		Pair<TarotAction, Object> argGapDone = new Pair<TarotAction, Object>(TarotAction.CHIEN_REVERTED, null);
-		notifyObservers(argGapDone);
+		
+		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.CHIEN_REVERTED, null));
 	}
 	
 	public void nouvelleDonne(){
@@ -483,10 +430,8 @@ public class Model extends Observable {
 		loadCards();
 		
 		distributedCards = 0;
-
 		currentPlayer = 0;
 		chienCardX = CHIEN_CARD_X_START;
-		
 		nbCardInGap = 0;
 	}
 }
