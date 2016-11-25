@@ -122,8 +122,8 @@ public class View implements Observer {
         menuBackground.setX(model.SCREEN_W / 2 - menuBackground.getImage().getWidth() / 2);
         menuBackground.setY(model.SCREEN_H / 2 - menuBackground.getImage().getHeight() / 2);
 
-        menuTitle.setX(Model.SCREEN_W / 2 - menuTitle.getImage().getWidth() / 2);
-        menuTitle.setY(Model.SCREEN_H / 10);
+        menuTitle.setTranslateX(Model.SCREEN_W / 2 - menuTitle.getImage().getWidth() / 2);
+        menuTitle.setTranslateY(Model.SCREEN_H / 10);
     }
 
     private void initSettingsBackground() {
@@ -146,22 +146,22 @@ public class View implements Observer {
     private void initMenuButtons() {
         playButton = menuButton("", Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 3);
         settingsButton = menuButton("", Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20);
-        quitButton = menuButton("", Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.4);
+        quitButton = menuButton("", Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.6);
 
         playImage.setFitWidth(Model.SCREEN_W / 5);
         playImage.setFitHeight(Model.SCREEN_H / 5);
-        playImage.setX(Model.SCREEN_W / 2 - playImage.getImage().getWidth() / 4);
-        playImage.setY(Model.SCREEN_H / 4 + playImage.getImage().getHeight() / 5);
+        playImage.setTranslateX(Model.SCREEN_W / 2 - playImage.getImage().getWidth() / 4);
+        playImage.setTranslateY(Model.SCREEN_H / 4 + playImage.getImage().getHeight() / 5);
 
         settingsImage.setFitWidth(Model.SCREEN_W / 4);
         settingsImage.setFitHeight(Model.SCREEN_H / 4);
-        settingsImage.setX(Model.SCREEN_W / 2 - settingsImage.getImage().getWidth() / 4);
-        settingsImage.setY(Model.SCREEN_H / 2);
+        settingsImage.setTranslateX(Model.SCREEN_W / 2 - settingsImage.getImage().getWidth() / 4);
+        settingsImage.setTranslateY(Model.SCREEN_H / 2);
 
         quitImage.setFitWidth(Model.SCREEN_W / 5);
         quitImage.setFitHeight(Model.SCREEN_H / 5);
-        quitImage.setX(Model.SCREEN_W / 2 - quitImage.getImage().getWidth() / 4);
-        quitImage.setY(Model.SCREEN_H / 2 + Model.SCREEN_H / 4);
+        quitImage.setTranslateX(Model.SCREEN_W / 2 - quitImage.getImage().getWidth() / 3.5);
+        quitImage.setTranslateY(Model.SCREEN_H / 2 + Model.SCREEN_H / 4);
 
         playButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
@@ -169,23 +169,73 @@ public class View implements Observer {
                 initGameView();
             }
         });
+        playButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                playImage.setTranslateZ(-400);
+                playButton.setTranslateZ(-401);
+                playButton.setTranslateY(30);
+            }
+        });
+        playButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                playImage.setTranslateZ(-5);
+                playButton.setTranslateZ(-6);
+                playButton.setTranslateY(0);
+            }
+        });
         settingsButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) { displaySettings(); }
         });
-        quitButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        settingsButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                System.exit(0);
+                settingsImage.setTranslateZ(-400);
+                settingsButton.setTranslateZ(-401);
+                settingsButton.setTranslateY(-30);
+                settingsImage.setTranslateY(Model.SCREEN_H / 2 - 20);
+            }
+        });
+        settingsButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                settingsImage.setTranslateZ(-5);
+                settingsButton.setTranslateZ(-6);
+                settingsButton.setTranslateY(0);
+                settingsImage.setTranslateY(Model.SCREEN_H / 2);
+            }
+        });
+        quitButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) { System.exit(0); }
+        });
+        quitButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                quitImage.setTranslateZ(-400);
+                quitButton.setTranslateZ(-401);
+                quitButton.setTranslateY(-85);
+                quitImage.setTranslateY(Model.SCREEN_H / 2 + Model.SCREEN_H / 4 - 85);
+            }
+        });
+       quitButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                quitImage.setTranslateZ(0);
+                quitButton.setTranslateZ(0);
+                quitButton.setTranslateY(0);
+                quitImage.setTranslateY(Model.SCREEN_H / 2 + Model.SCREEN_H / 4);
             }
         });
 
-        group.getChildren().add(playButton);
-        group.getChildren().add(settingsButton);
-        group.getChildren().add(quitButton);
         group.getChildren().add(playImage);
         group.getChildren().add(settingsImage);
         group.getChildren().add(quitImage);
+        group.getChildren().add(playButton);
+        group.getChildren().add(settingsButton);
+        group.getChildren().add(quitButton);
     }
 
     private void initSettingsButtons() {
