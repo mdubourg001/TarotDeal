@@ -1,5 +1,6 @@
 package Tarot;
 
+import java.awt.geom.Point2D;
 import javafx.util.Pair;
 
 import java.awt.*;
@@ -49,7 +50,7 @@ public class Model extends Observable {
 	Map<String, ArrayList<CardModel>> gameDecks = new HashMap<String, ArrayList<CardModel>>();
 	ArrayList<ArrayList<CardModel>> playersDecks = new ArrayList<ArrayList<CardModel>>();
 	
-	double[][][] playerCardsPositions = new double[NB_PLAYERS][NB_CARDS][2];
+	Point2D[][] playerCardsPositions = new Point2D[NB_PLAYERS][NB_CARDS_PLAYER];
 	
 	private int distributedCards = 0;
 
@@ -130,80 +131,74 @@ public class Model extends Observable {
 	
 	// TODO
 	private void loadPlayersCardsPositions(){
-		double[][] positions = new double[NB_PLAYERS][2];
-		positions[0][0] = DIST_CARD_X_START;
-		positions[0][1] = DIST_CARD_Y1;
+		Point2D[] positions = new Point2D[NB_PLAYERS];
+		positions[0] = new Point2D.Double(DIST_CARD_X_START, DIST_CARD_Y1);
 		
-		for(int i = 0; i<NB_CARDS; i++){
-			playerCardsPositions[0][i][0] = positions[0][0];
-			playerCardsPositions[0][i][1] = positions[0][1];
+		for(int i = 0; i<NB_CARDS_PLAYER; i++){
+			playerCardsPositions[0][i] = new Point2D.Double(positions[0].getX(), positions[0].getY());
 			updateMyDistCardPosition(positions[0]);
 			
-			updatePlayer1CardsPositions(i, positions[1]);
-			playerCardsPositions[1][i][0] = positions[1][0];
-			playerCardsPositions[1][i][1] = positions[1][1];
+			playerCardsPositions[1][i] = updatePlayer1CardsPositions(i);
 			
-			updatePlayer2CardsPositions(i, positions[2]);
-			playerCardsPositions[2][i][0] = positions[2][0];
-			playerCardsPositions[2][i][1] = positions[2][1];
+			playerCardsPositions[2][i] = updatePlayer2CardsPositions(i);
 			
-			updatePlayer3CardsPositions(i, positions[3]);
-			playerCardsPositions[3][i][0] = positions[3][0];
-			playerCardsPositions[3][i][1] = positions[3][1];
+			playerCardsPositions[3][i] = updatePlayer3CardsPositions(i);
 		}
 	}
 	
-	private void updateMyDistCardPosition(double pos[]){
-		pos[0] += (CardModel.CARD_W + DIST_CARD_X_DIFF);
-		if(pos[0] > DIST_CARD_X_START + 8*(CardModel.CARD_W + DIST_CARD_X_DIFF)){
-			pos[0] = DIST_CARD_X_START;
-			pos[1] = DIST_CARD_Y2;
+	private void updateMyDistCardPosition(Point2D pos){
+		pos.setLocation(pos.getX() + (CardModel.CARD_W + DIST_CARD_X_DIFF), pos.getY());
+		if(pos.getX() > DIST_CARD_X_START + 8*(CardModel.CARD_W + DIST_CARD_X_DIFF)){
+			pos.setLocation(DIST_CARD_X_START, DIST_CARD_Y2);
 		}
 	}
 	
-	private void updatePlayer1CardsPositions(int index, double pos[]){
-		pos[0] = PLAYERS_2_4_X_SHIFT+SCREEN_W;
+	private Point2D updatePlayer1CardsPositions(int index){
+		Point2D pos;
 		switch(index%3){
 		case 0:
-			pos[1] = PLAYERS_2_4_Y1;
+			pos = new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y1);
 			break;
 		case 1:
-			pos[1] = PLAYERS_2_4_Y2;
+			pos = new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y2);
 			break;
-		case 2:
-			pos[1] = PLAYERS_2_4_Y3;
+		default:
+			pos = new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y3);
 			break;
 		}
+		return pos;
 	}
 	
-	private void updatePlayer2CardsPositions(int index, double pos[]){
-		pos[1] = PLAYER_3_Y;
+	private Point2D updatePlayer2CardsPositions(int index){
+		Point2D pos;
 		switch(index%3){
 		case 0:
-			pos[0] = (SCREEN_W-CardModel.CARD_W)/2-(CardModel.CARD_W + DIST_CARD_X_DIFF);
+			pos = new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2-(CardModel.CARD_W + DIST_CARD_X_DIFF), PLAYER_3_Y);
 			break;
 		case 1:
-			pos[0] = (SCREEN_W-CardModel.CARD_W)/2;
+			pos = new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2, PLAYER_3_Y);
 			break;
-		case 2:
-			pos[0] = (SCREEN_W-CardModel.CARD_W)/2+(CardModel.CARD_W + DIST_CARD_X_DIFF);
+		default:
+			pos = new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2+(CardModel.CARD_W + DIST_CARD_X_DIFF), PLAYER_3_Y);
 			break;
 		}
+		return pos;
 	}
 	
-	private void updatePlayer3CardsPositions(int index, double pos[]){
-		pos[0] = -PLAYERS_2_4_X_SHIFT-CardModel.CARD_W;
+	private Point2D updatePlayer3CardsPositions(int index){
+		Point2D pos;
 		switch(index%3){
 		case 0:
-			pos[1] = PLAYERS_2_4_Y1;
+			pos = new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y1);
 			break;
 		case 1:
-			pos[1] = PLAYERS_2_4_Y2;
+			pos = new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y2);
 			break;
-		case 2:
-			pos[1] = PLAYERS_2_4_Y3;
+		default:
+			pos = new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y3);
 			break;
 		}
+		return pos;
 	}
 	
 	public static final double DECK_Z_TOP = -76;
@@ -290,8 +285,8 @@ public class Model extends Observable {
 		
 		for(int i=0; i<3; i++){
 			playersDecks.get(0).add(gameDecks.get("jeu").get(cardOrders[i]));
-			playersDecks.get(0).get(playersDecks.get(0).size()-1).moveTo(playerCardsPositions[0][playersDecks.get(0).size()-1][0], 
-																		playerCardsPositions[0][playersDecks.get(0).size()-1][1], 1);
+			playersDecks.get(0).get(playersDecks.get(0).size()-1).moveTo(playerCardsPositions[0][playersDecks.get(0).size()-1].getX(), 
+																		playerCardsPositions[0][playersDecks.get(0).size()-1].getY(), 1);
 			gameDecks.get("jeu").remove(cardOrders[i]);
 		}
 		changePlayer();
@@ -325,8 +320,8 @@ public class Model extends Observable {
 		
 		for(int i=0; i<3; i++){
 			playersDecks.get(player).add(gameDecks.get("jeu").get(0));
-			playersDecks.get(player).get(playersDecks.get(player).size()-1).moveTo(playerCardsPositions[player][playersDecks.get(player).size()-1][0], 
-																			playerCardsPositions[player][playersDecks.get(player).size()-1][1], 1);
+			playersDecks.get(player).get(playersDecks.get(player).size()-1).moveTo(playerCardsPositions[player][playersDecks.get(player).size()-1].getX(), 
+																			playerCardsPositions[player][playersDecks.get(player).size()-1].getY(), 1);
 			gameDecks.get("jeu").remove(0);
 		}
 		changePlayer();
