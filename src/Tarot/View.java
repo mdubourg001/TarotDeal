@@ -131,8 +131,8 @@ public class View implements Observer {
 
     }
 
-    private Button menuButton(String name, double x, double y) {
-        Button button = new Button(name);
+    private Button menuButton(double x, double y) {
+        Button button = new Button("");
         button.setFont(menuButtonFont);
         button.setLayoutX(x);
         button.setLayoutY(y);
@@ -144,9 +144,9 @@ public class View implements Observer {
     }
 
     private void initMenuButtons() {
-        playButton = menuButton("", Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 3);
-        settingsButton = menuButton("", Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20);
-        quitButton = menuButton("", Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.6);
+        playButton = menuButton(Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 3);
+        settingsButton = menuButton(Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20);
+        quitButton = menuButton(Model.SCREEN_W / 2 - (this.BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.6);
 
         playImage.setFitWidth(Model.SCREEN_W / 5);
         playImage.setFitHeight(Model.SCREEN_H / 5);
@@ -405,7 +405,7 @@ public class View implements Observer {
         animationMoveCard.play();
     }
 
-    public static final double TIME_MULTIPLIER = 2000; // TODO REMETTRE A 2000
+    public static final double TIME_MULTIPLIER = 6000; // TODO REMETTRE A 2000
 
     private double calculTime(double[] deltas, double speed) {
         double time = 0;
@@ -643,6 +643,11 @@ public class View implements Observer {
             public void handle(MouseEvent event) {
                 selectedCardXSave = (int) view.getMeshView().getTranslateX();
                 selectedCardYSave = (int) view.getMeshView().getTranslateY();
+                view.getMeshView().setRotationAxis(new Point3D(1, 0, 0));
+                view.getMeshView().setRotate(20);
+                view.getMeshView().setTranslateZ(-50);
+                view.getMeshView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2) + (event.getSceneX()-Model.SCREEN_W/2)*0.15*(1-event.getSceneY()/Model.SCREEN_H));
+                view.getMeshView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2) + (event.getSceneY()-CAMERA_SHIFT_Z)/(5));
             }
         };
     }
@@ -651,8 +656,9 @@ public class View implements Observer {
         return new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
+                view.getMeshView().setTranslateZ(-50);
                 view.getMeshView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2) + (event.getSceneX()-Model.SCREEN_W/2)*0.15*(1-event.getSceneY()/Model.SCREEN_H));
-                view.getMeshView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2)*(1+event.getSceneY()/(5*Model.SCREEN_H)));
+                view.getMeshView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2) + (event.getSceneY()-CAMERA_SHIFT_Z)/(5));
             }
         };
     }
@@ -663,9 +669,12 @@ public class View implements Observer {
             public void handle(MouseEvent event) {
                 if (model.ungapableCards().contains(card.getName()) || cardViewInEcart(cardViews.get(card.getName()))) {
                     moveCard(cardViews.get(card.getName()), selectedCardXSave, selectedCardYSave, card.getZ(), null);
+                    view.getMeshView().setRotate(0);
                 } else {
                     controller.addCardToGap(card);
                     removeListeners(cardViews.get(card.getName()));
+                    view.getMeshView().setRotate(0);
+                    view.getMeshView().setTranslateZ(0);
                 }
             }
         };
