@@ -8,15 +8,6 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 
 public class CardView {
-	//public static final double SHIFT = 0.5;
-	
-    /*private static Image back = new Image("file:./res/back.jpg");
-
-    private Image image;
-    private ImageView backIV;
-    private ImageView frontIV;*/
-
-    //Mesh
     private static Image cardsTexture = new Image("file:./res/textureCards.jpg");
 
     private TriangleMesh mesh = new TriangleMesh();
@@ -25,28 +16,6 @@ public class CardView {
     PhongMaterial cardMaterial = new PhongMaterial();
 
     public CardView(CardModel card) {
-        /*this.image = new Image("file:./" + card.getPath());
-
-        this.backIV = new ImageView(this.back);
-        this.backIV.setFitWidth(CardModel.CARD_W);
-        this.backIV.setFitHeight(CardModel.CARD_H);
-        this.backIV.setTranslateX(card.getX());
-        this.backIV.setTranslateY(card.getY());
-        this.backIV.setTranslateZ(card.getZ());
-        this.backIV.setRotationAxis(new Point3D(0, 1, 0));
-        this.backIV.setRotate(180);
-
-        this.frontIV = new ImageView(this.image);
-        this.frontIV.setFitWidth(CardModel.CARD_W);
-        this.frontIV.setFitHeight(CardModel.CARD_H);
-        this.frontIV.setTranslateX(card.getX());
-        this.frontIV.setTranslateY(card.getY());
-        this.frontIV.setTranslateZ(card.getZ() + SHIFT);
-        this.frontIV.setRotationAxis(new Point3D(0, 1, 0));
-        this.frontIV.setRotate(180);*/
-
-        //Mesh
-
         mesh.getPoints().addAll(
                 0, 0, 0,
                 CardModel.CARD_W, 0, 0,
@@ -88,25 +57,7 @@ public class CardView {
         meshView.setRotationAxis(new Point3D(0, 1, 0));
         meshView.setRotate(180);
     }
-
-    /*
-    public ImageView getBack() {
-        return backIV;
-    }
-
-    public ImageView getFront() {
-
-        return frontIV;
-    }
-
-    public Image getImage() {
-
-        return image;
-    }
-    */
-
-    //Mesh
-
+    
     public MeshView getMeshView(){
         return meshView;
     }

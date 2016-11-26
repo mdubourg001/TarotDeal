@@ -386,7 +386,7 @@ public class Model extends Observable {
 		card.setY(GAP_Y_START + (CardModel.CARD_H + DIST_CARD_Y_DIFF)*(nbCardInGap/2));
 		nbCardInGap++;
 		
-		setAndNotifyChanged(new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED, card));
+		setAndNotifyChanged(new Pair<TarotAction, CardModel>(TarotAction.CARD_ADDED_GAP, card));
 		
 		if(nbCardInGap == NB_CARD_GAP){
 			finalizeGap();
