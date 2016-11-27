@@ -9,7 +9,7 @@ public class CardModel implements Comparable<CardModel> {
     private double x;
     private double y;
     private double z;
-    public boolean onFront = false;
+    private boolean onFront = false;
 
     private int order;
     private static int orderCpt = 0;
@@ -45,6 +45,10 @@ public class CardModel implements Comparable<CardModel> {
     public int getOrder() {
         return order;
     }
+    
+    public boolean isOnFront() {
+        return onFront;
+    }
 
     public void setX(double x) {
         this.x = x;
@@ -56,6 +60,10 @@ public class CardModel implements Comparable<CardModel> {
 
     public void setZ(double z) {
         this.z = z;
+    }
+    
+    public void setOnFront(boolean b) {
+        this.onFront = b;
     }
 
     public void moveTo(double x, double y, double z) {

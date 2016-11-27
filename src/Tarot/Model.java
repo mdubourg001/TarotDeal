@@ -125,14 +125,38 @@ public class Model extends Observable {
 	
 	public ArrayList<String> ungapableCards(){
 		ArrayList<String> values = new ArrayList<String>();
-		values.add("Trump1");
-		values.add("Trump21");
+		
 		values.add("Excuse");
 		values.add("ClubsKing");
 		values.add("DiamondsKing");
 		values.add("HeartsKing");
 		values.add("SpadesKing");
+		
+		if(ungableTrumps){
+			for(int i = FIRST_TRUMP; i <= LAST_TRUMP; i++){
+				values.add("Trump" + Integer.toString(i));
+			}
+		}
+		else{
+			values.add("Trump1");
+			values.add("Trump21");
+		}
+		
 		return values;
+	}
+	
+	private boolean ungableTrumps = false;
+	private boolean ungableTrumps(){
+		int nbColoredCard = 0;
+		for(CardModel card : playersDecks.get(0)){
+			if(!card.getName().contains("Trump")){
+				nbColoredCard++;
+			}
+			if(nbColoredCard == NB_CARD_GAP){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	// TODO
@@ -263,7 +287,7 @@ public class Model extends Observable {
 		case 1 :
 		case 2 :
 		case 3 :
-			move3CardsToPlayer(currentPlayer, new int[]{0, 0, 0});
+			move3CardsToPlayer(currentPlayer, new int[]{0, 1, 0});
 			break;
 		}
 	}
@@ -317,6 +341,16 @@ public class Model extends Observable {
 
 		setAndNotifyChanged(new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED_FROM_DECK, 
 				gameDecks.get("chien").get(gameDecks.get("chien").size()-1)));
+	}
+	
+	public void revertPlayer() {
+		ungableTrumps = ungableTrumps();
+		
+		for(CardModel card : playersDecks.get(0)){
+			card.setOnFront(true);
+		}
+		
+		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.PLAYER_REVERTED, null));
 	}
 	
 	public void organizePlayerCards(){
@@ -402,17 +436,9 @@ public class Model extends Observable {
 		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.GAP_DONE, null));
 	}
 	
-	public void revertPlayer() {
-		for(CardModel card : playersDecks.get(0)){
-			card.onFront = true;
-		}
-		
-		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.PLAYER_REVERTED, null));
-	}
-	
 	public void revertChien() {
 		for(CardModel card : gameDecks.get("chien")){
-			card.onFront = true;
+			card.setOnFront(true);
 		}
 		
 		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.CHIEN_REVERTED, null));

@@ -8,7 +8,6 @@ import java.util.Observer;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
-import javafx.animation.RotateTransition;
 import javafx.animation.Timeline;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
@@ -18,7 +17,6 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.DepthTest;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.PointLight;
 import javafx.scene.Scene;
@@ -27,19 +25,16 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.RotateEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.MeshView;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Rotate;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
@@ -365,7 +360,7 @@ public class View implements Observer {
         }
         
         //TODO
-        PointLight moonLight = new PointLight(Color.BLUE);
+        PointLight moonLight = new PointLight(Color.DARKBLUE);
         moonLight.setTranslateX(0);
         moonLight.setTranslateY(0);
         moonLight.setTranslateZ(-1500);
@@ -380,7 +375,7 @@ public class View implements Observer {
         PointLight lampLight2 = new PointLight(Color.WHITE);
         lampLight2.setTranslateX(Model.SCREEN_W/2);
         lampLight2.setTranslateY(Model.SCREEN_H/2);
-        lampLight2.setTranslateZ(-200);
+        lampLight2.setTranslateZ(-300);
         
         lampLight2.getTransforms().add(new Rotate(180, 200, 0, 0, Rotate.Z_AXIS));
         
@@ -437,9 +432,9 @@ public class View implements Observer {
             }
 
             if (i != model.getJeu().size() - 1) {
-                moveCard(CUT_SPEED, cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, null);
+                moveCard(CUT_SPEED, cardViews.get(card.getName()), card.getX() + xShift, null, z, null);
             } else {
-                moveCard(CUT_SPEED, cardViews.get(card.getName()), card.getX() + xShift, card.getY(), z, onFinished);
+                moveCard(CUT_SPEED, cardViews.get(card.getName()), card.getX() + xShift, null, z, onFinished);
             }
         }
     }
@@ -528,7 +523,7 @@ public class View implements Observer {
     	}
     }
 
-    public static final double TIME_MULTIPLIER = 3000; // TODO REMETTRE A 1000
+    public static final double TIME_MULTIPLIER = 3000; // TODO REMETTRE A 1500
 
     private double calculTime(double[] deltas, double speed) {
         double time = 0;
@@ -624,7 +619,7 @@ public class View implements Observer {
         }
     }
 
-    private final static double REVERT_CARD_DURATION = 0.6; // TODO REMETTRE A 1
+    private final static double REVERT_CARD_DURATION = 0.6; // TODO REMETTRE A 2
     private final static double REVERT_CARD_Z = -300;
 
     private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished2) {
@@ -642,6 +637,7 @@ public class View implements Observer {
         CardModel card;
         for (int i = 0; i < model.getMyCards().size(); i++) {
             card = model.getMyCards().get(i);
+            cardViews.get(card.getName()).getView().setTranslateZ(card.getZ());
             moveCard(cardViews.get(card.getName()), card, null);
         }
         waiter(ORGANIZE_CARD_TIME, doNexTActionEvent());
@@ -660,7 +656,6 @@ public class View implements Observer {
     private static final int BUTTON_X_DIFF = 10;
     public static final int BUTTON_X_START = (Model.SCREEN_W - (5 * BUTTON_W + 4 * BUTTON_X_DIFF)) / 2;
     public static final int BUTTON_Y = Model.SCREEN_H / 10;
-
 
     private Map<String, Button> actionButtons = new HashMap<String, Button>();
     private Font buttonsFont = new Font(40);
@@ -693,7 +688,7 @@ public class View implements Observer {
 
     private void changeColorButton(Button button, boolean toGray) {
         if (toGray) {
-            button.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, new CornerRadii(50), null)));
+            button.setBackground(new Background(new BackgroundFill(Color.WHITE, new CornerRadii(50), null)));
             button.setTextFill(Color.BLACK);
         } else {
             button.setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(50), null)));
