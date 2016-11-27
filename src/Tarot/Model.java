@@ -29,7 +29,7 @@ public class Model extends Observable {
 	private static final int NB_PLAYERS = 4;
 	
 	public static final int DECK_X = (int)(SCREEN_W / 2.5) - CardModel.CARD_W / 2 ;
-	public static final int DECK_Y = SCREEN_H / 20;
+	public static final int DECK_Y = (SCREEN_H - 1500) / 10;
 
 	public static final int DIST_CARD_X_DIFF = 5;
 	public static final int DIST_CARD_Y_DIFF = 25;
@@ -42,8 +42,8 @@ public class Model extends Observable {
 	public static final int DIST_CARD_Y2 = DIST_CARD_Y1 + CardModel.CARD_H + DIST_CARD_Y_DIFF;
 	
 
-	private static final int PLAYER_3_Y = -400;
-	private static final int PLAYERS_2_4_X_SHIFT = 200;
+	private static final int PLAYER_3_Y = -800;
+	private static final int PLAYERS_2_4_X_SHIFT = 600;
 	private static final int PLAYERS_2_4_Y1 = -200;
 	private static final int PLAYERS_2_4_Y2 = 0;
 	private static final int PLAYERS_2_4_Y3 = 200;
@@ -455,6 +455,8 @@ public class Model extends Observable {
 		for(ArrayList<CardModel> deck : playersDecks){
 			deck.clear();
 		}
+		
+		CardModel.reinitOrder();
 		
 		loadCards();
 		

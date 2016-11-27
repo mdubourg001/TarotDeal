@@ -13,6 +13,10 @@ public class CardModel implements Comparable<CardModel> {
 
     private int order;
     private static int orderCpt = 0;
+    
+    public static void reinitOrder(){
+    	orderCpt = 0;
+    }
 
     public CardModel(String name) {
         this.name = name;

@@ -31,6 +31,7 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
@@ -39,38 +40,39 @@ import javafx.util.Duration;
 import javafx.util.Pair;
 
 public class View implements Observer {
-    public final static int CAMERA_SHIFT_Y = -300;
-    public final static int CAMERA_ROTATE = 20;
-    public final static int CAMERA_SHIFT_Z = 200;
+    public final static double DISTRIBUTION_GROUP_ROTATE = -45; //MIN -45 MAX 0
+    public final static double DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
+    public final static double DISTRIBUTION_GROUP_SHIFT_Z = 200;
 
     private Controller controller;
     private Model model;
 
-    private Group group = new Group();
-    private Scene scene = new Scene(group, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.DISABLED);
+    private Group root = new Group();
+    private Group menuGroup = new Group();
+    private Group settingsGroup = new Group();
+    private Group distributionGroup = new Group();
+    private Group actionButtonsGroup = new Group();
+    private Scene scene = new Scene(root, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.DISABLED);
     private PerspectiveCamera camera = new PerspectiveCamera();
 
     private Map<String, CardView> cardViews = new HashMap<String, CardView>();
-    
     
     private MeshView ground = createGround();
     private MeshView createGround(){
     	TriangleMesh mesh = new TriangleMesh();
     	
     	 mesh.getPoints().addAll(
-                 0, 40, 2.1f,
-                 Model.SCREEN_W, 40, 2.1f,
-                 0, Model.SCREEN_H+40, 2.1f,
-                 Model.SCREEN_W, Model.SCREEN_H+40, 2.1f
+                 0, 0, 2.1f,
+                 Model.SCREEN_W, 0, 2.1f,
+                 0, Model.SCREEN_H, 2.1f,
+                 Model.SCREEN_W, Model.SCREEN_H, 2.1f
          );
-    	 
     	 mesh.getTexCoords().addAll(
          		0f, 0f,
          		1f, 0f,
                 0f, 1f,
                 1f, 1f
          );
-    	 
     	 mesh.getFaces().addAll(
                  0, 0, 3, 3, 1, 1,
                  3, 3, 0, 0, 2, 2
@@ -104,8 +106,10 @@ public class View implements Observer {
     public View(Controller controller) {
         this.controller = controller;
         this.model = controller.getModel();
+        
+        root.getChildren().add(distributionGroup);
 
-        group.setDepthTest(DepthTest.ENABLE);
+        distributionGroup.setDepthTest(DepthTest.ENABLE);
 
         if (!Platform.isSupported(ConditionalFeature.SCENE3D)) {
             throw new RuntimeException("SCENE3D not supported");
@@ -114,11 +118,15 @@ public class View implements Observer {
         scene.setFill(Color.BLACK);
         scene.setCamera(camera);
         camera.setRotationAxis(new Point3D(1, 0, 0));
+        distributionGroup.setRotationAxis(new Point3D(1, 0, 0));
 
-        ground.setScaleX(1.2);
-        ground.setScaleY(1.2);
+        ground.setScaleX(1.15 - DISTRIBUTION_GROUP_ROTATE/100);
+        ground.setScaleY(1.15 - DISTRIBUTION_GROUP_ROTATE/100);
 
         initActionButtons();
+        for (Button b : actionButtons.values()) {
+        	actionButtonsGroup.getChildren().add(b);
+        }
     }
 
     public Scene getScene() {
@@ -133,13 +141,13 @@ public class View implements Observer {
     }
 
     public void displayMenu() {
-        group.getChildren().clear();
+        distributionGroup.getChildren().clear();
         initMenuBackground();
         initMenuButtons();
     }
 
     public void displaySettings() {
-        group.getChildren().clear();
+        distributionGroup.getChildren().clear();
         initSettingsBackground();
         initSettingsButtons();
 
@@ -153,8 +161,8 @@ public class View implements Observer {
         };
     }
     private void initMenuBackground() {
-        group.getChildren().add(menuBackground);
-        group.getChildren().add(menuTitle);
+        distributionGroup.getChildren().add(menuBackground);
+        distributionGroup.getChildren().add(menuTitle);
 
         double ratioBackImage = Model.SCREEN_H / menuBackground.getImage().getHeight();
         menuBackground.setScaleY(ratioBackImage);
@@ -168,9 +176,9 @@ public class View implements Observer {
     }
 
     private void initSettingsBackground() {
-        group.getChildren().add(settingsBackground);
-        group.getChildren().add(cardsBackImage);
-        group.getChildren().add(soundImage);
+        distributionGroup.getChildren().add(settingsBackground);
+        distributionGroup.getChildren().add(cardsBackImage);
+        distributionGroup.getChildren().add(soundImage);
 
         cardsBackImage.setFitWidth(Model.SCREEN_W / 4);
         cardsBackImage.setFitHeight(Model.SCREEN_H / 4);
@@ -283,24 +291,27 @@ public class View implements Observer {
             }
         });
 
-        group.getChildren().add(playImage);
-        group.getChildren().add(settingsImage);
-        group.getChildren().add(quitImage);
-        group.getChildren().add(playButton);
-        group.getChildren().add(settingsButton);
-        group.getChildren().add(quitButton);
+        distributionGroup.getChildren().add(playImage);
+        distributionGroup.getChildren().add(settingsImage);
+        distributionGroup.getChildren().add(quitImage);
+        distributionGroup.getChildren().add(playButton);
+        distributionGroup.getChildren().add(settingsButton);
+        distributionGroup.getChildren().add(quitButton);
     }
 
     private void initSettingsButtons() {
 
     }
 
-    private void initGameView() {
-        group.getChildren().clear();
-        camera.setRotate(CAMERA_ROTATE);
-        camera.setTranslateZ(CAMERA_SHIFT_Y);
-        camera.setTranslateY(CAMERA_SHIFT_Z);
-        group.getChildren().add(ground);
+    private void initGameView() { //TODO
+        distributionGroup.getChildren().clear();
+        distributionGroup.setRotate(DISTRIBUTION_GROUP_ROTATE);
+        distributionGroup.setTranslateY(DISTRIBUTION_GROUP_SHIFT_Y);
+        distributionGroup.setTranslateZ(DISTRIBUTION_GROUP_SHIFT_Z);
+        Rectangle r = new Rectangle(-1000, -1000, Model.SCREEN_W+2000, Model.SCREEN_H + 2000);
+        r.setTranslateZ(3);
+        distributionGroup.getChildren().add(r);
+        distributionGroup.getChildren().add(ground);
         controller.doNextAction();
     }
 
@@ -356,7 +367,7 @@ public class View implements Observer {
     public void updateDeckMixed() {
         for (CardModel card : model.getJeu()) {
             cardViews.put(card.getName(), new CardView(card));
-            group.getChildren().add(cardViews.get(card.getName()).getView());
+            distributionGroup.getChildren().add(cardViews.get(card.getName()).getView());
         }
         
         //TODO
@@ -365,7 +376,7 @@ public class View implements Observer {
         moonLight.setTranslateY(0);
         moonLight.setTranslateZ(-1500);
         
-        PointLight lampLight = new PointLight(Color.WHITE);
+        PointLight lampLight = new PointLight(Color.PALEGOLDENROD);
         lampLight.setTranslateX(Model.SCREEN_W/2);
         lampLight.setTranslateY(Model.SCREEN_H/2);
         lampLight.setTranslateZ(-400);
@@ -375,7 +386,7 @@ public class View implements Observer {
         PointLight lampLight2 = new PointLight(Color.WHITE);
         lampLight2.setTranslateX(Model.SCREEN_W/2);
         lampLight2.setTranslateY(Model.SCREEN_H/2);
-        lampLight2.setTranslateZ(-300);
+        lampLight2.setTranslateZ(-200);
         
         lampLight2.getTransforms().add(new Rotate(180, 200, 0, 0, Rotate.Z_AXIS));
         
@@ -388,7 +399,7 @@ public class View implements Observer {
         timeLine.getKeyFrames().addAll(keyFrame);
         timeLine.play();
         
-        group.getChildren().addAll(moonLight, lampLight, lampLight2);
+        distributionGroup.getChildren().addAll(moonLight, lampLight, lampLight2);
         controller.doNextAction();
     }
 
@@ -645,7 +656,7 @@ public class View implements Observer {
 
     public void updatePetitSec(Boolean petitSec) {
         if (!petitSec) {
-        	drawActionButtons();
+        	root.getChildren().add(actionButtonsGroup);
         } else {
             nouvelleDonne();
         }
@@ -655,7 +666,7 @@ public class View implements Observer {
     private static final int BUTTON_H = 150;
     private static final int BUTTON_X_DIFF = 10;
     public static final int BUTTON_X_START = (Model.SCREEN_W - (5 * BUTTON_W + 4 * BUTTON_X_DIFF)) / 2;
-    public static final int BUTTON_Y = Model.SCREEN_H / 10;
+    public static final int BUTTON_Y = Model.SCREEN_H / 40;
 
     private Map<String, Button> actionButtons = new HashMap<String, Button>();
     private Font buttonsFont = new Font(40);
@@ -680,8 +691,6 @@ public class View implements Observer {
         button.setTextFill(Color.WHITE);
         button.setOnMouseEntered(mouseEvent -> changeColorButton(button, true));
         button.setOnMouseExited(mouseEvent -> changeColorButton(button, false));
-        button.setRotationAxis(new Point3D(1, 0, 0));
-        button.setRotate(CAMERA_ROTATE);
         button.setOnMouseClicked(mouseEvent -> controller.chooseAction(action));
         return button;
     }
@@ -696,21 +705,13 @@ public class View implements Observer {
         }
     }
 
-    public void drawActionButtons() {
-        for (Button b : actionButtons.values()) {
-            group.getChildren().add(b);
-        }
-    }
-
     public static final int ECART_ZONE_X = Model.GAP_X1 - 40;
     public static final int ECART_ZONE_Y = Model.GAP_Y_START - 40;
     public static final int ECART_ZONE_W = 2 * CardModel.CARD_W + Model.DIST_CARD_X_DIFF + 80;
     public static final int ECART_ZONE_H = 3 * (CardModel.CARD_H + Model.DIST_CARD_Y_DIFF) + 80;
 
     public void updateActionChosen(PlayerAction action) {
-        for (Button b : actionButtons.values()) {
-            group.getChildren().remove(b);
-        }
+    	root.getChildren().remove(actionButtonsGroup);
 
         if (action == PlayerAction.PASSE) {
             nouvelleDonne();
@@ -743,8 +744,8 @@ public class View implements Observer {
             		selectedCardXSave = (int) view.getView().getTranslateX();
                     selectedCardYSave = (int) view.getView().getTranslateY();
                     view.getView().setRotationAxis(Rotate.X_AXIS);
-                    view.getView().setRotate(20);
-                    view.getView().setTranslateZ(-CardModel.CARD_H/2*Math.sin(CAMERA_ROTATE));
+                    view.getView().setRotate(-DISTRIBUTION_GROUP_ROTATE);
+                    view.getView().setTranslateZ(-1 + CardModel.CARD_H * DISTRIBUTION_GROUP_ROTATE/90);
                     view.getView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2) + (event.getSceneX()-Model.SCREEN_W/2)*0.15*(1-event.getSceneY()/Model.SCREEN_H));
                     view.getView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2)*(1+event.getSceneY()/(5*Model.SCREEN_H)));
                     viewSelected = view;
@@ -807,8 +808,11 @@ public class View implements Observer {
     }
 
     private void nouvelleDonne() {
-        group.getChildren().clear();
-        group.getChildren().add(ground);
+        distributionGroup.getChildren().clear();
+        Rectangle r = new Rectangle(-1000, -1000, Model.SCREEN_W+2000, Model.SCREEN_H + 2000);
+        r.setTranslateZ(3);
+        distributionGroup.getChildren().add(r);
+        distributionGroup.getChildren().add(ground);
 
         controller.nouvelleDonne();
     }
