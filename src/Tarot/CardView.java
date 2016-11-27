@@ -10,12 +10,12 @@ import javafx.scene.shape.TriangleMesh;
 public class CardView {
     private static Image cardsTexture = new Image("file:./res/textureCards.jpg");
 
-    private TriangleMesh mesh = new TriangleMesh();
-    private MeshView meshView = new MeshView(mesh);
-
-    PhongMaterial cardMaterial = new PhongMaterial();
+    private MeshView meshView = new MeshView();
 
     public CardView(CardModel card) {
+        TriangleMesh mesh = new TriangleMesh();
+        PhongMaterial cardMaterial = new PhongMaterial();
+        
         mesh.getPoints().addAll(
                 0, 0, 0,
                 CardModel.CARD_W, 0, 0,
@@ -49,6 +49,7 @@ public class CardView {
 
         cardMaterial.setDiffuseMap(cardsTexture);
 
+        meshView.setMesh(mesh);
         meshView.setDrawMode(DrawMode.FILL);
         meshView.setMaterial(cardMaterial);
         meshView.setTranslateX(card.getX());
@@ -58,7 +59,7 @@ public class CardView {
         meshView.setRotate(180);
     }
     
-    public MeshView getMeshView(){
+    public MeshView getView(){
         return meshView;
     }
 }

@@ -12,5 +12,6 @@ public enum TarotAction {
     ACTION_CHOSEN,
     CHIEN_REVERTED,
     CARD_ADDED_GAP,
-    GAP_DONE
+    GAP_DONE,
+    DISTRIBUTION_DONE
 }

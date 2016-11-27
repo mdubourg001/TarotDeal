@@ -41,7 +41,7 @@ public class Controller {
                 model.organizePlayerCards();//Only if it use gap
                 break;
             case 8:
-                //continue
+                model.finish();
                 break;
         }
     }

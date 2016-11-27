@@ -394,11 +394,10 @@ public class Model extends Observable {
 	}
 	
 	private void finalizeGap(){
-		while(gameDecks.get("chien").size() != 0){
+		while(gameDecks.get("chien").size() > 0){
 			playersDecks.get(0).add(gameDecks.get("chien").get(0));
 			gameDecks.get("chien").remove(0);
 		}
-		organizePlayerCards();
 		
 		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.GAP_DONE, null));
 	}
@@ -417,6 +416,10 @@ public class Model extends Observable {
 		}
 		
 		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.CHIEN_REVERTED, null));
+	}
+	
+	public void finish(){
+		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.DISTRIBUTION_DONE, null));
 	}
 	
 	public void nouvelleDonne(){
