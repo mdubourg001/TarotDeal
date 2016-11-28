@@ -1,8 +1,8 @@
 package Tarot;
 
 public class CardModel implements Comparable<CardModel> {
-    public static final int CARD_W = (int)(Model.SCREEN_W/12.7) ;
-    public static final int CARD_H = (int)(CARD_W*1.74);
+	public static final int CARD_H = (int)(Model.SCREEN_H/4.8);
+    public static final int CARD_W = (int)(CARD_H*0.58) ;
     public static final double CARD_DIAG = Math.sqrt(CARD_W*CARD_W + CARD_H*CARD_H);
 
     private String name;

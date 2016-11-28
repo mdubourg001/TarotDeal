@@ -40,9 +40,9 @@ import javafx.util.Duration;
 import javafx.util.Pair;
 
 public class View implements Observer {
-    private static final double DISTRIBUTION_GROUP_ROTATE = -20; //CAMERA ROTATION MIN -45 MAX 0
+    private static final double DISTRIBUTION_GROUP_ROTATE = -22.5; //CAMERA ROTATION MIN -45 MAX 0
     private static final double DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE + Model.SCREEN_H/30;
-    private static final double DISTRIBUTION_GROUP_SHIFT_Z = 200; //DEZOOM MIN 0 MAX 500
+    private static final double DISTRIBUTION_GROUP_SHIFT_Z = 0; //DEZOOM MIN 0 MAX 500
 
     private static final double DISTRIBUTION_AREA_SHIFT = Model.SCREEN_W/2;
 
@@ -786,12 +786,12 @@ public class View implements Observer {
     }
 
     private void followMouse(CardView view, MouseEvent event){
-        view.getView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2) + (event.getSceneX()-Model.SCREEN_W/2)*0.1
-                *(Math.tan(DISTRIBUTION_GROUP_ROTATE * Math.cos(90-DISTRIBUTION_GROUP_ROTATE) + Math.cos(DISTRIBUTION_GROUP_ROTATE))));
-        view.getView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2) + (event.getSceneY()-Model.SCREEN_H/2)*0.1
-                *(Math.tan(DISTRIBUTION_GROUP_ROTATE * Math.cos(90-DISTRIBUTION_GROUP_ROTATE) + Math.cos(DISTRIBUTION_GROUP_ROTATE))));
-        /*view.getView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2) + (event.getSceneX()-Model.SCREEN_W/2)*0.15*(1-event.getSceneY()/Model.SCREEN_H));
-        view.getView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2)*(1+event.getSceneY()/(5*Model.SCREEN_H)));*/
+        view.getView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2)
+        		+ 0.04*(event.getSceneX()-Model.SCREEN_W/2)*(DISTRIBUTION_GROUP_SHIFT_Z/100)
+        		+ 0.04*(event.getSceneX()-Model.SCREEN_W/2)*(-(DISTRIBUTION_GROUP_ROTATE/20)*(1-event.getSceneY()/(0.2*Model.SCREEN_H))));
+        view.getView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2)
+        		+ 0.04*(event.getSceneY()-Model.SCREEN_H/2)*(DISTRIBUTION_GROUP_SHIFT_Z/100)
+        		+ 0.02*(event.getSceneY()*(-DISTRIBUTION_GROUP_ROTATE/5)));
     }
 
     private EventHandler<MouseEvent> tryAddCardToGapEvent(CardView view, CardModel card){
