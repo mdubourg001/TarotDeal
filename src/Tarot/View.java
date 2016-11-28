@@ -22,11 +22,15 @@ import javafx.scene.PointLight;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
@@ -53,7 +57,7 @@ public class View implements Observer {
     private Group menuGroup = new Group();
     private Group settingsGroup = new Group();
     private Group distributionGroup = new Group();
-    private Group actionButtonsGroup = new Group();
+    private Group unrealElementsGroup = new Group();
     private Scene scene = new Scene(root, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.DISABLED);
     private PerspectiveCamera camera = new PerspectiveCamera();
 
@@ -83,6 +87,7 @@ public class View implements Observer {
         this.model = controller.getModel();
         
         root.getChildren().add(distributionGroup);
+        root.getChildren().add(unrealElementsGroup);
 
         distributionGroup.setDepthTest(DepthTest.ENABLE);
 
@@ -101,9 +106,6 @@ public class View implements Observer {
         ground.setScaleY(1 + DISTRIBUTION_GROUP_SHIFT_Z/1330 - DISTRIBUTION_GROUP_ROTATE/100);
 
         initActionButtons();
-        for (Button b : actionButtons.values()) {
-        	actionButtonsGroup.getChildren().add(b);
-        }
 
         distributionArea.setTranslateZ(3);
     }
@@ -350,7 +352,7 @@ public class View implements Observer {
                 updatePlayerCardsOrganized();
                 break;
             case PETIT_SEC_DETECTED:
-                updatePetitSec(((Pair<TarotAction, Boolean>) arg1).getValue());
+                updatePetitSec(((Pair<TarotAction, Pair<Boolean, Integer>>) arg1).getValue());
                 break;
             case ACTION_CHOSEN:
                 updateActionChosen(((Pair<TarotAction, PlayerAction>) arg1).getValue());
@@ -360,7 +362,7 @@ public class View implements Observer {
                 break;
             case CARD_ADDED_GAP:
             	moveCard(cardViews.get(((Pair<TarotAction, CardModel>) arg1).getValue().getName()),
-                        ((Pair<TarotAction, CardModel>) arg1).getValue(), 0.0, unselectView());
+                        ((Pair<TarotAction, CardModel>) arg1).getValue(), 0.0, null);
             	break;
             case GAP_DONE:
                 updateGapDone();
@@ -379,16 +381,17 @@ public class View implements Observer {
         initLights();
         controller.doNextAction();
     }
-
+    
     private static final double LAMP_START_Z = -600;
     private static final double LAMP_SHIFT_Z = 300;
-    private static final double LAMP_SHINIG_SHIFT_Z = 350;
+    private static final double LAMP_SHINING_SHIFT_Z = 350;
+    private static final double LAMP_SHINING_SHIFT_COEF_X = 1;
     private void initLights(){
         PointLight moonLight = createPointLight(Color.DARKBLUE, new Point3D(0, 0, -1500));
-        PointLight lampLight = createLampLight(Color.PALEGOLDENROD,
-                new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_START_Z + LAMP_SHIFT_Z), LAMP_SHIFT_Z/2);
+        PointLight lampLight = createLampLight(Color.LIGHTBLUE,
+                new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_START_Z + LAMP_SHIFT_Z), LAMP_SHINING_SHIFT_COEF_X*LAMP_SHIFT_Z/2);
         PointLight lampLightShining = createLampLight(Color.WHITE,
-                new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_START_Z + LAMP_SHINIG_SHIFT_Z), LAMP_SHINIG_SHIFT_Z/2);
+                new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_START_Z + LAMP_SHINING_SHIFT_Z), LAMP_SHINING_SHIFT_COEF_X*LAMP_SHINING_SHIFT_Z/2);
 
         distributionGroup.getChildren().addAll(moonLight, lampLight, lampLightShining);
     }
@@ -463,7 +466,7 @@ public class View implements Observer {
         }
     }
 
-    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.1; //TODO Remettre ï¿½ 0.5
+    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.1; //TODO Remettre ï¿½ 0.3
     public void update3CardsDistributed(Pair<Boolean, CardModel[]> arg) {
     	moveCardFromDeck(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
         moveCardFromDeck(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
@@ -544,7 +547,7 @@ public class View implements Observer {
         return  value;
     }
 
-    public static final double TIME_MULTIPLIER = 3000; // TODO REMETTRE A 1500
+    public static final double TIME_MULTIPLIER = 1000; // TODO REMETTRE A 1000
 
     private double calculTime(double[] deltas, double speed) {
         double time = 0;
@@ -624,7 +627,7 @@ public class View implements Observer {
         return intersections;
     }
     
-    private final static double REVERT_CARD_WAIT_COEF = 0.175;
+    private final static double REVERT_CARD_WAIT_COEF = 0.05; //TODO Remetre à 0.1
     public void revertDeck(ArrayList<CardModel> deck, int size, EventHandler<ActionEvent> onFinished) {
         int i = 1;
         for (CardModel card : deck) {
@@ -641,7 +644,7 @@ public class View implements Observer {
         }
     }
 
-    private final static double REVERT_CARD_DURATION = 0.6; // TODO REMETTRE A 2
+    private final static double REVERT_CARD_DURATION = 1; // TODO REMETTRE A 2
     private final static double REVERT_CARD_Z = -300;
 
     private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished) {
@@ -665,13 +668,30 @@ public class View implements Observer {
         waiter(ORGANIZE_CARD_TIME, doNexTActionEvent());
     }
 
-    public void updatePetitSec(Boolean petitSec) {
-        if (!petitSec) {
-        	root.getChildren().add(actionButtonsGroup);
+    public void updatePetitSec(Pair<Boolean, Integer> petitSec) {
+        if (!petitSec.getKey()) {
+        	drawActionsButtons();
         } else {
-            //TODO Waiter before petit sec
-            nouvelleDonne();
+        	unrealElementsGroup.getChildren().add(createPetitSecLabel(petitSec.getValue()));
+            waiter(3, nouvelleDonneEvent());
         }
+    }
+    
+    private Label createPetitSecLabel(Integer player){
+    	Label l = new Label("Petit Sec Player " + player);
+    	l.setTextFill(Color.WHITE);
+    	l.setFont(new Font(Model.SCREEN_W/10));
+    	l.setTranslateX(Model.SCREEN_W/9);
+    	l.setTranslateY(Model.SCREEN_H/3);
+    	l.setTranslateZ(-300);
+    	l.setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(50), null)));
+    	return l;
+    }
+    
+    private void drawActionsButtons(){
+    	for(Button b : actionButtons.values()){
+    		unrealElementsGroup.getChildren().add(b);
+    	}
     }
 
     private static final double BUTTON_W = Model.SCREEN_W/5.5;
@@ -723,7 +743,7 @@ public class View implements Observer {
     public static final int ECART_ZONE_H = 3 * (CardModel.CARD_H + Model.DIST_CARD_Y_DIFF) + 80;
 
     public void updateActionChosen(PlayerAction action) {
-    	root.getChildren().remove(actionButtonsGroup);
+    	unrealElementsGroup.getChildren().clear();
 
         if (action == PlayerAction.PASSE) {
             nouvelleDonne();
@@ -735,7 +755,6 @@ public class View implements Observer {
         }
     }
 
-    private boolean isCardSelected = false;
     private CardView viewSelected = null;
     private double selectedCardXSave = 0;
     private double selectedCardYSave = 0;
@@ -752,7 +771,7 @@ public class View implements Observer {
         return new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-            	if(viewSelected == null){
+            	if(view.canBeSelected()){
                     selectCardEvent(view, event);
             	}
             }
@@ -764,7 +783,7 @@ public class View implements Observer {
         selectedCardYSave = (int) view.getView().getTranslateY();
         riseCard(view, event);
         viewSelected = view;
-        isCardSelected = true;
+        view.canBeSelected(false);
     }
 
     private void riseCard(CardView view, MouseEvent event){
@@ -778,7 +797,7 @@ public class View implements Observer {
         return new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-            	if(viewSelected == view && isCardSelected){
+            	if(viewSelected == view){
                     followMouse(view, event);
             	}
             }
@@ -786,12 +805,13 @@ public class View implements Observer {
     }
 
     private void followMouse(CardView view, MouseEvent event){
+    	//Inaccurate formula which try to position cards on the mouse depending of zoom and camera rotation
         view.getView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2)
-        		+ 0.04*(event.getSceneX()-Model.SCREEN_W/2)*(DISTRIBUTION_GROUP_SHIFT_Z/100)
-        		+ 0.04*(event.getSceneX()-Model.SCREEN_W/2)*(-(DISTRIBUTION_GROUP_ROTATE/20)*(1-event.getSceneY()/(0.2*Model.SCREEN_H))));
+        		+ 0.0004*(event.getSceneX()-Model.SCREEN_W/2)*DISTRIBUTION_GROUP_SHIFT_Z
+        		+ 0.002*(event.getSceneX()-Model.SCREEN_W/2)*(-DISTRIBUTION_GROUP_ROTATE)*(1-event.getSceneY()/(0.2*Model.SCREEN_H)));
         view.getView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2)
-        		+ 0.04*(event.getSceneY()-Model.SCREEN_H/2)*(DISTRIBUTION_GROUP_SHIFT_Z/100)
-        		+ 0.02*(event.getSceneY()*(-DISTRIBUTION_GROUP_ROTATE/5)));
+        		+ 0.0004*(event.getSceneY()-Model.SCREEN_H/2)*DISTRIBUTION_GROUP_SHIFT_Z
+        		+ 0.003*(event.getSceneY()-Model.SCREEN_H/2)*(-DISTRIBUTION_GROUP_ROTATE));
     }
 
     private EventHandler<MouseEvent> tryAddCardToGapEvent(CardView view, CardModel card){
@@ -804,10 +824,10 @@ public class View implements Observer {
     }
 
     private void tryAddCardToGap(CardView view, CardModel card){
-        isCardSelected = false;
         if(viewSelected == view){
+        	viewSelected = null;
             if (model.ungapableCards().contains(card.getName()) || cardViewInEcart(cardViews.get(card.getName()))) {
-                moveCard(cardViews.get(card.getName()), selectedCardXSave, selectedCardYSave, card.getZ(), 0.0, unselectView());
+                moveCard(cardViews.get(card.getName()), selectedCardXSave, selectedCardYSave, card.getZ(), 0.0, canSelectView(view));
             }
             else{
                 controller.addCardToGap(card);
@@ -816,11 +836,11 @@ public class View implements Observer {
         }
     }
 
-    private EventHandler<ActionEvent> unselectView(){
+    private EventHandler<ActionEvent> canSelectView(CardView view){
     	return new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent event) {
-				viewSelected = null;
+				view.canBeSelected(true);
 			}
     	};
     }
@@ -840,10 +860,20 @@ public class View implements Observer {
 
     private void nouvelleDonne() {
         distributionGroup.getChildren().clear();
+        unrealElementsGroup.getChildren().clear();
 
         distributionGroup.getChildren().add(distributionArea);
         distributionGroup.getChildren().add(ground);
 
         controller.nouvelleDonne();
+    }
+    
+    private EventHandler<ActionEvent> nouvelleDonneEvent(){
+    	return new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent event) {
+				nouvelleDonne();
+			}
+    	};
     }
 }

@@ -367,6 +367,7 @@ public class Model extends Observable {
 
 	public void detectPetitSec(){
 		Boolean petitSec = false;
+		Integer playerNb = 1;
 		for(ArrayList<CardModel> deck : playersDecks){
 			for(CardModel card : deck){
 				if(card.getName().contentEquals("Trump1")){
@@ -380,8 +381,10 @@ public class Model extends Observable {
 			if(petitSec){
 				break;
 			}
+			playerNb++;
 		}
-		setAndNotifyChanged(new Pair<TarotAction, Boolean>(TarotAction.PETIT_SEC_DETECTED, petitSec));
+		setAndNotifyChanged(new Pair<TarotAction, Pair<Boolean, Integer>>(TarotAction.PETIT_SEC_DETECTED, 
+				new Pair<Boolean, Integer>(petitSec, playerNb)));
 	}
 
 	private ArrayList<String> othersTrumps(){

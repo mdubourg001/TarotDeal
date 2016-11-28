@@ -9,6 +9,7 @@ import javafx.scene.shape.TriangleMesh;
 
 public class CardView {
     private static Image cardsTexture = new Image("file:./res/textureCards.jpg");
+    private boolean canBeSelected = true;
 
     private MeshView meshView = new MeshView();
 
@@ -61,5 +62,13 @@ public class CardView {
     
     public MeshView getView(){
         return meshView;
+    }
+    
+    public boolean canBeSelected(){
+        return canBeSelected;
+    }
+    
+    public void canBeSelected(boolean b){
+        canBeSelected = b;
     }
 }
