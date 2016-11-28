@@ -40,9 +40,11 @@ import javafx.util.Duration;
 import javafx.util.Pair;
 
 public class View implements Observer {
-    public final static double DISTRIBUTION_GROUP_ROTATE = -45; //MIN -45 MAX 0
-    public final static double DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
-    public final static double DISTRIBUTION_GROUP_SHIFT_Z = 200;
+    private static final double DISTRIBUTION_GROUP_ROTATE = -20; //MIN -45 MAX 0
+    private static final double DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
+    private static final double DISTRIBUTION_GROUP_SHIFT_Z = 200;
+
+    private static final double DISTRIBUTION_AREA_SHIFT = 1000;
 
     private Controller controller;
     private Model model;
@@ -58,35 +60,6 @@ public class View implements Observer {
     private Map<String, CardView> cardViews = new HashMap<String, CardView>();
     
     private MeshView ground = createGround();
-    private MeshView createGround(){
-    	TriangleMesh mesh = new TriangleMesh();
-    	
-    	 mesh.getPoints().addAll(
-                 0, 0, 2.1f,
-                 Model.SCREEN_W, 0, 2.1f,
-                 0, Model.SCREEN_H, 2.1f,
-                 Model.SCREEN_W, Model.SCREEN_H, 2.1f
-         );
-    	 mesh.getTexCoords().addAll(
-         		0f, 0f,
-         		1f, 0f,
-                0f, 1f,
-                1f, 1f
-         );
-    	 mesh.getFaces().addAll(
-                 0, 0, 3, 3, 1, 1,
-                 3, 3, 0, 0, 2, 2
-         );
-    	
-    	Image groundTexture = new Image("file:./res/ground_tarot.png");
-    	PhongMaterial groundMaterial = new PhongMaterial();
-    	groundMaterial.setDiffuseMap(groundTexture);
-    	
-    	MeshView view = new MeshView(mesh);
-    	view.setMaterial(groundMaterial);
-    	
-    	return view;
-    }
     
     private ImageView menuBackground = new ImageView("file:./res/menu_background.jpg");
     private ImageView menuTitle = new ImageView("file:./res/title.png");
@@ -102,6 +75,8 @@ public class View implements Observer {
 
     private ImageView cardsBackImage = new ImageView("file:./res/cardsback.png");
     private ImageView soundImage = new ImageView("file:./res/sound.png");
+
+    private Rectangle distributionArea = new Rectangle(-DISTRIBUTION_AREA_SHIFT, -DISTRIBUTION_AREA_SHIFT, Model.SCREEN_W+2*DISTRIBUTION_AREA_SHIFT, Model.SCREEN_H + 2*DISTRIBUTION_AREA_SHIFT);
 
     public View(Controller controller) {
         this.controller = controller;
@@ -127,6 +102,38 @@ public class View implements Observer {
         for (Button b : actionButtons.values()) {
         	actionButtonsGroup.getChildren().add(b);
         }
+
+        distributionArea.setTranslateZ(3);
+    }
+
+    private MeshView createGround(){
+        TriangleMesh mesh = new TriangleMesh();
+
+        mesh.getPoints().addAll(
+                0, 0, 2.1f,
+                Model.SCREEN_W, 0, 2.1f,
+                0, Model.SCREEN_H, 2.1f,
+                Model.SCREEN_W, Model.SCREEN_H, 2.1f
+        );
+        mesh.getTexCoords().addAll(
+                0f, 0f,
+                1f, 0f,
+                0f, 1f,
+                1f, 1f
+        );
+        mesh.getFaces().addAll(
+                0, 0, 3, 3, 1, 1,
+                3, 3, 0, 0, 2, 2
+        );
+
+        Image groundTexture = new Image("file:./res/ground_tarot.png");
+        PhongMaterial groundMaterial = new PhongMaterial();
+        groundMaterial.setDiffuseMap(groundTexture);
+
+        MeshView view = new MeshView(mesh);
+        view.setMaterial(groundMaterial);
+
+        return view;
     }
 
     public Scene getScene() {
@@ -308,9 +315,7 @@ public class View implements Observer {
         distributionGroup.setRotate(DISTRIBUTION_GROUP_ROTATE);
         distributionGroup.setTranslateY(DISTRIBUTION_GROUP_SHIFT_Y);
         distributionGroup.setTranslateZ(DISTRIBUTION_GROUP_SHIFT_Z);
-        Rectangle r = new Rectangle(-1000, -1000, Model.SCREEN_W+2000, Model.SCREEN_H + 2000);
-        r.setTranslateZ(3);
-        distributionGroup.getChildren().add(r);
+        distributionGroup.getChildren().add(distributionArea);
         distributionGroup.getChildren().add(ground);
         controller.doNextAction();
     }
@@ -369,38 +374,39 @@ public class View implements Observer {
             cardViews.put(card.getName(), new CardView(card));
             distributionGroup.getChildren().add(cardViews.get(card.getName()).getView());
         }
-        
-        //TODO
-        PointLight moonLight = new PointLight(Color.DARKBLUE);
-        moonLight.setTranslateX(0);
-        moonLight.setTranslateY(0);
-        moonLight.setTranslateZ(-1500);
-        
-        PointLight lampLight = new PointLight(Color.PALEGOLDENROD);
-        lampLight.setTranslateX(Model.SCREEN_W/2);
-        lampLight.setTranslateY(Model.SCREEN_H/2);
-        lampLight.setTranslateZ(-400);
-        
-        lampLight.getTransforms().add(new Rotate(180, 200, 0, 0, Rotate.Z_AXIS));
-        
-        PointLight lampLight2 = new PointLight(Color.WHITE);
-        lampLight2.setTranslateX(Model.SCREEN_W/2);
-        lampLight2.setTranslateY(Model.SCREEN_H/2);
-        lampLight2.setTranslateZ(-200);
-        
-        lampLight2.getTransforms().add(new Rotate(180, 200, 0, 0, Rotate.Z_AXIS));
-        
+        initLights();
+        controller.doNextAction();
+    }
+
+    private void initLights(){
+        PointLight moonLight = createPointLight(Color.DARKBLUE, new Point3D(0, 0, -1500));
+        PointLight lampLight = createLampLight(Color.PALEGOLDENROD, new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, -400), 200);
+        PointLight lampLightShining = createLampLight(Color.WHITE, new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, -200), 200);
+
+        distributionGroup.getChildren().addAll(moonLight, lampLight, lampLightShining);
+    }
+
+    private PointLight createPointLight(Color c, Point3D pos){
+        PointLight point = new PointLight(c);
+        point.setTranslateX(pos.getX());
+        point.setTranslateY(pos.getY());
+        point.setTranslateZ(pos.getZ());
+        return point;
+    }
+
+    private static final double LAMP_ROTATE_DURATION = 3;
+
+    private PointLight createLampLight(Color c, Point3D pos, double pivot){
+        PointLight lamp = createPointLight(c, pos);
+        lamp.getTransforms().add(new Rotate(180, pivot, 0, 0, Rotate.Z_AXIS));
         Timeline timeLine = new Timeline();
-        
-        KeyFrame keyFrame = new KeyFrame(Duration.seconds(3), new KeyValue(lampLight.rotateProperty(), 360),
-        		new KeyValue(lampLight2.rotateProperty(), 360));
-        
+
+        KeyFrame keyFrame = new KeyFrame(Duration.seconds(LAMP_ROTATE_DURATION), new KeyValue(lamp.rotateProperty(), 360));
+
         timeLine.setCycleCount(Timeline.INDEFINITE);
         timeLine.getKeyFrames().addAll(keyFrame);
         timeLine.play();
-        
-        distributionGroup.getChildren().addAll(moonLight, lampLight, lampLight2);
-        controller.doNextAction();
+        return lamp;
     }
 
     public void updateDeckCut(Integer indexHalf, int iteration) {
@@ -450,7 +456,7 @@ public class View implements Observer {
         }
     }
 
-    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.1; //TODO Remettre à 0.5
+    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.1; //TODO Remettre ï¿½ 0.5
     public void update3CardsDistributed(Pair<Boolean, CardModel[]> arg) {
     	moveCardFromDeck(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
         moveCardFromDeck(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
@@ -809,9 +815,8 @@ public class View implements Observer {
 
     private void nouvelleDonne() {
         distributionGroup.getChildren().clear();
-        Rectangle r = new Rectangle(-1000, -1000, Model.SCREEN_W+2000, Model.SCREEN_H + 2000);
-        r.setTranslateZ(3);
-        distributionGroup.getChildren().add(r);
+
+        distributionGroup.getChildren().add(distributionArea);
         distributionGroup.getChildren().add(ground);
 
         controller.nouvelleDonne();
