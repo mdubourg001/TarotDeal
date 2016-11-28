@@ -24,12 +24,11 @@ public class Model extends Observable {
 	public static final int NB_CARDS = 78;
 	public static final int NB_CARDS_PLAYER = 18;
 	public static final int CHIEN_SIZE = 6;
-	public static final int PLAYER_NB_CARDS = 18;
 	
 	private static final int NB_PLAYERS = 4;
 	
 	public static final int DECK_X = (int)(SCREEN_W / 2.5) - CardModel.CARD_W / 2 ;
-	public static final int DECK_Y = (SCREEN_H - 1500) / 10;
+	public static final int DECK_Y = SCREEN_H/200;
 
 	public static final int DIST_CARD_X_DIFF = 5;
 	public static final int DIST_CARD_Y_DIFF = 25;
@@ -42,8 +41,8 @@ public class Model extends Observable {
 	public static final int DIST_CARD_Y2 = DIST_CARD_Y1 + CardModel.CARD_H + DIST_CARD_Y_DIFF;
 	
 
-	private static final int PLAYER_3_Y = -800;
-	private static final int PLAYERS_2_4_X_SHIFT = 600;
+	private static final double PLAYER_3_Y = -SCREEN_W/2.4;
+	private static final double PLAYERS_2_4_X_SHIFT = SCREEN_H/1.8;
 	private static final int PLAYERS_2_4_Y1 = -200;
 	private static final int PLAYERS_2_4_Y2 = 0;
 	private static final int PLAYERS_2_4_Y3 = 200;
@@ -74,13 +73,13 @@ public class Model extends Observable {
 	public ArrayList<CardModel> getJeu() {
 		return gameDecks.get("jeu");
 	}
+
+	public ArrayList<CardModel> getChienCards() {
+		return gameDecks.get("chien");
+	}
 	
 	public ArrayList<CardModel> getMyCards() {
 		return playersDecks.get(0);
-	}
-	
-	public ArrayList<CardModel> getChienCards() {
-		return gameDecks.get("chien");
 	}
 	
 	private void setAndNotifyChanged(Object arg){
@@ -158,11 +157,9 @@ public class Model extends Observable {
 		}
 		return false;
 	}
-	
-	// TODO
+
 	private void loadPlayersCardsPositions(){
 		Point2D[] positions = new Point2D[NB_PLAYERS];
-		positions[0] = new Point2D.Double(DIST_CARD_X_START, DIST_CARD_Y1);
 		
 		for(int i = 0; i<NB_CARDS_PLAYER; i++){
 			playerCardsPositions[0][i] = updateMyDistCardPosition(i);
@@ -262,7 +259,8 @@ public class Model extends Observable {
 			z += DECK_Z_DIFF;
         }
 	}
-	
+
+	// Adapted to avoid graphics bugs, cards which pass through each others
 	public void distributeCards(){
 		switch(distributedCards){
 		case 3:
@@ -383,7 +381,6 @@ public class Model extends Observable {
 				break;
 			}
 		}
-		
 		setAndNotifyChanged(new Pair<TarotAction, Boolean>(TarotAction.PETIT_SEC_DETECTED, petitSec));
 	}
 
