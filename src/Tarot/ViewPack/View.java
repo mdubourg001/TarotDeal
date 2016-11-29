@@ -46,9 +46,9 @@ import javafx.util.Duration;
 import javafx.util.Pair;
 
 public class View implements Observer {
-    private static final double DISTRIBUTION_GROUP_ROTATE = -22.5; //CAMERA ROTATION MIN -45 MAX 0
-    private static final double DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE + Model.SCREEN_H/30;
-    private static final double DISTRIBUTION_GROUP_SHIFT_Z = 0; //DEZOOM MIN 0 MAX 500
+    private static final double DISTRIBUTION_GROUP_ROTATE = -0; //CAMERA ROTATION MIN -30 MAX 0
+    private static final double DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
+    private static final double DISTRIBUTION_GROUP_SHIFT_Z = 0; //DEZOOM MIN 0 MAX 400
 
     private static final double DISTRIBUTION_AREA_SHIFT = Model.SCREEN_W/2;
 
@@ -105,8 +105,6 @@ public class View implements Observer {
         scene.setCamera(camera);
         camera.setRotationAxis(new Point3D(1, 0, 0));
         distributionGroup.setRotationAxis(new Point3D(1, 0, 0));
-
-        ground.setTranslateY(-Model.SCREEN_H/30);
 
         ground.setScaleX(1 + DISTRIBUTION_GROUP_SHIFT_Z/1330 - DISTRIBUTION_GROUP_ROTATE/100);
         ground.setScaleY(1 + DISTRIBUTION_GROUP_SHIFT_Z/1330 - DISTRIBUTION_GROUP_ROTATE/100);
