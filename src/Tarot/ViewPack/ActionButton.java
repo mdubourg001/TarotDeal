@@ -20,7 +20,7 @@ public class ActionButton extends Button {
 
     private static Font font = new Font(BUTTON_W/8.75);
 
-    public PlayerAction action;
+    private PlayerAction action;
 
     ActionButton(String name, double x, double y, double z, PlayerAction action){
         super(name);
@@ -45,5 +45,9 @@ public class ActionButton extends Button {
             setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(50), null)));
             setTextFill(Color.WHITE);
         }
+    }
+    
+    public PlayerAction getAction(){
+    	return action;
     }
 }

@@ -2,7 +2,6 @@ package Tarot.ModelPack;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,7 +21,6 @@ public class Model extends Observable {
 	public static final int LAST_TRUMP = 21;
 	
 	public static final int NB_CARDS = 78;
-	public static final int NB_CARDS_PLAYER = 18;
 	public static final int CHIEN_SIZE = 6;
 	
 	private static final int NB_PLAYERS = 4;
@@ -37,20 +35,22 @@ public class Model extends Observable {
 	public static final int CHIEN_CARD_Y = DECK_Y + CardModel.CARD_H + DIST_CARD_Y_DIFF;
 
 	public static final int DIST_CARD_X_START = (int)(SCREEN_W / 2.5) - (9 * CardModel.CARD_W + 8 * DIST_CARD_X_DIFF) / 2;
-	public static final int DIST_CARD_Y1 = CHIEN_CARD_Y + CardModel.CARD_H + DIST_CARD_Y_DIFF;
-	public static final int DIST_CARD_Y2 = DIST_CARD_Y1 + CardModel.CARD_H + DIST_CARD_Y_DIFF;
-	
+	public static final int DIST_CARD_Y = CHIEN_CARD_Y + CardModel.CARD_H + DIST_CARD_Y_DIFF;
 
 	private static final double PLAYER_3_Y = -SCREEN_W/2.4;
-	private static final double PLAYERS_2_4_X_SHIFT = SCREEN_H/1.8;
-	private static final int PLAYERS_2_4_Y1 = -200;
-	private static final int PLAYERS_2_4_Y2 = 0;
-	private static final int PLAYERS_2_4_Y3 = 200;
+	private static final double PLAYER_3_X_SHIFT = 200;
+	
+	private static final double PLAYERS_2_4_X = SCREEN_H/1.8;
+	private static final int PLAYERS_2_4_SHIFT_Y = 200;
 	
 	Map<String, ArrayList<CardModel>> gameDecks = new HashMap<String, ArrayList<CardModel>>();
-	ArrayList<ArrayList<CardModel>> playersDecks = new ArrayList<ArrayList<CardModel>>();
 	
-	Point2D[][] playerCardsPositions = new Point2D[NB_PLAYERS][NB_CARDS_PLAYER];
+	Player[] players = new Player[]{
+			new Player(DIST_CARD_X_START, DIST_CARD_Y, CardModel.CARD_W + DIST_CARD_X_DIFF, CardModel.CARD_H + DIST_CARD_Y_DIFF, true),
+			new Player(Model.SCREEN_W + PLAYERS_2_4_X, DECK_Y, 0, PLAYERS_2_4_SHIFT_Y),
+			new Player(DECK_X, PLAYER_3_Y, PLAYER_3_X_SHIFT, 0),
+			new Player(-PLAYERS_2_4_X, DECK_Y, 0, PLAYERS_2_4_SHIFT_Y)
+	};
 	
 	private int distributedCards = 0;
 
@@ -62,12 +62,7 @@ public class Model extends Observable {
 		gameDecks.put("chien", new ArrayList<CardModel>());
 		gameDecks.put("gap", new ArrayList<CardModel>());
 		
-		for(int i=0; i<NB_PLAYERS; i++){
-			playersDecks.add(new ArrayList<CardModel>());
-		}
-		
 		loadCards();
-		loadPlayersCardsPositions();
 	}
 
 	public ArrayList<CardModel> getJeu() {
@@ -79,7 +74,7 @@ public class Model extends Observable {
 	}
 	
 	public ArrayList<CardModel> getMyCards() {
-		return playersDecks.get(0);
+		return players[0].getDeck();
 	}
 	
 	private void setAndNotifyChanged(Object arg){
@@ -147,7 +142,7 @@ public class Model extends Observable {
 	private boolean ungableTrumps = false;
 	private boolean ungableTrumps(){
 		int nbColoredCard = 0;
-		for(CardModel card : playersDecks.get(0)){
+		for(CardModel card : players[0].getDeck()){
 			if(!card.getName().contains("Trump")){
 				nbColoredCard++;
 			}
@@ -156,62 +151,6 @@ public class Model extends Observable {
 			}
 		}
 		return false;
-	}
-
-	private void loadPlayersCardsPositions(){
-		Point2D[] positions = new Point2D[NB_PLAYERS];
-		
-		for(int i = 0; i<NB_CARDS_PLAYER; i++){
-			playerCardsPositions[0][i] = updateMyDistCardPosition(i);
-			playerCardsPositions[1][i] = updatePlayer1CardsPositions(i);
-			playerCardsPositions[2][i] = updatePlayer2CardsPositions(i);
-			playerCardsPositions[3][i] = updatePlayer3CardsPositions(i);
-		}
-	}
-	
-	private Point2D updateMyDistCardPosition(int index){
-		double x,y;
-		x = DIST_CARD_X_START + (CardModel.CARD_W + DIST_CARD_X_DIFF)*(index%9);
-		if(index < 9){
-			y = DIST_CARD_Y1;
-		}
-		else{
-			y = DIST_CARD_Y2;
-		}
-		return new Point2D.Double(x, y);
-	}
-	
-	private Point2D updatePlayer1CardsPositions(int index){
-		switch(index%3){
-		case 0:
-			return new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y1);
-		case 1:
-			return new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y2);
-		default:
-			return new Point2D.Double(PLAYERS_2_4_X_SHIFT+SCREEN_W, PLAYERS_2_4_Y3);
-		}
-	}
-	
-	private Point2D updatePlayer2CardsPositions(int index){
-		switch(index%3){
-		case 0:
-			return new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2-(CardModel.CARD_W + DIST_CARD_X_DIFF), PLAYER_3_Y);
-		case 1:
-			return new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2, PLAYER_3_Y);
-		default:
-			return new Point2D.Double((SCREEN_W-CardModel.CARD_W)/2+(CardModel.CARD_W + DIST_CARD_X_DIFF), PLAYER_3_Y);
-		}
-	}
-	
-	private Point2D updatePlayer3CardsPositions(int index){
-		switch(index%3){
-		case 0:
-			return new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y1);
-		case 1:
-			return new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y2);
-		default:
-			return new Point2D.Double(-PLAYERS_2_4_X_SHIFT-CardModel.CARD_W, PLAYERS_2_4_Y3);
-		}
 	}
 	
 	public static final double DECK_Z_TOP = -76;
@@ -292,27 +231,27 @@ public class Model extends Observable {
 	
 	private void move3CardsToPlayer(int player, int[] order){
 		for(int i=0; i<3; i++){
-			playersDecks.get(player).add(gameDecks.get("jeu").get(order[i]));
-			playersDecks.get(player).get(playersDecks.get(player).size()-1).moveTo(playerCardsPositions[player][playersDecks.get(player).size()-1].getX(), 
-																			playerCardsPositions[player][playersDecks.get(player).size()-1].getY(), 1);
+			players[player].getDeck().add(gameDecks.get("jeu").get(order[i]));
+			players[player].getDeck().get(players[player].getDeck().size()-1).moveTo(players[player].getLastCardPosition().getX(), 
+					players[player].getLastCardPosition().getY(), 1);
 			gameDecks.get("jeu").remove(order[i]);
 		}
 		changePlayer();
 		
 		setAndNotifyChanged(new Pair<TarotAction, Pair<Boolean, CardModel[]>>(TarotAction.CARDS_DISTRIBUTED,
 				new Pair<Boolean, CardModel[]>(gameDecks.get("jeu").isEmpty(), 
-						new CardModel[]{playersDecks.get(player).get(playersDecks.get(player).size()-3), 
-								playersDecks.get(player).get(playersDecks.get(player).size()-2), 
-								playersDecks.get(player).get(playersDecks.get(player).size()-1)})));
+						new CardModel[]{players[player].getDeck().get(players[player].getDeck().size()-3), 
+								players[player].getDeck().get(players[player].getDeck().size()-2), 
+								players[player].getDeck().get(players[player].getDeck().size()-1)})));
 	}
 	
 	//Avoid cards to pass thought each others
 	private int[] chooseMy3CardsOrder(){
 		int[] order = new int[3];
-		if(playersDecks.get(0).size()%9 == 0){
+		if(players[0].getDeck().size()%9 == 0){
 			order[0] = 0; order[1] = 0; order[2] = 0;
 		}
-		else if(playersDecks.get(0).size()%9 == 3){
+		else if(players[0].getDeck().size()%9 == 3){
 			order[0] = 0; order[1] = 1; order[2] = 0;
 		}
 		else{
@@ -344,7 +283,7 @@ public class Model extends Observable {
 	public void revertPlayer() {
 		ungableTrumps = ungableTrumps();
 		
-		for(CardModel card : playersDecks.get(0)){
+		for(CardModel card : players[0].getDeck()){
 			card.setOnFront(true);
 		}
 		
@@ -352,13 +291,13 @@ public class Model extends Observable {
 	}
 	
 	public void organizePlayerCards(){
-		Collections.sort(playersDecks.get(0));
+		Collections.sort(players[0].getDeck());
 		
 		double newZ = 1.0;
-		for(int i = 0; i<NB_CARDS_PLAYER; i++){
-			playersDecks.get(0).get(i).setX(playerCardsPositions[0][i].getX());
-			playersDecks.get(0).get(i).setY(playerCardsPositions[0][i].getY());
-			playersDecks.get(0).get(i).setZ(newZ);
+		for(int i = 0; i<Player.NB_CARDS; i++){
+			players[0].getDeck().get(i).setX(players[0].getCardPosition(i).getX());
+			players[0].getDeck().get(i).setY(players[0].getCardPosition(i).getY());
+			players[0].getDeck().get(i).setZ(newZ);
 			newZ -= 0.01;
 		}
 		
@@ -368,8 +307,8 @@ public class Model extends Observable {
 	public void detectPetitSec(){
 		Boolean petitSec = false;
 		Integer playerNb = 1;
-		for(ArrayList<CardModel> deck : playersDecks){
-			for(CardModel card : deck){
+		for(Player p : players){
+			for(CardModel card : p.getDeck()){
 				if(card.getName().contentEquals("Trump1")){
 					petitSec = true;
 				}
@@ -409,7 +348,7 @@ public class Model extends Observable {
 	
 	public void addCardToGap(CardModel card){
 		gameDecks.get("gap").add(card);
-		playersDecks.get(0).remove(card);
+		players[0].getDeck().remove(card);
 
 		if(nbCardInGap % 2 == 0){
 			card.setX(GAP_X1);
@@ -429,7 +368,7 @@ public class Model extends Observable {
 	
 	private void finalizeGap(){
 		while(gameDecks.get("chien").size() > 0){
-			playersDecks.get(0).add(gameDecks.get("chien").get(0));
+			players[0].getDeck().add(gameDecks.get("chien").get(0));
 			gameDecks.get("chien").remove(0);
 		}
 		
@@ -452,8 +391,8 @@ public class Model extends Observable {
 		for(ArrayList<CardModel> deck : gameDecks.values()){
 			deck.clear();
 		}
-		for(ArrayList<CardModel> deck : playersDecks){
-			deck.clear();
+		for(Player p : players){
+			p.getDeck().clear();
 		}
 		
 		CardModel.reinitOrder();

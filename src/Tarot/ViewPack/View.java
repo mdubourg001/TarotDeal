@@ -9,6 +9,7 @@ import java.util.Observer;
 import Tarot.*;
 import Tarot.ModelPack.CardModel;
 import Tarot.ModelPack.Model;
+import Tarot.ModelPack.Player;
 import Tarot.ModelPack.PlayerAction;
 import Tarot.ModelPack.TarotAction;
 import javafx.animation.KeyFrame;
@@ -46,7 +47,7 @@ import javafx.util.Duration;
 import javafx.util.Pair;
 
 public class View implements Observer {
-    private static final double DISTRIBUTION_GROUP_ROTATE = -0; //CAMERA ROTATION MIN -30 MAX 0
+    private static final double DISTRIBUTION_GROUP_ROTATE = -30; //CAMERA ROTATION MIN -30 MAX 0
     private static final double DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
     private static final double DISTRIBUTION_GROUP_SHIFT_Z = 0; //DEZOOM MIN 0 MAX 400
 
@@ -82,6 +83,24 @@ public class View implements Observer {
 
     private Rectangle distributionArea = new Rectangle(-DISTRIBUTION_AREA_SHIFT, -DISTRIBUTION_AREA_SHIFT, Model.SCREEN_W+2*DISTRIBUTION_AREA_SHIFT, Model.SCREEN_H + 2*DISTRIBUTION_AREA_SHIFT);
 
+    private Map<String, ActionButton> actionButtons = new HashMap<String, ActionButton>(){{
+        put("passe", new ActionButton("Passe",
+                ActionButton.BUTTON_X_START, ActionButton.BUTTON_Y, -300,
+                PlayerAction.PASSE));
+        put("prise", new ActionButton("Prise",
+                ActionButton.BUTTON_X_START + (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.PRISE));
+        put("garde", new ActionButton("Garde",
+                ActionButton.BUTTON_X_START + 2 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.GARDE));
+        put("gardeSans", new ActionButton("Garde\nsans chien",
+                ActionButton.BUTTON_X_START + 3 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.GARDE_SANS));
+        put("gardeContre", new ActionButton("Garde contre\nle chien",
+                ActionButton.BUTTON_X_START + 4 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.GARDE_CONTRE));
+    }};
+    
     public View(Controller controller) {
         this.controller = controller;
         this.model = controller.getModel();
@@ -112,7 +131,7 @@ public class View implements Observer {
         distributionArea.setTranslateZ(3);
 
         for(ActionButton b : actionButtons.values()){
-            b.setOnMouseClicked(mouseEvent -> controller.chooseAction(b.action));
+            b.setOnMouseClicked(mouseEvent -> controller.chooseAction(b.getAction()));
         }
     }
 
@@ -310,7 +329,7 @@ public class View implements Observer {
                         ((Pair<TarotAction, CardModel>) arg1).getValue(), null);
                 break;
             case PLAYER_REVERTED:
-                revertDeck(model.getMyCards(), Model.NB_CARDS_PLAYER, doNexTActionEvent());
+                revertDeck(model.getMyCards(), Player.NB_CARDS, doNexTActionEvent());
                 break;
             case PLAYER_ORGANIZED:
                 updatePlayerCardsOrganized();
@@ -342,45 +361,24 @@ public class View implements Observer {
             cardViews.put(card.getName(), new CardView(card));
             distributionGroup.getChildren().add(cardViews.get(card.getName()).getView());
         }
-        initLights();
+        addLights();
         controller.doNextAction();
     }
     
-    private static final double LAMP_START_Z = -600;
-    private static final double LAMP_SHIFT_Z = 300;
-    private static final double LAMP_SHINING_SHIFT_Z = 350;
-    private static final double LAMP_SHINING_SHIFT_COEF_X = 1;
-    private void initLights(){
-        PointLight moonLight = createPointLight(Color.DARKBLUE, new Point3D(0, 0, -1500));
-        PointLight lampLight = createLampLight(Color.LIGHTBLUE,
-                new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_START_Z + LAMP_SHIFT_Z), LAMP_SHINING_SHIFT_COEF_X*LAMP_SHIFT_Z/2);
-        PointLight lampLightShining = createLampLight(Color.WHITE,
-                new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_START_Z + LAMP_SHINING_SHIFT_Z), LAMP_SHINING_SHIFT_COEF_X*LAMP_SHINING_SHIFT_Z/2);
+    public static final double MOON_LIGHT_Z = -1500;
+    public static final double LAMPS_HOOK_Z = -600;
+    public static final double LAMP_Z = -350;
+    public static final double LAMP_SHINING_Z = -300;
+    private static final double LAMPS_SPEED = 1;
+    
+    private void addLights(){
+        PointLight moonLight = new EnvironmentLight(Color.DARKBLUE, new Point3D(0, 0, MOON_LIGHT_Z));
+        PointLight lampLight = new LampLight(Color.LIGHTBLUE, 
+        		new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_Z), LAMPS_HOOK_Z, LAMPS_SPEED);
+        PointLight lampLightShining = new LampLight(Color.WHITE, 
+        		new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_SHINING_Z), LAMPS_HOOK_Z, LAMPS_SPEED);
 
         distributionGroup.getChildren().addAll(moonLight, lampLight, lampLightShining);
-    }
-
-    private PointLight createPointLight(Color c, Point3D pos){
-        PointLight point = new PointLight(c);
-        point.setTranslateX(pos.getX());
-        point.setTranslateY(pos.getY());
-        point.setTranslateZ(pos.getZ());
-        return point;
-    }
-
-    private static final double LAMP_ROTATE_DURATION = 3;
-
-    private PointLight createLampLight(Color c, Point3D pos, double pivot){
-        PointLight lamp = createPointLight(c, pos);
-        lamp.getTransforms().add(new Rotate(180, pivot, 0, 0, Rotate.Z_AXIS));
-        Timeline timeLine = new Timeline();
-
-        KeyFrame keyFrame = new KeyFrame(Duration.seconds(LAMP_ROTATE_DURATION), new KeyValue(lamp.rotateProperty(), 360));
-
-        timeLine.setCycleCount(Timeline.INDEFINITE);
-        timeLine.getKeyFrames().addAll(keyFrame);
-        timeLine.play();
-        return lamp;
     }
 
     public void updateDeckCut(Integer indexHalf, int iteration) {
@@ -657,24 +655,6 @@ public class View implements Observer {
     		unrealElementsGroup.getChildren().add(b);
     	}
     }
-
-    private Map<String, ActionButton> actionButtons = new HashMap<String, ActionButton>(){{
-        put("passe", new ActionButton("Passe",
-                ActionButton.BUTTON_X_START, ActionButton.BUTTON_Y, -300,
-                PlayerAction.PASSE));
-        put("prise", new ActionButton("Prise",
-                ActionButton.BUTTON_X_START + (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
-                PlayerAction.PRISE));
-        put("garde", new ActionButton("Garde",
-                ActionButton.BUTTON_X_START + 2 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
-                PlayerAction.GARDE));
-        put("gardeSans", new ActionButton("Garde\nsans chien",
-                ActionButton.BUTTON_X_START + 3 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
-                PlayerAction.GARDE_SANS));
-        put("gardeContre", new ActionButton("Garde contre\nle chien",
-                ActionButton.BUTTON_X_START + 4 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
-                PlayerAction.GARDE_CONTRE));
-    }};
 
     public static final int ECART_ZONE_X = Model.GAP_X1 - 40;
     public static final int ECART_ZONE_Y = Model.GAP_Y_START - 40;
