@@ -69,13 +69,11 @@ public class View implements Observer {
     private ImageView menuTitle = new ImageView("file:./res/title.png");
     private ImageView settingsBackground = new ImageView("file:./res/settings_background.png");
 
-    private Button playButton;
-    private ImageView playImage = new ImageView("file:./res/play.png");
-    private Button settingsButton;
-    private ImageView settingsImage = new ImageView("file:./res/settings.png");
-    private Button quitButton;
-    private ImageView quitImage = new ImageView("file:./res/quit.png");
-    private Font menuButtonFont = new Font("Martyric_PersonalUse.ttf", 40);
+    private Map<String, ImageButton> imageButtons = new HashMap<String, ImageButton>() {{
+        put("play", new ImageButton("file:./res/play.png", Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2, Model.SCREEN_W / 2));
+        put("settings", new ImageButton("file:./res/settings.png", Model.SCREEN_W / 2 - (BUTTON_W + Model.SCREEN_W / 19.2) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20));
+        put("quit", new ImageButton("file:./res/quit.png",  Model.SCREEN_W / 2 - (BUTTON_W + Model.SCREEN_W / 19.2) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.6));
+    }};
 
     private ImageView cardsBackImage = new ImageView("file:./res/cardsback.png");
     private ImageView soundImage = new ImageView("file:./res/sound.png");
@@ -86,8 +84,15 @@ public class View implements Observer {
         this.controller = controller;
         this.model = controller.getModel();
         
-        root.getChildren().add(distributionGroup);
-        root.getChildren().add(unrealElementsGroup);
+        root.getChildren().add(menuGroup);
+        initMenuBackground();
+        initMenuButtons();
+
+        initSettingsBackground();
+        initSettingsButtons();
+
+        initGameView();
+        initActionButtons();
 
         distributionGroup.setDepthTest(DepthTest.ENABLE);
 
@@ -152,16 +157,13 @@ public class View implements Observer {
     }
 
     public void displayMenu() {
-        distributionGroup.getChildren().clear();
-        initMenuBackground();
-        initMenuButtons();
+        root.getChildren().clear();
+        root.getChildren().add(menuGroup);
     }
 
     public void displaySettings() {
-        distributionGroup.getChildren().clear();
-        initSettingsBackground();
-        initSettingsButtons();
-
+        root.getChildren().clear();
+        root.getChildren().add(settingsGroup);
     }
 
     public EventHandler<ActionEvent> doNexTActionEvent() {
@@ -172,8 +174,8 @@ public class View implements Observer {
         };
     }
     private void initMenuBackground() {
-        distributionGroup.getChildren().add(menuBackground);
-        distributionGroup.getChildren().add(menuTitle);
+        menuGroup.getChildren().add(menuBackground);
+        menuGroup.getChildren().add(menuTitle);
 
         double ratioBackImage = Model.SCREEN_H / menuBackground.getImage().getHeight();
         menuBackground.setScaleY(ratioBackImage);
@@ -187,9 +189,9 @@ public class View implements Observer {
     }
 
     private void initSettingsBackground() {
-        distributionGroup.getChildren().add(settingsBackground);
-        distributionGroup.getChildren().add(cardsBackImage);
-        distributionGroup.getChildren().add(soundImage);
+        settingsGroup.getChildren().add(settingsBackground);
+        settingsGroup.getChildren().add(cardsBackImage);
+        settingsGroup.getChildren().add(soundImage);
 
         cardsBackImage.setFitWidth(Model.SCREEN_W / 4);
         cardsBackImage.setFitHeight(Model.SCREEN_H / 4);
@@ -203,111 +205,68 @@ public class View implements Observer {
 
     }
 
-    private Button menuButton(String name, double x, double y) {
-        Button button = new Button(name);
-        button.setFont(menuButtonFont);
-        button.setLayoutX(x);
-        button.setLayoutY(y);
-        button.setTextAlignment(TextAlignment.CENTER);
-        button.setPrefSize(BUTTON_W + 100, BUTTON_H);
-        button.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, new CornerRadii(50), null)));
-        button.setTextFill(Color.WHITE);
-        return button;
-    }
-
     private void initMenuButtons() {
-        playButton = menuButton("", Model.SCREEN_W / 2 - (BUTTON_W + 100) / 2, Model.SCREEN_H / 3);
-        settingsButton = menuButton("", Model.SCREEN_W / 2 - (BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20);
-        quitButton = menuButton("", Model.SCREEN_W / 2 - (BUTTON_W + 100) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.6);
 
-        playImage.setFitWidth(Model.SCREEN_W / 5);
-        playImage.setFitHeight(Model.SCREEN_H / 5);
-        playImage.setTranslateX(Model.SCREEN_W / 2 - playImage.getImage().getWidth() / 4);
-        playImage.setTranslateY(Model.SCREEN_H / 4 + playImage.getImage().getHeight() / 5);
+        imageButtons.get("play").setImageSize(Model.SCREEN_W / 5, Model.SCREEN_H / 5);
+        imageButtons.get("play").setPosition(Model.SCREEN_W / 2 - BUTTON_W / 2.5,
+                Model.SCREEN_H / 4 + ImageButton.BUTTON_H / 2);
 
-        settingsImage.setFitWidth(Model.SCREEN_W / 4);
-        settingsImage.setFitHeight(Model.SCREEN_H / 4);
-        settingsImage.setTranslateX(Model.SCREEN_W / 2 - settingsImage.getImage().getWidth() / 4);
-        settingsImage.setTranslateY(Model.SCREEN_H / 2);
+        imageButtons.get("settings").setImageSize(Model.SCREEN_W / 4, Model.SCREEN_H / 4);
+        imageButtons.get("settings").setPosition(Model.SCREEN_W / 2 - BUTTON_W / 2,
+                Model.SCREEN_H / 2 + ImageButton.BUTTON_H / 3);
 
-        quitImage.setFitWidth(Model.SCREEN_W / 5);
-        quitImage.setFitHeight(Model.SCREEN_H / 5);
-        quitImage.setTranslateX(Model.SCREEN_W / 2 - quitImage.getImage().getWidth() / 3.5);
-        quitImage.setTranslateY(Model.SCREEN_H / 2 + Model.SCREEN_H / 4);
+        imageButtons.get("quit").setImageSize(Model.SCREEN_W / 5, Model.SCREEN_H / 5);
+        imageButtons.get("quit").setPosition(Model.SCREEN_W / 2 - BUTTON_W / 2,
+                Model.SCREEN_H / 2 + ImageButton.BUTTON_H * 1.7);
 
-        playButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        imageButtons.get("play").setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                initGameView();
+                displayView();
+                controller.doNextAction();
             }
         });
-        playButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+        imageButtons.get("play").setOnMouseEntered(new EventHandler<MouseEvent>() {
             @Override
-            public void handle(MouseEvent event) {
-                playImage.setTranslateZ(-400);
-                playButton.setTranslateZ(-401);
-                playButton.setTranslateY(30);
-            }
+            public void handle(MouseEvent event) { imageButtons.get("play").inflate(30); }
         });
-        playButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+        imageButtons.get("play").setOnMouseExited(new EventHandler<MouseEvent>() {
             @Override
-            public void handle(MouseEvent event) {
-                playImage.setTranslateZ(-5);
-                playButton.setTranslateZ(-6);
-                playButton.setTranslateY(0);
-            }
+            public void handle(MouseEvent event) { imageButtons.get("play").deflate(-30); }
         });
-        settingsButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        imageButtons.get("settings").setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) { displaySettings(); }
         });
-        settingsButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+        imageButtons.get("settings").setOnMouseEntered(new EventHandler<MouseEvent>() {
             @Override
-            public void handle(MouseEvent event) {
-                settingsImage.setTranslateZ(-400);
-                settingsButton.setTranslateZ(-401);
-                settingsButton.setTranslateY(-30);
-                settingsImage.setTranslateY(Model.SCREEN_H / 2 - 20);
-            }
+            public void handle(MouseEvent event) { imageButtons.get("settings").inflate(-30); }
         });
-        settingsButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+        imageButtons.get("settings").setOnMouseExited(new EventHandler<MouseEvent>() {
             @Override
-            public void handle(MouseEvent event) {
-                settingsImage.setTranslateZ(-5);
-                settingsButton.setTranslateZ(-6);
-                settingsButton.setTranslateY(0);
-                settingsImage.setTranslateY(Model.SCREEN_H / 2);
-            }
+            public void handle(MouseEvent event) { imageButtons.get("settings").deflate(30); }
         });
-        quitButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        imageButtons.get("quit").setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) { System.exit(0); }
         });
-        quitButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+        imageButtons.get("quit").setOnMouseEntered(new EventHandler<MouseEvent>() {
             @Override
-            public void handle(MouseEvent event) {
-                quitImage.setTranslateZ(-400);
-                quitButton.setTranslateZ(-401);
-                quitButton.setTranslateY(-85);
-                quitImage.setTranslateY(Model.SCREEN_H / 2 + Model.SCREEN_H / 4 - 85);
-            }
+            public void handle(MouseEvent event) { imageButtons.get("quit").inflate(-85); }
         });
-       quitButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+        imageButtons.get("quit").setOnMouseExited(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                quitImage.setTranslateZ(0);
-                quitButton.setTranslateZ(0);
-                quitButton.setTranslateY(0);
-                quitImage.setTranslateY(Model.SCREEN_H / 2 + Model.SCREEN_H / 4);
+                imageButtons.get("quit").deflate(85);
             }
         });
 
-        distributionGroup.getChildren().add(playImage);
-        distributionGroup.getChildren().add(settingsImage);
-        distributionGroup.getChildren().add(quitImage);
-        distributionGroup.getChildren().add(playButton);
-        distributionGroup.getChildren().add(settingsButton);
-        distributionGroup.getChildren().add(quitButton);
+        menuGroup.getChildren().add(imageButtons.get("play"));
+        menuGroup.getChildren().add(imageButtons.get("settings"));
+        menuGroup.getChildren().add(imageButtons.get("quit"));
+        menuGroup.getChildren().add(imageButtons.get("play").getImage());
+        menuGroup.getChildren().add(imageButtons.get("settings").getImage());
+        menuGroup.getChildren().add(imageButtons.get("quit").getImage());
     }
 
     private void initSettingsButtons() {
@@ -315,13 +274,17 @@ public class View implements Observer {
     }
 
     private void initGameView() { //TODO
-        distributionGroup.getChildren().clear();
         distributionGroup.setRotate(DISTRIBUTION_GROUP_ROTATE);
         distributionGroup.setTranslateY(DISTRIBUTION_GROUP_SHIFT_Y);
         distributionGroup.setTranslateZ(DISTRIBUTION_GROUP_SHIFT_Z);
         distributionGroup.getChildren().add(distributionArea);
         distributionGroup.getChildren().add(ground);
-        controller.doNextAction();
+    }
+
+    private void displayView(){
+        root.getChildren().clear();
+        root.getChildren().add(distributionGroup);
+        root.getChildren().add(unrealElementsGroup);
     }
 
     @SuppressWarnings("unchecked")
@@ -627,7 +590,7 @@ public class View implements Observer {
         return intersections;
     }
     
-    private final static double REVERT_CARD_WAIT_COEF = 0.05; //TODO Remetre à 0.1
+    private final static double REVERT_CARD_WAIT_COEF = 0.05; //TODO Remetre ï¿½ 0.1
     public void revertDeck(ArrayList<CardModel> deck, int size, EventHandler<ActionEvent> onFinished) {
         int i = 1;
         for (CardModel card : deck) {
