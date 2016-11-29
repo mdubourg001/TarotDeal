@@ -414,15 +414,15 @@ public class View implements Observer {
         }
     }
 
-    private static final double CUT_SPEED = 0.2;
+    private static final double CUT_TIME = 0.4;
 
-    private void moveCutDeck(double xShiftValue, boolean trueZ, Integer indexHalf, EventHandler<ActionEvent> onFinished) {
+    private void moveCutDeck(double xShiftValue, boolean trueZ, Integer indexCut, EventHandler<ActionEvent> onFinished) {
         CardModel card;
         double xShift;
         double z;
         for (int i = 0; i < model.getJeu().size(); i++) {
             card = model.getJeu().get(i);
-            if (i < indexHalf) {
+            if (i < Model.NB_CARDS - indexCut) {
                 xShift = -xShiftValue;
             } else {
                 xShift = xShiftValue;
@@ -435,9 +435,9 @@ public class View implements Observer {
             }
 
             if (i != model.getJeu().size() - 1) {
-                moveCard(CUT_SPEED, cardViews.get(card.getName()), card.getX() + xShift, null, z, null);
+                moveCard(CUT_TIME, cardViews.get(card.getName()), card.getX() + xShift, null, z, null);
             } else {
-                moveCard(CUT_SPEED, cardViews.get(card.getName()), card.getX() + xShift, null, z, onFinished);
+            	moveCard(CUT_TIME, cardViews.get(card.getName()), card.getX() + xShift, null, z, onFinished);
             }
         }
     }
@@ -477,19 +477,19 @@ public class View implements Observer {
         moveCard(cardView, card.getX(), card.getY(), card.getZ(), a, onFinished);
     }
     private void moveCard(CardView cardView, Double x, Double y, Double z, EventHandler<ActionEvent> onFinished) {
-        moveCard(1, cardView, x, y, z, cardView.getView().getRotate(), onFinished);
+        moveCard(cardView, x, y, z, cardView.getView().getRotate(), onFinished);
     }
     private void moveCard(CardView cardView, Double x, Double y, Double z, Double a, EventHandler<ActionEvent> onFinished) {
-        moveCard(1, cardView, x, y, z, a, onFinished);
-    }
-    private void moveCard(double speed, CardView cardView, Double x, Double y, Double z, EventHandler<ActionEvent> onFinished) {
-        moveCard(speed, cardView, x, y, z, cardView.getView().getRotate(), onFinished);
-    }
-    private void moveCard(double speed, CardView cardView, Double x, Double y, Double z, Double a, EventHandler<ActionEvent> onFinished) {
         Double time = calculTime(new double[]{calculDelta(cardView.getView().getTranslateX(), x),
         		calculDelta(cardView.getView().getTranslateY(), y),
-        		calculDelta(cardView.getView().getTranslateZ(), z)}, speed);
+        		calculDelta(cardView.getView().getTranslateZ(), z)});
 
+        moveMeshView(time, cardView.getView(), x, y, z, a, onFinished);
+    }
+    private void moveCard(double time, CardView cardView, Double x, Double y, Double z, EventHandler<ActionEvent> onFinished) {
+    	moveCard(time, cardView, x, y, z, cardView.getView().getRotate(), onFinished);
+    }
+    private void moveCard(double time, CardView cardView, Double x, Double y, Double z, Double a, EventHandler<ActionEvent> onFinished) {
         moveMeshView(time, cardView.getView(), x, y, z, a, onFinished);
     }
     private void moveMeshView(double time, MeshView view, Double x, Double y, Double z, Double a, EventHandler<ActionEvent> onFinished) {
@@ -523,18 +523,19 @@ public class View implements Observer {
         return  value;
     }
 
-    public static final double TIME_MULTIPLIER = 1000; // TODO REMETTRE A 1000
+    public static final double TIME_DIVIDER = 1000; // TODO REMETTRE A 1000
 
-    private double calculTime(double[] deltas, double speed) {
+    private double calculTime(double[] deltas) {
         double time = 0;
         for (double d : deltas) {
             time += d;
         }
-        time /= (TIME_MULTIPLIER * speed);
+        time /= TIME_DIVIDER;
         return time;
     }
 
-    // Allows the cards to wait to be outside of the deck before descending, which prevents them from passing through
+    /*Attend que les cartes soit totalement sortient du cercle forme par la diagonale du deck (jeu)
+    avant de descendre (en z). Evite que les cartes passe au travers du deck.*/
     private void moveCardFromDeck(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished2) {
         Point2D firstDest = calculFirstDest(cardView, card);
 
@@ -738,7 +739,9 @@ public class View implements Observer {
     }
 
     private void followMouse(CardView view, MouseEvent event){
-    	//Inaccurate formula which try to position cards on the mouse depending of zoom and camera rotation
+    	/*Formule inexacte qui essaye de garder la carte au niveau de la souris, lors du glisser deposer,
+    	en prenant en compte l'inclinaison de la camera et le dezoom. Ci ces 2 valeurs sont a 0 le centre
+    	de la carte est toujours au niveau de la souris.*/
         view.getView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2)
         		+ 0.0004*(event.getSceneX()-Model.SCREEN_W/2)*DISTRIBUTION_GROUP_SHIFT_Z
         		+ 0.002*(event.getSceneX()-Model.SCREEN_W/2)*(-DISTRIBUTION_GROUP_ROTATE)*(1-event.getSceneY()/(0.2*Model.SCREEN_H)));

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
+import java.util.Random;
 
 import javafx.util.Pair;
 
@@ -174,13 +175,14 @@ public class Model extends Observable {
 	}
 
 	public void cutDeck(){
-        ArrayList<CardModel> firstHalf = subDeck(gameDecks.get("jeu") ,0, NB_CARDS/2);
-        ArrayList<CardModel> secondHalf = subDeck(gameDecks.get("jeu") ,NB_CARDS/2, NB_CARDS);
+		int cutIndex = new Random().nextInt(NB_CARDS-8) + 4;
+        ArrayList<CardModel> firstHalf = subDeck(gameDecks.get("jeu") ,0, cutIndex);
+        ArrayList<CardModel> secondHalf = subDeck(gameDecks.get("jeu") ,cutIndex, NB_CARDS);
 
         gameDecks.replace("jeu", mergeDecks(secondHalf, firstHalf));
         adaptZJeu();
         
-        setAndNotifyChanged(new Pair<TarotAction, Integer>(TarotAction.DECK_CUT, NB_CARDS/2));
+        setAndNotifyChanged(new Pair<TarotAction, Integer>(TarotAction.DECK_CUT, cutIndex));
     }
 	
 	private ArrayList<CardModel> subDeck(ArrayList<CardModel> deck, int iMin, int iMax){
@@ -204,7 +206,7 @@ public class Model extends Observable {
         }
 	}
 
-	// Adapted to avoid graphics bugs, cards which pass through each others
+	//Adapter pour eviter des bugs graphiques dus a des cartes qui se croisent
 	public void distributeCards(){
 		switch(distributedCards){
 		case 3:
@@ -234,6 +236,9 @@ public class Model extends Observable {
 		}
 	}
 	
+	/*Le parametre order fait en sorte que, plus une carte aura de distance a parcourir apres 
+	distribution, plus elle sera traitee tot. Cela evite que les cartes se croisent lors
+	d'un déplacement continue. Ainsi la Vue n'a pas a gerer ce bug graphique.*/
 	private void move3CardsToPlayer(int player, int[] order){
 		for(int i=0; i<3; i++){
 			players[player].getDeck().add(gameDecks.get("jeu").get(order[i]));
@@ -250,16 +255,16 @@ public class Model extends Observable {
 								players[player].getDeck().get(players[player].getDeck().size()-1)})));
 	}
 	
-	//Avoid cards to pass thought each others
+	//Expliquer avant "move3CardsToPlayer(int player, int[] order){...}".
 	private int[] chooseMy3CardsOrder(){
 		int[] order = new int[3];
-		if(players[0].getDeck().size()%9 == 0){
+		if(players[0].getDeck().size()%9 == 0){//Les cartes sont a gauche du Jeu.
 			order[0] = 0; order[1] = 0; order[2] = 0;
 		}
-		else if(players[0].getDeck().size()%9 == 3){
+		else if(players[0].getDeck().size()%9 == 3){//1 carte a gauche, 1 a droite et 1 au niveau du Jeu.
 			order[0] = 0; order[1] = 1; order[2] = 0;
 		}
-		else{
+		else{//Les cartes sont a droite du Jeu.
 			order[0] = 2; order[1] = 1; order[2] = 0;
 		}
 		return order;
@@ -298,6 +303,8 @@ public class Model extends Observable {
 	public void organizePlayerCards(){
 		Collections.sort(players[0].getDeck());
 		
+		/*Modifier tres legerement le z d'une carte a l'autre evite les croisements de cartes si elles
+		sont bougees, d'abord en z, puis en x et y. La Vue peut alors gerer facilement ce bug graphique.*/
 		double newZ = 1.0;
 		for(int i = 0; i<Player.NB_CARDS; i++){
 			players[0].getDeck().get(i).setX(players[0].getCardPosition(i).getX());
