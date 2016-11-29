@@ -1,5 +1,7 @@
 package Tarot;
 
+import Tarot.ModelPack.Model;
+import Tarot.ViewPack.View;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
@@ -27,14 +29,5 @@ public class Main extends Application{
 		stage.show();
 		
 		view.displayMenu();
-	}
-	
-	public void nouvelleDonne(){
-		model = new Model();
-		controller = new Controller(model);
-		view = new View(controller);
-		model.addObserver(view);
-		
-		controller.doNextAction();
 	}
 }

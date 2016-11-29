@@ -1,4 +1,4 @@
-package Tarot;
+package Tarot.ModelPack;
 
 public enum PlayerAction {
 	PASSE,

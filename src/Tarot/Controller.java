@@ -1,5 +1,9 @@
 package Tarot;
 
+import Tarot.ModelPack.CardModel;
+import Tarot.ModelPack.Model;
+import Tarot.ModelPack.PlayerAction;
+
 public class Controller {
     private Model model;
 

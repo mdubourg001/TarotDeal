@@ -1,5 +1,6 @@
-package Tarot;
+package Tarot.ViewPack;
 
+import Tarot.ModelPack.Model;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -18,7 +19,7 @@ public class ImageButton extends Button{
     private ImageView image = null;
 
     public ImageButton(String path, double x, double y) {
-        super("");
+        super();
         image = new ImageView(path);
         this.setPrefSize(BUTTON_W, BUTTON_H);
         this.setTranslateX(0);

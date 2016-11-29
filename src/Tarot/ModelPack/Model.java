@@ -1,4 +1,4 @@
-package Tarot;
+package Tarot.ModelPack;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -280,7 +280,7 @@ public class Model extends Observable {
 		
 		switch(currentPlayer){
 		case 0 :
-			move3CardsToPlayer(currentPlayer, choose3CardsOrder());
+			move3CardsToPlayer(currentPlayer, chooseMy3CardsOrder());
 			break;
 		case 1 :
 		case 2 :
@@ -307,7 +307,7 @@ public class Model extends Observable {
 	}
 	
 	//Avoid cards to pass thought each others
-	private int[] choose3CardsOrder(){
+	private int[] chooseMy3CardsOrder(){
 		int[] order = new int[3];
 		if(playersDecks.get(0).size()%9 == 0){
 			order[0] = 0; order[1] = 0; order[2] = 0;

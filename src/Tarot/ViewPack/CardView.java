@@ -1,5 +1,6 @@
-package Tarot;
+package Tarot.ViewPack;
 
+import Tarot.ModelPack.CardModel;
 import javafx.geometry.Point3D;
 import javafx.scene.image.Image;
 import javafx.scene.paint.PhongMaterial;

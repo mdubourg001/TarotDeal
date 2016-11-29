@@ -1,4 +1,4 @@
-package Tarot;
+package Tarot.ViewPack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,6 +6,11 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import Tarot.*;
+import Tarot.ModelPack.CardModel;
+import Tarot.ModelPack.Model;
+import Tarot.ModelPack.PlayerAction;
+import Tarot.ModelPack.TarotAction;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -28,9 +33,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
@@ -71,8 +73,8 @@ public class View implements Observer {
 
     private Map<String, ImageButton> imageButtons = new HashMap<String, ImageButton>() {{
         put("play", new ImageButton("file:./res/play.png", Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2, Model.SCREEN_W / 2));
-        put("settings", new ImageButton("file:./res/settings.png", Model.SCREEN_W / 2 - (BUTTON_W + Model.SCREEN_W / 19.2) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20));
-        put("quit", new ImageButton("file:./res/quit.png",  Model.SCREEN_W / 2 - (BUTTON_W + Model.SCREEN_W / 19.2) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.6));
+        put("settings", new ImageButton("file:./res/settings.png", Model.SCREEN_W / 2 - (ImageButton.BUTTON_W + Model.SCREEN_W / 19.2) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20));
+        put("quit", new ImageButton("file:./res/quit.png",  Model.SCREEN_W / 2 - (ImageButton.BUTTON_W + Model.SCREEN_W / 19.2) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.6));
     }};
 
     private ImageView cardsBackImage = new ImageView("file:./res/cardsback.png");
@@ -92,7 +94,6 @@ public class View implements Observer {
         initSettingsButtons();
 
         initGameView();
-        initActionButtons();
 
         distributionGroup.setDepthTest(DepthTest.ENABLE);
 
@@ -110,9 +111,11 @@ public class View implements Observer {
         ground.setScaleX(1 + DISTRIBUTION_GROUP_SHIFT_Z/1330 - DISTRIBUTION_GROUP_ROTATE/100);
         ground.setScaleY(1 + DISTRIBUTION_GROUP_SHIFT_Z/1330 - DISTRIBUTION_GROUP_ROTATE/100);
 
-        initActionButtons();
-
         distributionArea.setTranslateZ(3);
+
+        for(ActionButton b : actionButtons.values()){
+            b.setOnMouseClicked(mouseEvent -> controller.chooseAction(b.action));
+        }
     }
 
     private MeshView createGround(){
@@ -208,15 +211,15 @@ public class View implements Observer {
     private void initMenuButtons() {
 
         imageButtons.get("play").setImageSize(Model.SCREEN_W / 5, Model.SCREEN_H / 5);
-        imageButtons.get("play").setPosition(Model.SCREEN_W / 2 - BUTTON_W / 2.5,
+        imageButtons.get("play").setPosition(Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2.5,
                 Model.SCREEN_H / 4 + ImageButton.BUTTON_H / 2);
 
         imageButtons.get("settings").setImageSize(Model.SCREEN_W / 4, Model.SCREEN_H / 4);
-        imageButtons.get("settings").setPosition(Model.SCREEN_W / 2 - BUTTON_W / 2,
+        imageButtons.get("settings").setPosition(Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2,
                 Model.SCREEN_H / 2 + ImageButton.BUTTON_H / 3);
 
         imageButtons.get("quit").setImageSize(Model.SCREEN_W / 5, Model.SCREEN_H / 5);
-        imageButtons.get("quit").setPosition(Model.SCREEN_W / 2 - BUTTON_W / 2,
+        imageButtons.get("quit").setPosition(Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2,
                 Model.SCREEN_H / 2 + ImageButton.BUTTON_H * 1.7);
 
         imageButtons.get("play").setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -643,8 +646,8 @@ public class View implements Observer {
     private Label createPetitSecLabel(Integer player){
     	Label l = new Label("Petit Sec Player " + player);
     	l.setTextFill(Color.WHITE);
-    	l.setFont(new Font(Model.SCREEN_W/10));
-    	l.setTranslateX(Model.SCREEN_W/9);
+    	l.setFont(new Font(Model.SCREEN_W/12));
+    	l.setTranslateX(Model.SCREEN_W/7.5);
     	l.setTranslateY(Model.SCREEN_H/3);
     	l.setTranslateZ(-300);
     	l.setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(50), null)));
@@ -657,48 +660,23 @@ public class View implements Observer {
     	}
     }
 
-    private static final double BUTTON_W = Model.SCREEN_W/5.5;
-    private static final double BUTTON_H = BUTTON_W/2.33;
-    private static final double BUTTON_X_DIFF = Model.SCREEN_W/200;
-    public static final double BUTTON_X_START = (Model.SCREEN_W - (5 * BUTTON_W + 4 * BUTTON_X_DIFF)) / 2;
-    public static final double BUTTON_Y = Model.SCREEN_H / 10;
-
-    private Map<String, Button> actionButtons = new HashMap<String, Button>();
-    private Font buttonsFont = new Font(BUTTON_W/8.75);
-
-    public void initActionButtons() {
-        actionButtons.put("passe", actionButton("Passe", BUTTON_X_START, BUTTON_Y, -50, PlayerAction.PASSE));
-        actionButtons.put("prise", actionButton("Prise", BUTTON_X_START + (BUTTON_W + BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.PRISE));
-        actionButtons.put("garde", actionButton("Garde", BUTTON_X_START + 2 * (BUTTON_W + BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE));
-        actionButtons.put("gardeSans", actionButton("Garde\nsans chien", BUTTON_X_START + 3 * (BUTTON_W + BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE_SANS));
-        actionButtons.put("gardeContre", actionButton("Garde contre\nle chien", BUTTON_X_START + 4 * (BUTTON_W + BUTTON_X_DIFF), BUTTON_Y, -50, PlayerAction.GARDE_CONTRE));
-    }
-
-    private Button actionButton(String name, double x, double y, double z, PlayerAction action) {
-        Button button = new Button(name);
-        button.setFont(buttonsFont);
-        button.setLayoutX(x);
-        button.setLayoutY(y);
-        button.setTranslateZ(z);
-        button.setTextAlignment(TextAlignment.CENTER);
-        button.setPrefSize(BUTTON_W, BUTTON_H);
-        button.setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(50), null)));
-        button.setTextFill(Color.WHITE);
-        button.setOnMouseEntered(mouseEvent -> changeColorButton(button, true));
-        button.setOnMouseExited(mouseEvent -> changeColorButton(button, false));
-        button.setOnMouseClicked(mouseEvent -> controller.chooseAction(action));
-        return button;
-    }
-
-    private void changeColorButton(Button button, boolean toGray) {
-        if (toGray) {
-            button.setBackground(new Background(new BackgroundFill(Color.WHITE, new CornerRadii(50), null)));
-            button.setTextFill(Color.BLACK);
-        } else {
-            button.setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(50), null)));
-            button.setTextFill(Color.WHITE);
-        }
-    }
+    private Map<String, ActionButton> actionButtons = new HashMap<String, ActionButton>(){{
+        put("passe", new ActionButton("Passe",
+                ActionButton.BUTTON_X_START, ActionButton.BUTTON_Y, -300,
+                PlayerAction.PASSE));
+        put("prise", new ActionButton("Prise",
+                ActionButton.BUTTON_X_START + (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.PRISE));
+        put("garde", new ActionButton("Garde",
+                ActionButton.BUTTON_X_START + 2 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.GARDE));
+        put("gardeSans", new ActionButton("Garde\nsans chien",
+                ActionButton.BUTTON_X_START + 3 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.GARDE_SANS));
+        put("gardeContre", new ActionButton("Garde contre\nle chien",
+                ActionButton.BUTTON_X_START + 4 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.GARDE_CONTRE));
+    }};
 
     public static final int ECART_ZONE_X = Model.GAP_X1 - 40;
     public static final int ECART_ZONE_Y = Model.GAP_Y_START - 40;

@@ -1,4 +1,4 @@
-package Tarot;
+package Tarot.ModelPack;
 
 public class CardModel implements Comparable<CardModel> {
 	public static final int CARD_H = (int)(Model.SCREEN_H/4.8);
