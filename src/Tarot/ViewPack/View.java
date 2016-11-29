@@ -39,6 +39,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
@@ -124,6 +125,7 @@ public class View implements Observer {
         scene.setCamera(camera);
         camera.setRotationAxis(new Point3D(1, 0, 0));
         distributionGroup.setRotationAxis(new Point3D(1, 0, 0));
+        addCardsZones();
 
         ground.setScaleX(1 + DISTRIBUTION_GROUP_SHIFT_Z/1330 - DISTRIBUTION_GROUP_ROTATE/100);
         ground.setScaleY(1 + DISTRIBUTION_GROUP_SHIFT_Z/1330 - DISTRIBUTION_GROUP_ROTATE/100);
@@ -134,15 +136,27 @@ public class View implements Observer {
             b.setOnMouseClicked(mouseEvent -> controller.chooseAction(b.getAction()));
         }
     }
+    
+    private void addCardsZones(){
+    	CardsZone[] zones = new CardsZone[]{
+    			new CardsZone("Chien", Model.CHIEN_X-5, Model.CHIEN_Y-5, Model.CHIEN_W+10, Model.CHIEN_H+10),
+    			new CardsZone("Your Cards", Model.MY_CARDS_X-5, Model.MY_CARDS_Y-5, Model.MY_CARDS_W+10, Model.MY_CARDS_H+10),
+    			new CardsZone("Gap", Model.GAP_X-5, Model.GAP_Y-5, Model.GAP_W+10, Model.GAP_H+10)
+    					};
+    	for(CardsZone zone : zones){
+    		distributionGroup.getChildren().add(zone.getZone());
+    		distributionGroup.getChildren().add(zone.getLab());
+    	}
+    }
 
     private MeshView createGround(){
         TriangleMesh mesh = new TriangleMesh();
 
         mesh.getPoints().addAll(
                 0, 0, 2.1f,
-                Model.SCREEN_W, 0, 2.1f,
-                0, Model.SCREEN_H, 2.1f,
-                Model.SCREEN_W, Model.SCREEN_H, 2.1f
+                (float)Model.SCREEN_W, 0, 2.1f,
+                0, (float)Model.SCREEN_H, 2.1f,
+                (float)Model.SCREEN_W, (float)Model.SCREEN_H, 2.1f
         );
         mesh.getTexCoords().addAll(
                 0f, 0f,
@@ -656,10 +670,10 @@ public class View implements Observer {
     	}
     }
 
-    public static final int ECART_ZONE_X = Model.GAP_X1 - 40;
-    public static final int ECART_ZONE_Y = Model.GAP_Y_START - 40;
-    public static final int ECART_ZONE_W = 2 * CardModel.CARD_W + Model.DIST_CARD_X_DIFF + 80;
-    public static final int ECART_ZONE_H = 3 * (CardModel.CARD_H + Model.DIST_CARD_Y_DIFF) + 80;
+    public static final double ECART_ZONE_X = Model.GAP_X - 40;
+    public static final double ECART_ZONE_Y = Model.GAP_Y - 40;
+    public static final double ECART_ZONE_W = 2 * CardModel.CARD_W + Model.DIST_CARD_X_SHIFT + 80;
+    public static final double ECART_ZONE_H = 3 * (CardModel.CARD_H + Model.DIST_CARD_Y_SHIFT) + 80;
 
     public void updateActionChosen(PlayerAction action) {
     	unrealElementsGroup.getChildren().clear();
@@ -730,7 +744,7 @@ public class View implements Observer {
         		+ 0.002*(event.getSceneX()-Model.SCREEN_W/2)*(-DISTRIBUTION_GROUP_ROTATE)*(1-event.getSceneY()/(0.2*Model.SCREEN_H)));
         view.getView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2)
         		+ 0.0004*(event.getSceneY()-Model.SCREEN_H/2)*DISTRIBUTION_GROUP_SHIFT_Z
-        		+ 0.003*(event.getSceneY()-Model.SCREEN_H/2)*(-DISTRIBUTION_GROUP_ROTATE));
+        		+ 0.004*event.getSceneY()*(-DISTRIBUTION_GROUP_ROTATE));
     }
 
     private EventHandler<MouseEvent> tryAddCardToGapEvent(CardView view, CardModel card){

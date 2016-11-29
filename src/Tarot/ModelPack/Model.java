@@ -12,41 +12,46 @@ import javafx.util.Pair;
 
 public class Model extends Observable {
 
-	private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	private static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
 
-	public static final int SCREEN_W = (int)screenSize.getWidth();
-	public static final int SCREEN_H = (int)screenSize.getHeight();
+	public static final double SCREEN_W = SCREEN_SIZE.getWidth();
+	public static final double SCREEN_H = SCREEN_SIZE.getHeight();
 	
 	public static final int FIRST_TRUMP = 1;
 	public static final int LAST_TRUMP = 21;
 	
 	public static final int NB_CARDS = 78;
-	public static final int CHIEN_SIZE = 6;
 	
 	private static final int NB_PLAYERS = 4;
 	
-	public static final int DECK_X = (int)(SCREEN_W / 2.5) - CardModel.CARD_W / 2 ;
-	public static final int DECK_Y = SCREEN_H/200;
+	public static final double DECK_X = (SCREEN_W / 2.5) - CardModel.CARD_W / 2 ;
+	public static final double DECK_Y = SCREEN_H/200;
 
-	public static final int DIST_CARD_X_DIFF = 5;
-	public static final int DIST_CARD_Y_DIFF = 25;
+	public static final double DIST_CARD_X_SHIFT = 5;
+	public static final double DIST_CARD_Y_SHIFT = 25;
 
-	public static final int CHIEN_CARD_X_START = (int)(SCREEN_W / 2.5) - (6 * CardModel.CARD_W + 5 * DIST_CARD_X_DIFF) / 2;
-	public static final int CHIEN_CARD_Y = DECK_Y + CardModel.CARD_H + DIST_CARD_Y_DIFF;
+	public static final int CHIEN_SIZE = 6;
+	public static final double CHIEN_W = CHIEN_SIZE * CardModel.CARD_W + (CHIEN_SIZE-1) * DIST_CARD_X_SHIFT;
+	public static final double CHIEN_H = CardModel.CARD_H;
+	public static final double CHIEN_X = (SCREEN_W / 2.5) - CHIEN_W/2;
+	public static final double CHIEN_Y = DECK_Y + CardModel.CARD_H + DIST_CARD_Y_SHIFT;
 
-	public static final int DIST_CARD_X_START = (int)(SCREEN_W / 2.5) - (9 * CardModel.CARD_W + 8 * DIST_CARD_X_DIFF) / 2;
-	public static final int DIST_CARD_Y = CHIEN_CARD_Y + CardModel.CARD_H + DIST_CARD_Y_DIFF;
+	public static final int DIST_CARD_SIZE = 9;
+	public static final double MY_CARDS_W = DIST_CARD_SIZE * CardModel.CARD_W + (DIST_CARD_SIZE-1) * DIST_CARD_X_SHIFT;
+	public static final double MY_CARDS_H = 2 * CardModel.CARD_H + DIST_CARD_Y_SHIFT;
+	public static final double MY_CARDS_X = (SCREEN_W / 2.5) - MY_CARDS_W/2;
+	public static final double MY_CARDS_Y = CHIEN_Y + CHIEN_H + DIST_CARD_Y_SHIFT;
 
 	private static final double PLAYER_3_Y = -SCREEN_W/2.4;
 	private static final double PLAYER_3_X_SHIFT = 200;
 	
 	private static final double PLAYERS_2_4_X = SCREEN_H/1.8;
-	private static final int PLAYERS_2_4_SHIFT_Y = 200;
+	private static final double PLAYERS_2_4_SHIFT_Y = 200;
 	
 	Map<String, ArrayList<CardModel>> gameDecks = new HashMap<String, ArrayList<CardModel>>();
 	
 	Player[] players = new Player[]{
-			new Player(DIST_CARD_X_START, DIST_CARD_Y, CardModel.CARD_W + DIST_CARD_X_DIFF, CardModel.CARD_H + DIST_CARD_Y_DIFF, true),
+			new Player(MY_CARDS_X, MY_CARDS_Y, CardModel.CARD_W + DIST_CARD_X_SHIFT, CardModel.CARD_H + DIST_CARD_Y_SHIFT, true),
 			new Player(Model.SCREEN_W + PLAYERS_2_4_X, DECK_Y, 0, PLAYERS_2_4_SHIFT_Y),
 			new Player(DECK_X, PLAYER_3_Y, PLAYER_3_X_SHIFT, 0),
 			new Player(-PLAYERS_2_4_X, DECK_Y, 0, PLAYERS_2_4_SHIFT_Y)
@@ -55,7 +60,7 @@ public class Model extends Observable {
 	private int distributedCards = 0;
 
 	private int currentPlayer = 0;
-	private int chienCardX = CHIEN_CARD_X_START;
+	private double chienCardX = CHIEN_X;
 	
 	public Model(){
 		gameDecks.put("jeu", new ArrayList<CardModel>());
@@ -146,7 +151,7 @@ public class Model extends Observable {
 			if(!card.getName().contains("Trump")){
 				nbColoredCard++;
 			}
-			if(nbColoredCard == NB_CARD_GAP){
+			if(nbColoredCard == GAP_SIZE){
 				return true;
 			}
 		}
@@ -272,8 +277,8 @@ public class Model extends Observable {
 	
 	private void moveCardTochien(){
 		gameDecks.get("chien").add(gameDecks.get("jeu").get(0));
-		gameDecks.get("chien").get(gameDecks.get("chien").size()-1).moveTo(chienCardX, CHIEN_CARD_Y, 1);
-		chienCardX += (CardModel.CARD_W + DIST_CARD_X_DIFF);
+		gameDecks.get("chien").get(gameDecks.get("chien").size()-1).moveTo(chienCardX, CHIEN_Y, 1);
+		chienCardX += (CardModel.CARD_W + DIST_CARD_X_SHIFT);
 		gameDecks.get("jeu").remove(0);
 
 		setAndNotifyChanged(new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED_FROM_DECK, 
@@ -340,28 +345,29 @@ public class Model extends Observable {
 		setAndNotifyChanged(new Pair<TarotAction, PlayerAction>(TarotAction.ACTION_CHOSEN, myAction));
 	}
 
-	public static final int NB_CARD_GAP = 6;
-	public static final int GAP_X1= 4 * (SCREEN_W / 5);
-	public static final int GAP_X2 = GAP_X1 + (CardModel.CARD_W + DIST_CARD_X_DIFF);
-	public static final int GAP_Y_START = SCREEN_H / 5;
-	private int nbCardInGap = 0;
+	public static final int GAP_SIZE = 6;
+	public static final double GAP_W = 2*CardModel.CARD_W + DIST_CARD_X_SHIFT;
+	public static final double GAP_H = (GAP_SIZE/2) * CardModel.CARD_H + (GAP_SIZE/2 - 1) * DIST_CARD_Y_SHIFT;
+	public static final double GAP_X = 4 * (SCREEN_W / 5);
+	public static final double GAP_Y = SCREEN_H / 5;
 	
+	private int nbCardInGap = 0;
 	public void addCardToGap(CardModel card){
 		gameDecks.get("gap").add(card);
 		players[0].getDeck().remove(card);
 
 		if(nbCardInGap % 2 == 0){
-			card.setX(GAP_X1);
+			card.setX(GAP_X);
 		}
 		else{
-			card.setX(GAP_X2);
+			card.setX(GAP_X + (CardModel.CARD_W + DIST_CARD_X_SHIFT));
 		}
-		card.setY(GAP_Y_START + (CardModel.CARD_H + DIST_CARD_Y_DIFF)*(nbCardInGap/2));
+		card.setY(GAP_Y + (CardModel.CARD_H + DIST_CARD_Y_SHIFT)*(nbCardInGap/2));
 		nbCardInGap++;
 		
 		setAndNotifyChanged(new Pair<TarotAction, CardModel>(TarotAction.CARD_ADDED_GAP, card));
 		
-		if(nbCardInGap == NB_CARD_GAP){
+		if(nbCardInGap == GAP_SIZE){
 			finalizeGap();
 		}
 	}
@@ -401,7 +407,7 @@ public class Model extends Observable {
 		
 		distributedCards = 0;
 		currentPlayer = 0;
-		chienCardX = CHIEN_CARD_X_START;
+		chienCardX = CHIEN_X;
 		nbCardInGap = 0;
 	}
 }

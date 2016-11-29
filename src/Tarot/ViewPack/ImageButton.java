@@ -34,7 +34,7 @@ public class ImageButton extends Button{
 
     public ImageView getImage(){ return this.image; }
 
-    public void setImageSize(int width, int height) {
+    public void setImageSize(double width, double height) {
         image.setFitWidth(width);
         image.setFitHeight(height);
         // actualisation de la position après redimensionnement
@@ -49,14 +49,14 @@ public class ImageButton extends Button{
         image.setTranslateY((this.getTranslateY() + BUTTON_H / 2) - image.getFitHeight() / 2);
     }
 
-    public void inflate(int shiftY) {
+    public void inflate(double shiftY) {
         image.setTranslateZ(image.getTranslateZ() - 400);
         this.setTranslateZ(this.getTranslateZ() - 401);
         this.setTranslateY(this.getTranslateY() + shiftY);
         image.setTranslateY(image.getTranslateY() + shiftY);
     }
 
-    public void deflate(int shiftY) {
+    public void deflate(double shiftY) {
         image.setTranslateZ(image.getTranslateZ() + 400);
         this.setTranslateZ(this.getTranslateZ() + 401);
         this.setTranslateY(this.getTranslateY() + shiftY);
