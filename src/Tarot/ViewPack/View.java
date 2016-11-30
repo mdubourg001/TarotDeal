@@ -321,7 +321,7 @@ public class View implements Observer {
         root.getChildren().add(unrealElementsGroup);
     }
 
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	@Override
     public void update(Observable arg0, Object arg1) {
         switch (((Pair<TarotAction, Object>) arg1).getKey()) {
@@ -695,10 +695,17 @@ public class View implements Observer {
 
     private void doGap() {
         for (CardModel card : model.getMyCards()) {
-            cardViews.get(card.getName()).getView().setOnMousePressed(selectCardEvent(cardViews.get(card.getName())));
-            cardViews.get(card.getName()).getView().setOnMouseDragged(followMouseEvent(cardViews.get(card.getName())));
-            cardViews.get(card.getName()).getView().setOnMouseReleased(tryAddCardToGapEvent(cardViews.get(card.getName()), card));
+        	updateGapableCard(card);
         }
+        for (CardModel card : model.getChienCards()) {
+        	updateGapableCard(card);
+        }
+    }
+    
+    private void updateGapableCard(CardModel card){
+    	cardViews.get(card.getName()).getView().setOnMousePressed(selectCardEvent(cardViews.get(card.getName())));
+    	cardViews.get(card.getName()).getView().setOnMouseDragged(followMouseEvent(cardViews.get(card.getName())));
+    	cardViews.get(card.getName()).getView().setOnMouseReleased(tryAddCardToGapEvent(cardViews.get(card.getName()), card));
     }
 
     private EventHandler<MouseEvent> selectCardEvent(CardView view) {

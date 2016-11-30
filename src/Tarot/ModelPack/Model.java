@@ -349,6 +349,9 @@ public class Model extends Observable {
 	private PlayerAction myAction;
 	public void chooseAction(PlayerAction action){
 		myAction = action;
+		if(action == PlayerAction.GARDE || action == PlayerAction.PRISE){
+			moveChienToPlayer();
+		}
 		setAndNotifyChanged(new Pair<TarotAction, PlayerAction>(TarotAction.ACTION_CHOSEN, myAction));
 	}
 
@@ -375,17 +378,15 @@ public class Model extends Observable {
 		setAndNotifyChanged(new Pair<TarotAction, CardModel>(TarotAction.CARD_ADDED_GAP, card));
 		
 		if(nbCardInGap == GAP_SIZE){
-			finalizeGap();
+			setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.GAP_DONE, null));
 		}
 	}
 	
-	private void finalizeGap(){
+	private void moveChienToPlayer(){
 		while(gameDecks.get("chien").size() > 0){
 			players[0].getDeck().add(gameDecks.get("chien").get(0));
 			gameDecks.get("chien").remove(0);
 		}
-		
-		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.GAP_DONE, null));
 	}
 	
 	public void revertChien() {
