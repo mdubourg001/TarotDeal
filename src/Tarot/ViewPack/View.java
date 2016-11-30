@@ -355,7 +355,7 @@ public class View implements Observer {
                 updateActionChosen(((Pair<TarotAction, PlayerAction>) arg1).getValue());
                 break;
             case CHIEN_REVERTED:
-                revertDeck(model.getChienCards(), Model.CHIEN_SIZE, null);
+                revertDeck(model.getChienCards(), Model.CHIEN_SIZE, doGap());
                 break;
             case CARD_ADDED_GAP:
             	moveCard(cardViews.get(((Pair<TarotAction, CardModel>) arg1).getValue().getName()),
@@ -414,7 +414,7 @@ public class View implements Observer {
         }
     }
 
-    private static final double CUT_TIME = 0.4;
+    private static final double CUT_TIME = 0.6;
 
     private void moveCutDeck(double xShiftValue, boolean trueZ, Integer indexCut, EventHandler<ActionEvent> onFinished) {
         CardModel card;
@@ -442,7 +442,7 @@ public class View implements Observer {
         }
     }
 
-    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.1; //TODO Remettre � 0.3
+    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.5; //TODO Remettre � 0.3
     public void update3CardsDistributed(Pair<Boolean, CardModel[]> arg) {
     	moveCardFromDeck(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
         moveCardFromDeck(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
@@ -523,7 +523,7 @@ public class View implements Observer {
         return  value;
     }
 
-    public static final double TIME_DIVIDER = 1000; // TODO REMETTRE A 1000
+    public static final double TIME_DIVIDER = 500; // TODO REMETTRE A 1000
 
     private double calculTime(double[] deltas) {
         double time = 0;
@@ -604,7 +604,7 @@ public class View implements Observer {
         return intersections;
     }
     
-    private final static double REVERT_CARD_WAIT_COEF = 0.05; //TODO Remetre � 0.1
+    private final static double REVERT_CARD_WAIT_COEF = 0.1; //TODO Remetre � 0.1
     public void revertDeck(ArrayList<CardModel> deck, int size, EventHandler<ActionEvent> onFinished) {
         int i = 1;
         for (CardModel card : deck) {
@@ -621,7 +621,7 @@ public class View implements Observer {
         }
     }
 
-    private final static double REVERT_CARD_DURATION = 1; // TODO REMETTRE A 2
+    private final static double REVERT_CARD_DURATION = 2; // TODO REMETTRE A 2
     private final static double REVERT_CARD_Z = -300;
 
     private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished) {
@@ -683,7 +683,6 @@ public class View implements Observer {
             nouvelleDonne();
         } else if (action == PlayerAction.PRISE || action == PlayerAction.GARDE) {
         	controller.doNextAction();
-            doGap();
         } else {
             controller.skipGap();
         }
@@ -693,13 +692,18 @@ public class View implements Observer {
     private double selectedCardXSave = 0;
     private double selectedCardYSave = 0;
 
-    private void doGap() {
-        for (CardModel card : model.getMyCards()) {
-        	updateGapableCard(card);
-        }
-        for (CardModel card : model.getChienCards()) {
-        	updateGapableCard(card);
-        }
+    private EventHandler<ActionEvent> doGap() {
+        return new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent t) {
+                for (CardModel card : model.getMyCards()) {
+                    updateGapableCard(card);
+                }
+                for (CardModel card : model.getChienCards()) {
+                    updateGapableCard(card);
+                }
+                controller.doNextAction();
+            }
+        };
     }
     
     private void updateGapableCard(CardModel card){
@@ -807,6 +811,7 @@ public class View implements Observer {
 
         distributionGroup.getChildren().add(distributionArea);
         distributionGroup.getChildren().add(ground);
+        addCardsZones();
 
         controller.nouvelleDonne();
     }

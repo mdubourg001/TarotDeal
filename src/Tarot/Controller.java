@@ -42,9 +42,12 @@ public class Controller {
                 model.revertChien();//Only if it use gap
                 break;
             case 7:
-                model.organizePlayerCards();//Only if it use gap
+                model.moveChienToPlayer();//Only if it use gap
                 break;
             case 8:
+                model.organizePlayerCards();//Only if it use gap
+                break;
+            case 9:
                 model.finish();
                 break;
         }
@@ -59,7 +62,7 @@ public class Controller {
     }
     
     public void skipGap(){
-    	currentAction += 2;
+    	currentAction += 3;
         doNextAction();
     }
     

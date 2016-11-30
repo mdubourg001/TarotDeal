@@ -209,12 +209,12 @@ public class Model extends Observable {
 	//Adapter pour eviter des bugs graphiques dus a des cartes qui se croisent
 	public void distributeCards(){
 		switch(distributedCards){
-		case 3:
-		case 7:
-		case 11:
-		case 18:
-		case 22:
-		case 26:
+		case 6:
+		case 19:
+		case 32:
+		case 45:
+		case 58:
+		case 71:
 			addCardToChien();
 			break;
 		}
@@ -238,7 +238,7 @@ public class Model extends Observable {
 	
 	/*Le parametre order fait en sorte que, plus une carte aura de distance a parcourir apres 
 	distribution, plus elle sera traitee tot. Cela evite que les cartes se croisent lors
-	d'un déplacement continue. Ainsi la Vue n'a pas a gerer ce bug graphique.*/
+	d'un dï¿½placement continue. Ainsi la Vue n'a pas a gerer ce bug graphique.*/
 	private void move3CardsToPlayer(int player, int[] order){
 		for(int i=0; i<3; i++){
 			players[player].getDeck().add(gameDecks.get("jeu").get(order[i]));
@@ -349,9 +349,6 @@ public class Model extends Observable {
 	private PlayerAction myAction;
 	public void chooseAction(PlayerAction action){
 		myAction = action;
-		if(action == PlayerAction.GARDE || action == PlayerAction.PRISE){
-			moveChienToPlayer();
-		}
 		setAndNotifyChanged(new Pair<TarotAction, PlayerAction>(TarotAction.ACTION_CHOSEN, myAction));
 	}
 
@@ -382,7 +379,7 @@ public class Model extends Observable {
 		}
 	}
 	
-	private void moveChienToPlayer(){
+	public void moveChienToPlayer(){
 		while(gameDecks.get("chien").size() > 0){
 			players[0].getDeck().add(gameDecks.get("chien").get(0));
 			gameDecks.get("chien").remove(0);
