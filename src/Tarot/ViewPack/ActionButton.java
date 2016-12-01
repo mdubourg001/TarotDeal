@@ -1,6 +1,5 @@
 package Tarot.ViewPack;
 
-import Tarot.Controller;
 import Tarot.ModelPack.Model;
 import Tarot.ModelPack.PlayerAction;
 import javafx.scene.control.Button;

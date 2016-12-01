@@ -39,16 +39,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
 public class View implements Observer {
-    private static final double DISTRIBUTION_GROUP_ROTATE = -30; //CAMERA ROTATION MIN -30 MAX 0
+    public static final double DISTRIBUTION_GROUP_ROTATE = -30; //CAMERA ROTATION MIN -30 MAX 0
     private static final double DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
     private static final double DISTRIBUTION_GROUP_SHIFT_Z = 0; //DEZOOM MIN 0 MAX 400
 
@@ -135,6 +133,8 @@ public class View implements Observer {
         for(ActionButton b : actionButtons.values()){
             b.setOnMouseClicked(mouseEvent -> controller.chooseAction(b.getAction()));
         }
+        
+        projector.setLightOn(false);
     }
     
     private void addCardsZones(){
@@ -365,6 +365,7 @@ public class View implements Observer {
                 updateGapDone();
                 break;
             case DISTRIBUTION_DONE:
+            	addDinosaurs();
             	System.out.println("Distribution Done"); //TODO
             	break;
         }
@@ -392,7 +393,7 @@ public class View implements Observer {
         PointLight lampLightShining = new LampLight(Color.WHITE, 
         		new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_SHINING_Z), LAMPS_HOOK_Z, LAMPS_SPEED);
 
-        distributionGroup.getChildren().addAll(moonLight, lampLight, lampLightShining);
+        distributionGroup.getChildren().addAll(projector, moonLight, lampLight, lampLightShining);
     }
 
     public void updateDeckCut(Integer indexHalf, int iteration) {
@@ -442,7 +443,7 @@ public class View implements Observer {
         }
     }
 
-    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.5; //TODO Remettre � 0.3
+    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.1; //TODO Remettre � 0.3
     public void update3CardsDistributed(Pair<Boolean, CardModel[]> arg) {
     	moveCardFromDeck(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
         moveCardFromDeck(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
@@ -812,7 +813,7 @@ public class View implements Observer {
         distributionGroup.getChildren().add(distributionArea);
         distributionGroup.getChildren().add(ground);
         addCardsZones();
-
+        
         controller.nouvelleDonne();
     }
     
@@ -823,5 +824,20 @@ public class View implements Observer {
 				nouvelleDonne();
 			}
     	};
+    }
+    
+    private void addDinosaurs(){
+    	for(CardModel card : model.getMyCards()){
+    		if(card.getName().contains("Trump") || card.getName().contains("Excuse")){
+    			distributionGroup.getChildren().add((new Dinosaur3D(card, DinosaurType.LIOPLEURODON).getView()));
+    		}
+    	}
+    }
+    
+    private static final double PROJECTOR_SHIFT = -50;
+    private static EnvironmentLight projector = new EnvironmentLight(Color.WHITE, 
+    		new Point3D(Model.SCREEN_W/2 + PROJECTOR_SHIFT, Model.SCREEN_H/2 + -20*View.DISTRIBUTION_GROUP_ROTATE + PROJECTOR_SHIFT, -1100));
+    public static void turnOnProjector(boolean b){
+    	projector.setLightOn(b);
     }
 }
