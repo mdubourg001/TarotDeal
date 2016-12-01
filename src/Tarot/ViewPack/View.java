@@ -829,7 +829,7 @@ public class View implements Observer {
     private void addDinosaurs(){
     	for(CardModel card : model.getMyCards()){
     		if(card.getName().contains("Trump") || card.getName().contains("Excuse")){
-    			distributionGroup.getChildren().add((new Dinosaur3D(card, DinosaurType.LIOPLEURODON).getView()));
+    			distributionGroup.getChildren().add((new Dinosaur3D(card, cardViews.get(card.getName()).dinosaurType).getView()));
     		}
     	}
     }

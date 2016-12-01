@@ -11,6 +11,7 @@ import javafx.scene.shape.TriangleMesh;
 public class CardView {
     private static Image cardsTexture = new Image("file:./res/textureCards.jpg");
     private boolean canBeSelected = true;
+    public DinosaurType dinosaurType = null;
 
     private MeshView meshView = new MeshView();
 
@@ -59,6 +60,16 @@ public class CardView {
         meshView.setTranslateZ(card.getZ());
         meshView.setRotationAxis(new Point3D(0, 1, 0));
         meshView.setRotate(180);
+        
+        updateDinosaurType(card.getName());
+    }
+    
+    private void updateDinosaurType(String name){
+    	switch(name){
+    	case "Trump21" :
+    		dinosaurType = DinosaurType.LIOPLEURODON;
+    		break;
+    	}
     }
     
     public MeshView getView(){
