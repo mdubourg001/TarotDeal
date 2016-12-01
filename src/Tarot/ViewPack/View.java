@@ -18,6 +18,7 @@ import javafx.animation.Timeline;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -30,7 +31,8 @@ import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -39,18 +41,16 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
 public class View implements Observer {
-    private static final double DISTRIBUTION_GROUP_ROTATE = -30; //CAMERA ROTATION MIN -30 MAX 0
-    private static final double DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
-    private static final double DISTRIBUTION_GROUP_SHIFT_Z = 0; //DEZOOM MIN 0 MAX 400
+    public static double DISTRIBUTION_GROUP_ROTATE = -30; //CAMERA ROTATION MIN -30 MAX 0
+    private static double DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
+    public static double DISTRIBUTION_GROUP_SHIFT_Z = 0; //DEZOOM MIN 0 MAX 400
 
     private static final double DISTRIBUTION_AREA_SHIFT = Model.SCREEN_W/2;
 
@@ -68,19 +68,9 @@ public class View implements Observer {
     private Map<String, CardView> cardViews = new HashMap<String, CardView>();
     
     private MeshView ground = createGround();
-    
-    private ImageView menuBackground = new ImageView("file:./res/menu_background.jpg");
-    private ImageView menuTitle = new ImageView("file:./res/title.png");
-    private ImageView settingsBackground = new ImageView("file:./res/settings_background.png");
 
-    private Map<String, ImageButton> imageButtons = new HashMap<String, ImageButton>() {{
-        put("play", new ImageButton("file:./res/play.png", Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2, Model.SCREEN_W / 2));
-        put("settings", new ImageButton("file:./res/settings.png", Model.SCREEN_W / 2 - (ImageButton.BUTTON_W + Model.SCREEN_W / 19.2) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20));
-        put("quit", new ImageButton("file:./res/quit.png",  Model.SCREEN_W / 2 - (ImageButton.BUTTON_W + Model.SCREEN_W / 19.2) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.6));
-    }};
-
-    private ImageView cardsBackImage = new ImageView("file:./res/cardsback.png");
-    private ImageView soundImage = new ImageView("file:./res/sound.png");
+    private MenuView menuView = new MenuView(this);
+    private SettingsView settingsView = new SettingsView(this);
 
     private Rectangle distributionArea = new Rectangle(-DISTRIBUTION_AREA_SHIFT, -DISTRIBUTION_AREA_SHIFT, Model.SCREEN_W+2*DISTRIBUTION_AREA_SHIFT, Model.SCREEN_H + 2*DISTRIBUTION_AREA_SHIFT);
 
@@ -107,11 +97,6 @@ public class View implements Observer {
         this.model = controller.getModel();
         
         root.getChildren().add(menuGroup);
-        initMenuBackground();
-        initMenuButtons();
-
-        initSettingsBackground();
-        initSettingsButtons();
 
         initGameView();
 
@@ -135,6 +120,21 @@ public class View implements Observer {
         for(ActionButton b : actionButtons.values()){
             b.setOnMouseClicked(mouseEvent -> controller.chooseAction(b.getAction()));
         }
+
+        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if(event.getCode() == KeyCode.BACK_SPACE)
+                    nouvelleDonne();
+                    displayMenu();
+            }
+        });
+
+        menuView.display(menuGroup, root);
+    }
+
+    public Controller getController() {
+        return this.controller;
     }
     
     private void addCardsZones(){
@@ -191,13 +191,11 @@ public class View implements Observer {
     }
 
     public void displayMenu() {
-        root.getChildren().clear();
-        root.getChildren().add(menuGroup);
+        menuView.display(menuGroup, root);
     }
 
     public void displaySettings() {
-        root.getChildren().clear();
-        root.getChildren().add(settingsGroup);
+        settingsView.display(settingsGroup, root);
     }
 
     public EventHandler<ActionEvent> doNexTActionEvent() {
@@ -207,115 +205,25 @@ public class View implements Observer {
             }
         };
     }
-    private void initMenuBackground() {
-        menuGroup.getChildren().add(menuBackground);
-        menuGroup.getChildren().add(menuTitle);
 
-        double ratioBackImage = Model.SCREEN_H / menuBackground.getImage().getHeight();
-        menuBackground.setScaleY(ratioBackImage);
-        menuBackground.setScaleX(ratioBackImage);
+    private void updateRotateAndZoom() {
+        DISTRIBUTION_GROUP_ROTATE = settingsView.getRotationValue();
+        DISTRIBUTION_GROUP_SHIFT_Z = -settingsView.getZoomValue();
+        DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
 
-        menuBackground.setX(Model.SCREEN_W / 2 - menuBackground.getImage().getWidth() / 2);
-        menuBackground.setY(Model.SCREEN_H / 2 - menuBackground.getImage().getHeight() / 2);
-
-        menuTitle.setTranslateX(Model.SCREEN_W / 2 - menuTitle.getImage().getWidth() / 2);
-        menuTitle.setTranslateY(Model.SCREEN_H / 10);
-    }
-
-    private void initSettingsBackground() {
-        settingsGroup.getChildren().add(settingsBackground);
-        settingsGroup.getChildren().add(cardsBackImage);
-        settingsGroup.getChildren().add(soundImage);
-
-        cardsBackImage.setFitWidth(Model.SCREEN_W / 4);
-        cardsBackImage.setFitHeight(Model.SCREEN_H / 4);
-        cardsBackImage.setTranslateX(Model.SCREEN_W / 10);
-        cardsBackImage.setTranslateY(Model.SCREEN_H/10);
-
-        soundImage.setFitWidth(Model.SCREEN_W / 3.5);
-        soundImage.setFitHeight(Model.SCREEN_H / 4);
-        soundImage.setTranslateX(Model.SCREEN_W / 10);
-        soundImage.setTranslateY(Model.SCREEN_H/1.8);
-
-    }
-
-    private void initMenuButtons() {
-
-        imageButtons.get("play").setImageSize(Model.SCREEN_W / 5, Model.SCREEN_H / 5);
-        imageButtons.get("play").setPosition(Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2.5,
-                Model.SCREEN_H / 4 + ImageButton.BUTTON_H / 2);
-
-        imageButtons.get("settings").setImageSize(Model.SCREEN_W / 4, Model.SCREEN_H / 4);
-        imageButtons.get("settings").setPosition(Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2,
-                Model.SCREEN_H / 2 + ImageButton.BUTTON_H / 3);
-
-        imageButtons.get("quit").setImageSize(Model.SCREEN_W / 5, Model.SCREEN_H / 5);
-        imageButtons.get("quit").setPosition(Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2,
-                Model.SCREEN_H / 2 + ImageButton.BUTTON_H * 1.7);
-
-        imageButtons.get("play").setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                displayView();
-                controller.doNextAction();
-            }
-        });
-        imageButtons.get("play").setOnMouseEntered(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) { imageButtons.get("play").inflate(30); }
-        });
-        imageButtons.get("play").setOnMouseExited(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) { imageButtons.get("play").deflate(-30); }
-        });
-        imageButtons.get("settings").setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) { displaySettings(); }
-        });
-        imageButtons.get("settings").setOnMouseEntered(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) { imageButtons.get("settings").inflate(-30); }
-        });
-        imageButtons.get("settings").setOnMouseExited(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) { imageButtons.get("settings").deflate(30); }
-        });
-        imageButtons.get("quit").setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) { System.exit(0); }
-        });
-        imageButtons.get("quit").setOnMouseEntered(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) { imageButtons.get("quit").inflate(-85); }
-        });
-        imageButtons.get("quit").setOnMouseExited(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                imageButtons.get("quit").deflate(85);
-            }
-        });
-
-        menuGroup.getChildren().add(imageButtons.get("play"));
-        menuGroup.getChildren().add(imageButtons.get("settings"));
-        menuGroup.getChildren().add(imageButtons.get("quit"));
-        menuGroup.getChildren().add(imageButtons.get("play").getImage());
-        menuGroup.getChildren().add(imageButtons.get("settings").getImage());
-        menuGroup.getChildren().add(imageButtons.get("quit").getImage());
-    }
-
-    private void initSettingsButtons() {
-
-    }
-
-    private void initGameView() { //TODO
         distributionGroup.setRotate(DISTRIBUTION_GROUP_ROTATE);
         distributionGroup.setTranslateY(DISTRIBUTION_GROUP_SHIFT_Y);
         distributionGroup.setTranslateZ(DISTRIBUTION_GROUP_SHIFT_Z);
+    }
+
+    private void initGameView() {
+        updateRotateAndZoom();
         distributionGroup.getChildren().add(distributionArea);
         distributionGroup.getChildren().add(ground);
     }
 
-    private void displayView(){
+    public void displayView(){
+        updateRotateAndZoom();
         root.getChildren().clear();
         root.getChildren().add(distributionGroup);
         root.getChildren().add(unrealElementsGroup);
