@@ -833,7 +833,7 @@ public class View implements Observer {
     	}
     }
     
-    private static final double PROJECTOR_SHIFT = -100;
+    private static final double PROJECTOR_SHIFT = -50;
     private static EnvironmentLight projector = new EnvironmentLight(Color.WHITE, 
     		new Point3D(Model.SCREEN_W/2 + PROJECTOR_SHIFT, Model.SCREEN_H/2 + -20*View.DISTRIBUTION_GROUP_ROTATE + PROJECTOR_SHIFT, -1050));
     public static void turnOnProjector(boolean b){
