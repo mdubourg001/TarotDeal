@@ -18,7 +18,6 @@ import javafx.animation.Timeline;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -31,8 +30,6 @@ import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -745,9 +742,9 @@ public class View implements Observer {
     	}
     }
 
-    private static final double PROJECTOR_SHIFT = -50;
+    private static final double PROJECTOR_SHIFT = 50;
     private static EnvironmentLight projector = new EnvironmentLight(Color.WHITE,
-    		new Point3D(Model.SCREEN_W/2 + PROJECTOR_SHIFT, Model.SCREEN_H/2 + -20*View.DISTRIBUTION_GROUP_ROTATE + PROJECTOR_SHIFT, -1050));
+    		new Point3D(Model.SCREEN_W/2 + PROJECTOR_SHIFT, Model.SCREEN_H/2 + -20*View.DISTRIBUTION_GROUP_ROTATE + PROJECTOR_SHIFT, -1200));
     public static void turnOnProjector(boolean b){
     	projector.setLightOn(b);
     }
