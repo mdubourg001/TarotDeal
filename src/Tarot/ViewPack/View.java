@@ -33,6 +33,8 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -129,6 +131,8 @@ public class View implements Observer {
                     displayMenu();
             }
         });
+
+        projector.setLightOn(false);
 
         menuView.display(menuGroup, root);
     }
@@ -273,7 +277,7 @@ public class View implements Observer {
                 updateGapDone();
                 break;
             case DISTRIBUTION_DONE:
-            	System.out.println("Distribution Done"); //TODO
+            	addDinosaurs();
             	break;
         }
     }
@@ -300,7 +304,7 @@ public class View implements Observer {
         PointLight lampLightShining = new LampLight(Color.WHITE, 
         		new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_SHINING_Z), LAMPS_HOOK_Z, LAMPS_SPEED);
 
-        distributionGroup.getChildren().addAll(moonLight, lampLight, lampLightShining);
+        distributionGroup.getChildren().addAll(projector, moonLight, lampLight, lampLightShining);
     }
 
     public void updateDeckCut(Integer indexHalf, int iteration) {
@@ -322,7 +326,7 @@ public class View implements Observer {
         }
     }
 
-    private static final double CUT_TIME = 0.6;
+    private static final double CUT_TIME = 0.2;
 
     private void moveCutDeck(double xShiftValue, boolean trueZ, Integer indexCut, EventHandler<ActionEvent> onFinished) {
         CardModel card;
@@ -350,7 +354,7 @@ public class View implements Observer {
         }
     }
 
-    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.5; //TODO Remettre � 0.3
+    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.1; //TODO Remettre � 0.3
     public void update3CardsDistributed(Pair<Boolean, CardModel[]> arg) {
     	moveCardFromDeck(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
         moveCardFromDeck(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
@@ -529,7 +533,7 @@ public class View implements Observer {
         }
     }
 
-    private final static double REVERT_CARD_DURATION = 2; // TODO REMETTRE A 2
+    private final static double REVERT_CARD_DURATION = 1; // TODO REMETTRE A 2
     private final static double REVERT_CARD_Z = -300;
 
     private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished) {
@@ -731,5 +735,20 @@ public class View implements Observer {
 				nouvelleDonne();
 			}
     	};
+    }
+
+    private void addDinosaurs(){
+    	for(CardModel card : model.getMyCards()){
+    		if(card.getName().contains("Trump") || card.getName().contains("Excuse")){
+    			distributionGroup.getChildren().add((new Dinosaur3D(card, cardViews.get(card.getName()).dinosaurType).getView()));
+    		}
+    	}
+    }
+
+    private static final double PROJECTOR_SHIFT = -50;
+    private static EnvironmentLight projector = new EnvironmentLight(Color.WHITE,
+    		new Point3D(Model.SCREEN_W/2 + PROJECTOR_SHIFT, Model.SCREEN_H/2 + -20*View.DISTRIBUTION_GROUP_ROTATE + PROJECTOR_SHIFT, -1050));
+    public static void turnOnProjector(boolean b){
+    	projector.setLightOn(b);
     }
 }
