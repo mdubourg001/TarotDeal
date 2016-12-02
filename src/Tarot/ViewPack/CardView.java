@@ -64,14 +64,6 @@ public class CardView {
         updateDinosaurType(card.getName());
     }
     
-    private void updateDinosaurType(String name){
-    	switch(name){
-    	case "Trump21" :
-    		dinosaurType = DinosaurType.LIOPLEURODON;
-    		break;
-    	}
-    }
-    
     public MeshView getView(){
         return meshView;
     }
@@ -82,5 +74,43 @@ public class CardView {
     
     public void canBeSelected(boolean b){
         canBeSelected = b;
+    }
+    
+    private void updateDinosaurType(String name){
+    	switch(name){
+    	case "Trump21" :
+    		dinosaurType = DinosaurType.LIOPLEURODON;
+    		break;
+    	case "Trump20" :
+    		dinosaurType = DinosaurType.MOSASAURUS;
+    		break;
+    	case "Trump19" :
+    		dinosaurType = DinosaurType.TYRANOSAURUS;
+    		break;
+    	case "Trump18" :
+    		dinosaurType = DinosaurType.BRACHIOSAURUS;
+    		break;
+    	case "Trump17" :
+    		dinosaurType = DinosaurType.PLESIOSAURUS;
+    		break;
+    	case "Trump16" :
+    		dinosaurType = DinosaurType.SPINOSAURUS;
+    		break;
+    	case "Trump15" :
+    		dinosaurType = DinosaurType.DIPLODOCUS;
+    		break;
+    	case "Trump14" :
+    		dinosaurType = DinosaurType.CARNOTAURUS;
+    		break;
+    	case "Trump13" :
+    		dinosaurType = DinosaurType.DEINOSUCHUS;
+    		break;
+    	case "Trump12" :
+    		dinosaurType = DinosaurType.ANKYLOSAURUS;
+    		break;
+    	case "Trump11" :
+    		dinosaurType = DinosaurType.DEINONYCHUS;
+    		break;
+    	}
     }
 }
