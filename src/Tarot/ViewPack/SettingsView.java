@@ -35,7 +35,7 @@ public class SettingsView {
 
     private Slider soundSlider = new Slider(0, 100, 70);
     private Slider zoomSlider = new Slider(-400, 0, 0);
-    private Slider rotationSlider = new Slider(-30, 0, -30);
+    private Slider rotationSlider = new Slider(0, 30, 25);
 
     private ImageView cardBack1 = new ImageView("file:./res/backcard.png");
     private ImageView cardBack2 = new ImageView("file:./res/backcard2.png");
@@ -153,6 +153,7 @@ public class SettingsView {
                     cbSelectionRect.setTranslateX(CARDBACK2_X - cbSelectionRect.getStrokeWidth() / 1.5);
                     selectedCardBack = cardBack2;
                 }
+                CardView.changeCardBack(false);
             }
         });
         leftArrow.setOnMouseEntered(new EventHandler<MouseEvent>() {
@@ -185,6 +186,7 @@ public class SettingsView {
                     cbSelectionRect.setTranslateX(CARDBACK2_X - cbSelectionRect.getStrokeWidth() / 1.5);
                     selectedCardBack = cardBack2;
                 }
+                CardView.changeCardBack(true);
             }
         });
         rightArrow.setOnMouseEntered(new EventHandler<MouseEvent>() {
@@ -247,11 +249,11 @@ public class SettingsView {
     }
 
     public double getRotationValue() {
-        return rotationSlider.getValue();
+        return -rotationSlider.getValue();
     }
 
     public double getZoomValue() {
-        return zoomSlider.getValue();
+        return -zoomSlider.getValue();
     }
 
     public void display(Group settingsGroup, Group root) {

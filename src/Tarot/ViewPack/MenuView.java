@@ -67,7 +67,7 @@ public class MenuView {
             @Override
             public void handle(MouseEvent event) {
                 principalView.displayView();
-                principalView.getController().doNextAction();
+                principalView.getController().startIfNeeded();
             }
         });
         imageButtons.get("play").setOnMouseEntered(new EventHandler<MouseEvent>() {

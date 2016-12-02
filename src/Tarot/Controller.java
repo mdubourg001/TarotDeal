@@ -16,6 +16,12 @@ public class Controller {
     }
 
     private int currentAction = -1;
+    
+    public void startIfNeeded(){
+    	if(currentAction == -1){
+    		doNextAction();
+    	}
+    }
 
     public void doNextAction() {
         currentAction++;
@@ -66,10 +72,13 @@ public class Controller {
         doNextAction();
     }
     
-    public void nouvelleDonne() {
+    public void nouvelleDone() {
         model.nouvelleDonne();
-
         currentAction = -1;
+    }
+    
+    public void restart() {
+    	nouvelleDone();
         doNextAction();
     }
 }

@@ -209,7 +209,7 @@ public class View implements Observer {
 
     private void updateRotateAndZoom() {
         DISTRIBUTION_GROUP_ROTATE = settingsView.getRotationValue();
-        DISTRIBUTION_GROUP_SHIFT_Z = -settingsView.getZoomValue();
+        DISTRIBUTION_GROUP_SHIFT_Z = settingsView.getZoomValue();
         DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
 
         distributionGroup.setRotate(DISTRIBUTION_GROUP_ROTATE);
@@ -722,7 +722,7 @@ public class View implements Observer {
         distributionGroup.getChildren().add(ground);
         addCardsZones();
 
-        controller.nouvelleDonne();
+        controller.restart();
     }
     
     private EventHandler<ActionEvent> nouvelleDonneEvent(){

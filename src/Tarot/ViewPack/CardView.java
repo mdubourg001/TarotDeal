@@ -12,9 +12,13 @@ public class CardView {
     private static Image cardsTexture = new Image("file:./res/textureCards.jpg");
     private boolean canBeSelected = true;
     public DinosaurType dinosaurType = null;
+    
+    private static int cardBack = 0;
 
     private MeshView meshView = new MeshView();
 
+    private static final float TEX_X_COEF = 1.0f/10;
+    private static final float TEX_Y_COEF = 1.0f/9;
     public CardView(CardModel card) {
         TriangleMesh mesh = new TriangleMesh();
         PhongMaterial cardMaterial = new PhongMaterial();
@@ -31,15 +35,15 @@ public class CardView {
         float texY = order/10;
 
         mesh.getTexCoords().addAll(
-        		texX*0.1f, texY*0.125f,
-        		(texX+1)*0.1f, texY*0.125f,
-                texX*0.1f, (texY+1)*0.125f,
-                (texX+1)*0.1f, (texY+1)*0.125f, //Front (depend of card order)
+        		texX*TEX_X_COEF, texY*TEX_Y_COEF,
+        		(texX+1)*TEX_X_COEF, texY*TEX_Y_COEF,
+                texX*TEX_X_COEF, (texY+1)*TEX_Y_COEF,
+                (texX+1)*TEX_X_COEF, (texY+1)*TEX_Y_COEF, //Front (depend of card order)
 
-                0.8f, 0.875f,
-                0.9f, 0.875f,
-                0.8f, 1.0f,
-                0.9f, 1.0f  //Back
+                0.0f + 0.1f*cardBack, 8*TEX_Y_COEF,
+                0.1f + 0.1f*cardBack, 8*TEX_Y_COEF,
+                0.0f + 0.1f*cardBack, 1.0f,
+                0.1f + 0.1f*cardBack, 1.0f  //Back
         );
 
         mesh.getFaces().addAll(
@@ -62,6 +66,21 @@ public class CardView {
         meshView.setRotate(180);
         
         updateDinosaurType(card.getName());
+    }
+    
+    public static int getCardBack(){
+    	return cardBack;
+    }
+    
+    public static final int NB_CARD_BACKS = 3;
+    public static void changeCardBack(boolean next){
+    	if(next){
+    		cardBack++;
+    	}
+    	else{
+    		cardBack--;
+    	}
+    	cardBack %= NB_CARD_BACKS;
     }
     
     public MeshView getView(){

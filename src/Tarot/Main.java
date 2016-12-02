@@ -3,6 +3,7 @@ package Tarot;
 import Tarot.ModelPack.Model;
 import Tarot.ViewPack.View;
 import javafx.application.Application;
+import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;
 
 public class Main extends Application{
@@ -18,6 +19,7 @@ public class Main extends Application{
 	public void start(Stage stage) throws Exception {
 		stage.setFullScreen(true);
 		stage.setFullScreenExitHint("");
+		stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
 		model = new Model();
 		controller = new Controller(model);
 		view = new View(controller);
