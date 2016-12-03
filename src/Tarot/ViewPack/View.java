@@ -19,30 +19,23 @@ import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.DepthTest;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
-import javafx.scene.PointLight;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Font;
-import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
@@ -64,7 +57,7 @@ public class View implements Observer {
     private Scene scene = new Scene(root, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.DISABLED);
     private PerspectiveCamera camera = new PerspectiveCamera();
 
-    private Map<String, CardView> cardViews = new HashMap<String, CardView>();
+    private HashMap<String, CardView> cardViews = new HashMap<String, CardView>();
     
     private Ground ground = new Ground();
 
@@ -125,9 +118,6 @@ public class View implements Observer {
                     displayMenu();
             }
         });
-
-        projector.setLightOn(false);
-
         menuView.display(menuGroup, root);
     }
 
@@ -212,7 +202,7 @@ public class View implements Observer {
                 update3CardsDistributed(((Pair<TarotAction, Pair<Boolean, CardModel[]>>) arg1).getValue());
                 break;
             case CARD_MOVED_FROM_DECK:
-                moveCardFromDeck(cardViews.get(((Pair<TarotAction, CardModel>) arg1).getValue().getName()),
+                JeuManager.moveCardFromJeu(this, cardViews.get(((Pair<TarotAction, CardModel>) arg1).getValue().getName()),
                         ((Pair<TarotAction, CardModel>) arg1).getValue(), null);
                 break;
             case CARD_MOVED:
@@ -232,14 +222,14 @@ public class View implements Observer {
                 updateActionChosen(((Pair<TarotAction, PlayerAction>) arg1).getValue());
                 break;
             case CHIEN_REVERTED:
-                revertDeck(model.getChienCards(), Model.CHIEN_SIZE, doGap());
+                revertDeck(model.getChienCards(), Model.CHIEN_SIZE, GapManager.doGap(this, model, controller, cardViews));
                 break;
             case CARD_ADDED_GAP:
             	moveCard(cardViews.get(((Pair<TarotAction, CardModel>) arg1).getValue().getName()),
                         ((Pair<TarotAction, CardModel>) arg1).getValue(), 0.0, null);
             	break;
             case GAP_DONE:
-                updateGapDone();
+                GapManager.updateGapDone(model, controller, cardViews);
                 break;
             case DISTRIBUTION_DONE:
             	addDinosaurs();
@@ -252,24 +242,8 @@ public class View implements Observer {
             cardViews.put(card.getName(), new CardView(card));
             distributionGroup.getChildren().add(cardViews.get(card.getName()).getView());
         }
-        addLights();
+        LightManager.addLights(distributionGroup);
         controller.doNextAction();
-    }
-    
-    public static final double MOON_LIGHT_Z = -1500;
-    public static final double LAMPS_HOOK_Z = -600;
-    public static final double LAMP_Z = -350;
-    public static final double LAMP_SHINING_Z = -300;
-    private static final double LAMPS_SPEED = 1;
-    
-    private void addLights(){
-        PointLight moonLight = new EnvironmentLight(Color.DARKBLUE, new Point3D(0, 0, MOON_LIGHT_Z));
-        PointLight lampLight = new LampLight(Color.LIGHTBLUE, 
-        		new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_Z), LAMPS_HOOK_Z, LAMPS_SPEED);
-        PointLight lampLightShining = new LampLight(Color.WHITE, 
-        		new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_SHINING_Z), LAMPS_HOOK_Z, LAMPS_SPEED);
-
-        distributionGroup.getChildren().addAll(projector, moonLight, lampLight, lampLightShining);
     }
 
     public void updateDeckCut(Integer indexHalf, int iteration) {
@@ -321,9 +295,9 @@ public class View implements Observer {
 
     private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.2; //TODO Remettre � 0.2
     public void update3CardsDistributed(Pair<Boolean, CardModel[]> arg) {
-    	moveCardFromDeck(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
-        moveCardFromDeck(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
-        moveCardFromDeck(cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], null);
+    	JeuManager.moveCardFromJeu(this, cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
+    	JeuManager.moveCardFromJeu(this, cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
+    	JeuManager.moveCardFromJeu(this, cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], null);
     	
         waiter(TIME_BETWEEN_DISTRIBUTIONS, continueCardDistribution(arg.getKey()));
     }
@@ -339,37 +313,30 @@ public class View implements Observer {
             }
         };
     }
-
-    public void updateGapDone() {
-        for (CardModel card : model.getMyCards()) {
-            removeListeners(cardViews.get(card.getName()));
-        }
-        controller.doNextAction();
-    }
-
-    private void moveCard(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
+    
+    public void moveCard(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
         moveCard(cardView, card.getX(), card.getY(), card.getZ(), onFinished);
     }
-    private void moveCard(CardView cardView, CardModel card, Double a, EventHandler<ActionEvent> onFinished) {
+    public void moveCard(CardView cardView, CardModel card, Double a, EventHandler<ActionEvent> onFinished) {
         moveCard(cardView, card.getX(), card.getY(), card.getZ(), a, onFinished);
     }
-    private void moveCard(CardView cardView, Double x, Double y, Double z, EventHandler<ActionEvent> onFinished) {
+    public void moveCard(CardView cardView, Double x, Double y, Double z, EventHandler<ActionEvent> onFinished) {
         moveCard(cardView, x, y, z, cardView.getView().getRotate(), onFinished);
     }
-    private void moveCard(CardView cardView, Double x, Double y, Double z, Double a, EventHandler<ActionEvent> onFinished) {
+    public void moveCard(CardView cardView, Double x, Double y, Double z, Double a, EventHandler<ActionEvent> onFinished) {
         Double time = calculTime(new double[]{calculDelta(cardView.getView().getTranslateX(), x),
         		calculDelta(cardView.getView().getTranslateY(), y),
         		calculDelta(cardView.getView().getTranslateZ(), z)});
 
         moveMeshView(time, cardView.getView(), x, y, z, a, onFinished);
     }
-    private void moveCard(double time, CardView cardView, Double x, Double y, Double z, EventHandler<ActionEvent> onFinished) {
+    public void moveCard(double time, CardView cardView, Double x, Double y, Double z, EventHandler<ActionEvent> onFinished) {
     	moveCard(time, cardView, x, y, z, cardView.getView().getRotate(), onFinished);
     }
-    private void moveCard(double time, CardView cardView, Double x, Double y, Double z, Double a, EventHandler<ActionEvent> onFinished) {
+    public void moveCard(double time, CardView cardView, Double x, Double y, Double z, Double a, EventHandler<ActionEvent> onFinished) {
         moveMeshView(time, cardView.getView(), x, y, z, a, onFinished);
     }
-    private void moveMeshView(double time, MeshView view, Double x, Double y, Double z, Double a, EventHandler<ActionEvent> onFinished) {
+    public void moveMeshView(double time, MeshView view, Double x, Double y, Double z, Double a, EventHandler<ActionEvent> onFinished) {
         Timeline animationMoveCard = new Timeline();
 
         KeyValue kVMoveX = new KeyValue(view.translateXProperty(), unNull(x, view.getTranslateX()));
@@ -409,76 +376,6 @@ public class View implements Observer {
         }
         time /= TIME_DIVIDER;
         return time;
-    }
-
-    /*Attend que les cartes soit totalement sortient du cercle forme par la diagonale du deck (jeu)
-    avant de descendre (en z). Evite que les cartes passe au travers du deck.*/
-    private void moveCardFromDeck(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished2) {
-        Point2D firstDest = calculFirstDest(cardView, card);
-
-        EventHandler<ActionEvent> onFinished1 = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent t) {
-                moveCard(cardView, card, onFinished2);
-            }
-        };
-        moveCard(cardView, firstDest.getX(), firstDest.getY(), cardView.getView().getTranslateZ(), onFinished1);
-    }
-
-    private Point2D calculFirstDest(CardView cardView, CardModel card) {
-        Point2D viewP = new Point2D(cardView.getView().getTranslateX(), cardView.getView().getTranslateY());
-        Point2D cardP = new Point2D(card.getX(), card.getY());
-
-        if ((viewP.getX() - cardP.getX()) != 0) {
-            double a = calculCoef(viewP, cardP);
-            if (a != 0) {
-                double b = viewP.getY() - a * viewP.getX();
-                if (cardP.getX() - viewP.getX() < 0)
-                    return getIntersectionsLigneCircle(a, b, viewP.getX(), viewP.getY(), CardModel.CARD_DIAG).get(0);
-                else
-                    return getIntersectionsLigneCircle(a, b, viewP.getX(), viewP.getY(), CardModel.CARD_DIAG).get(1);
-            } else {
-                if (cardP.getX() - viewP.getX() > 0) {
-                    return new Point2D(viewP.getX() + CardModel.CARD_DIAG, viewP.getY());
-                } else {
-                    return new Point2D(viewP.getX() - CardModel.CARD_DIAG, viewP.getY());
-                }
-            }
-        } else {
-            if (cardP.getY() - viewP.getY() > 0) {
-                return new Point2D(viewP.getX(), Model.DECK_Y + CardModel.CARD_DIAG);
-            } else {
-                return new Point2D(viewP.getX(), Model.DECK_Y - CardModel.CARD_DIAG);
-            }
-        }
-    }
-
-    private double calculCoef(Point2D a, Point2D b) {
-        return (b.getY() - a.getY()) / (b.getX() - a.getX());
-    }
-
-    private ArrayList<Point2D> getIntersectionsLigneCircle(double a, double b, double cx, double cy, double r) {
-        ArrayList<Point2D> intersections = new ArrayList<Point2D>();
-
-        double A = 1 + a * a;
-        double B = 2 * (-cx + a * b - a * cy);
-        double C = cx * cx + cy * cy + b * b - 2 * b * cy - r * r;
-        double delta = B * B - 4 * A * C;
-
-        if (delta > 0) {
-            double x = (-B - (float) Math.sqrt(delta)) / (2 * A);
-            double y = a * x + b;
-            intersections.add(new Point2D(x, y));
-
-            x = (-B + (float) Math.sqrt(delta)) / (2 * A);
-            y = a * x + b;
-            intersections.add(new Point2D(x, y));
-        } else if (delta == 0) {
-            double x = -B / (2 * A);
-            double y = a * x + b;
-
-            intersections.add(new Point2D(x, y));
-        }
-        return intersections;
     }
     
     private final static double REVERT_CARD_WAIT_COEF = 0.05; //TODO Remetre � 0.1
@@ -548,11 +445,6 @@ public class View implements Observer {
     	}
     }
 
-    public static final double ECART_ZONE_X = Model.GAP_X - 40;
-    public static final double ECART_ZONE_Y = Model.GAP_Y - 40;
-    public static final double ECART_ZONE_W = 2 * CardModel.CARD_W + Model.DIST_CARD_X_SHIFT + 80;
-    public static final double ECART_ZONE_H = 3 * (CardModel.CARD_H + Model.DIST_CARD_Y_SHIFT) + 80;
-
     public void updateActionChosen(PlayerAction action) {
     	unrealElementsGroup.getChildren().clear();
 
@@ -563,123 +455,6 @@ public class View implements Observer {
         } else {
             controller.skipGap();
         }
-    }
-
-    private CardView viewSelected = null;
-    private double selectedCardXSave = 0;
-    private double selectedCardYSave = 0;
-
-    private EventHandler<ActionEvent> doGap() {
-        return new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent t) {
-                for (CardModel card : model.getMyCards()) {
-                    updateGapableCard(card);
-                }
-                for (CardModel card : model.getChienCards()) {
-                    updateGapableCard(card);
-                }
-                controller.doNextAction();
-            }
-        };
-    }
-    
-    private void updateGapableCard(CardModel card){
-    	cardViews.get(card.getName()).getView().setOnMousePressed(selectCardEvent(cardViews.get(card.getName())));
-    	cardViews.get(card.getName()).getView().setOnMouseDragged(followMouseEvent(cardViews.get(card.getName())));
-    	cardViews.get(card.getName()).getView().setOnMouseReleased(tryAddCardToGapEvent(cardViews.get(card.getName()), card));
-    }
-
-    private EventHandler<MouseEvent> selectCardEvent(CardView view) {
-        return new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-            	if(view.canBeSelected()){
-                    selectCardEvent(view, event);
-            	}
-            }
-        };
-    }
-
-    private void selectCardEvent(CardView view, MouseEvent event){
-        selectedCardXSave = (int) view.getView().getTranslateX();
-        selectedCardYSave = (int) view.getView().getTranslateY();
-        riseCard(view, event);
-        viewSelected = view;
-        view.canBeSelected(false);
-    }
-
-    private void riseCard(CardView view, MouseEvent event){
-        view.getView().setRotationAxis(Rotate.X_AXIS);
-        view.getView().setRotate(-DISTRIBUTION_GROUP_ROTATE);
-        view.getView().setTranslateZ(-1 + CardModel.CARD_H * DISTRIBUTION_GROUP_ROTATE/90);
-        followMouse(view, event);
-    }
-
-    private EventHandler<MouseEvent> followMouseEvent(CardView view) {
-        return new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-            	if(viewSelected == view){
-                    followMouse(view, event);
-            	}
-            }
-        };
-    }
-
-    private void followMouse(CardView view, MouseEvent event){
-    	/*Formule inexacte qui essaye de garder la carte au niveau de la souris, lors du glisser deposer,
-    	en prenant en compte l'inclinaison de la camera et le dezoom. Ci ces 2 valeurs sont a 0 le centre
-    	de la carte est toujours au niveau de la souris.*/
-        view.getView().setTranslateX((event.getSceneX() - CardModel.CARD_W / 2)
-        		+ 0.0004*(event.getSceneX()-Model.SCREEN_W/2)*DISTRIBUTION_GROUP_SHIFT_Z
-        		+ 0.002*(event.getSceneX()-Model.SCREEN_W/2)*(-DISTRIBUTION_GROUP_ROTATE)*(1-event.getSceneY()/(0.2*Model.SCREEN_H)));
-        view.getView().setTranslateY((event.getSceneY() - CardModel.CARD_H / 2)
-        		+ 0.0004*(event.getSceneY()-Model.SCREEN_H/2)*DISTRIBUTION_GROUP_SHIFT_Z
-        		+ 0.004*event.getSceneY()*(-DISTRIBUTION_GROUP_ROTATE));
-    }
-
-    private EventHandler<MouseEvent> tryAddCardToGapEvent(CardView view, CardModel card){
-        return new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                tryAddCardToGap(view, card);
-            }
-        };
-    }
-
-    private void tryAddCardToGap(CardView view, CardModel card){
-        if(viewSelected == view){
-        	viewSelected = null;
-            if (model.ungapableCards().contains(card.getName()) || cardViewInEcart(cardViews.get(card.getName()))) {
-                moveCard(cardViews.get(card.getName()), selectedCardXSave, selectedCardYSave, card.getZ(), 0.0, canSelectView(view));
-            }
-            else{
-                controller.addCardToGap(card);
-                removeListeners(cardViews.get(card.getName()));
-            }
-        }
-    }
-
-    private EventHandler<ActionEvent> canSelectView(CardView view){
-    	return new EventHandler<ActionEvent>(){
-			@Override
-			public void handle(ActionEvent event) {
-				view.canBeSelected(true);
-			}
-    	};
-    }
-
-    private boolean cardViewInEcart(CardView view) {
-        return view.getView().getTranslateX() + CardModel.CARD_W / 2 < ECART_ZONE_X
-                || view.getView().getTranslateX() + CardModel.CARD_W / 2 > ECART_ZONE_X + ECART_ZONE_W
-                || view.getView().getTranslateY() + CardModel.CARD_H / 2 < ECART_ZONE_Y
-                || view.getView().getTranslateY() + CardModel.CARD_H / 2 > ECART_ZONE_Y + ECART_ZONE_H;
-    }
-
-    private void removeListeners(CardView cardView) {
-        cardView.getView().setOnMousePressed(null);
-        cardView.getView().setOnMouseDragged(null);
-        cardView.getView().setOnMouseReleased(null);
     }
 
     private void nouvelleDonne() {
@@ -708,12 +483,5 @@ public class View implements Observer {
     			distributionGroup.getChildren().add((new Dinosaur3D(card, cardViews.get(card.getName()).getDinosaurType()).getView()));
     		}
     	}
-    }
-
-    private static final double PROJECTOR_SHIFT = 50;
-    private static EnvironmentLight projector = new EnvironmentLight(Color.WHITE,
-    		new Point3D(Model.SCREEN_W/2 + PROJECTOR_SHIFT, Model.SCREEN_H/2 - 27*View.DISTRIBUTION_GROUP_ROTATE + PROJECTOR_SHIFT, -1400 - View.DISTRIBUTION_GROUP_SHIFT_Z));
-    public static void turnOnProjector(boolean b){
-    	projector.setLightOn(b);
     }
 }
