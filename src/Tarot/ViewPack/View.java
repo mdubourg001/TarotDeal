@@ -351,7 +351,7 @@ public class View implements Observer {
         }
     }
 
-    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.1; //TODO Remettre � 0.3
+    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.2; //TODO Remettre � 0.2
     public void update3CardsDistributed(Pair<Boolean, CardModel[]> arg) {
     	moveCardFromDeck(cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
         moveCardFromDeck(cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
@@ -432,7 +432,7 @@ public class View implements Observer {
         return  value;
     }
 
-    public static final double TIME_DIVIDER = 500; // TODO REMETTRE A 1000
+    public static final double TIME_DIVIDER = 1000; // TODO REMETTRE A 1000
 
     private double calculTime(double[] deltas) {
         double time = 0;
@@ -513,7 +513,7 @@ public class View implements Observer {
         return intersections;
     }
     
-    private final static double REVERT_CARD_WAIT_COEF = 0.1; //TODO Remetre � 0.1
+    private final static double REVERT_CARD_WAIT_COEF = 0.05; //TODO Remetre � 0.1
     public void revertDeck(ArrayList<CardModel> deck, int size, EventHandler<ActionEvent> onFinished) {
         int i = 1;
         for (CardModel card : deck) {
