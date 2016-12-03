@@ -66,7 +66,7 @@ public class View implements Observer {
 
     private Map<String, CardView> cardViews = new HashMap<String, CardView>();
     
-    private MeshView ground = createGround();
+    private Ground ground = new Ground();
 
     private MenuView menuView = new MenuView(this);
     private SettingsView settingsView = new SettingsView(this);
@@ -111,9 +111,6 @@ public class View implements Observer {
         distributionGroup.setRotationAxis(new Point3D(1, 0, 0));
         addCardsZones();
 
-        ground.setScaleX(1 + DISTRIBUTION_GROUP_SHIFT_Z/1330 - DISTRIBUTION_GROUP_ROTATE/100);
-        ground.setScaleY(1 + DISTRIBUTION_GROUP_SHIFT_Z/1330 - DISTRIBUTION_GROUP_ROTATE/100);
-
         distributionArea.setTranslateZ(3);
 
         for(ActionButton b : actionButtons.values()){
@@ -148,36 +145,6 @@ public class View implements Observer {
     		distributionGroup.getChildren().add(zone.getZone());
     		distributionGroup.getChildren().add(zone.getLab());
     	}
-    }
-
-    private MeshView createGround(){
-        TriangleMesh mesh = new TriangleMesh();
-
-        mesh.getPoints().addAll(
-                0, 0, 2.1f,
-                (float)Model.SCREEN_W, 0, 2.1f,
-                0, (float)Model.SCREEN_H, 2.1f,
-                (float)Model.SCREEN_W, (float)Model.SCREEN_H, 2.1f
-        );
-        mesh.getTexCoords().addAll(
-                0f, 0f,
-                1f, 0f,
-                0f, 1f,
-                1f, 1f
-        );
-        mesh.getFaces().addAll(
-                0, 0, 3, 3, 1, 1,
-                3, 3, 0, 0, 2, 2
-        );
-
-        Image groundTexture = new Image("file:./res/ground_tarot.png");
-        PhongMaterial groundMaterial = new PhongMaterial();
-        groundMaterial.setDiffuseMap(groundTexture);
-
-        MeshView view = new MeshView(mesh);
-        view.setMaterial(groundMaterial);
-
-        return view;
     }
 
     public Scene getScene() {
@@ -220,11 +187,12 @@ public class View implements Observer {
     private void initGameView() {
         updateRotateAndZoom();
         distributionGroup.getChildren().add(distributionArea);
-        distributionGroup.getChildren().add(ground);
+        distributionGroup.getChildren().add(ground.getView());
     }
 
     public void displayView(){
         updateRotateAndZoom();
+        ground.resize();
         root.getChildren().clear();
         root.getChildren().add(distributionGroup);
         root.getChildren().add(unrealElementsGroup);
@@ -719,7 +687,7 @@ public class View implements Observer {
         unrealElementsGroup.getChildren().clear();
 
         distributionGroup.getChildren().add(distributionArea);
-        distributionGroup.getChildren().add(ground);
+        distributionGroup.getChildren().add(ground.getView());
         addCardsZones();
 
         controller.restart();
@@ -736,8 +704,8 @@ public class View implements Observer {
 
     private void addDinosaurs(){
     	for(CardModel card : model.getMyCards()){
-    		if(card.getName().contains("Trump") || card.getName().contains("Excuse")){
-    			distributionGroup.getChildren().add((new Dinosaur3D(card, cardViews.get(card.getName()).dinosaurType).getView()));
+    		if(cardViews.get(card.getName()).getDinosaurType() != null){
+    			distributionGroup.getChildren().add((new Dinosaur3D(card, cardViews.get(card.getName()).getDinosaurType()).getView()));
     		}
     	}
     }

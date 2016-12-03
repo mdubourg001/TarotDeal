@@ -11,7 +11,7 @@ import javafx.scene.shape.TriangleMesh;
 public class CardView {
     private static Image cardsTexture = new Image("file:./res/textureCards.jpg");
     private boolean canBeSelected = true;
-    public DinosaurType dinosaurType = null;
+    private DinosaurType dinosaurType = null;
     
     private static int cardBack = 0;
 
@@ -95,6 +95,10 @@ public class CardView {
         canBeSelected = b;
     }
     
+    public DinosaurType getDinosaurType(){
+    	return dinosaurType;
+    }
+    
     private void updateDinosaurType(String name){
     	switch(name){
     	case "Trump21" :
@@ -120,15 +124,6 @@ public class CardView {
     		break;
     	case "Trump14" :
     		dinosaurType = DinosaurType.CARNOTAURUS;
-    		break;
-    	case "Trump13" :
-    		dinosaurType = DinosaurType.DEINOSUCHUS;
-    		break;
-    	case "Trump12" :
-    		dinosaurType = DinosaurType.ANKYLOSAURUS;
-    		break;
-    	case "Trump11" :
-    		dinosaurType = DinosaurType.DEINONYCHUS;
     		break;
     	}
     }
