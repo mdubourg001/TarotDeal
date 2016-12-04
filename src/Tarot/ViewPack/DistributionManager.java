@@ -11,10 +11,10 @@ import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.util.Pair;
 
-/*Regroupe toutes les fonctions permettant de distribuer les cartes depûis le Jeu.*/
+/*Regroupe toutes les fonctions permettant de distribuer les cartes depuis le Jeu.*/
 public class DistributionManager {
 	
-    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.2; //TODO Remettre ï¿½ 0.2
+    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.2; //TODO Remettre a 0.2
     
     @SuppressWarnings({ "unchecked", "incomplete-switch" })
     public static void update(View view, Observable arg0, Object arg1) {

@@ -131,7 +131,7 @@ public class View implements Observer {
         settingsView.display(settingsGroup, root);
     }
     
-    public void displayView(){
+    public void displayDistribution(){
     	distributionGroup.updateRotateAndZoom(settingsView.getRotationValue(), settingsView.getZoomValue());
         root.getChildren().clear();
         root.getChildren().add(distributionGroup);
@@ -154,9 +154,6 @@ public class View implements Observer {
             case CARD_MOVED_TO_CHIEN:
                 DistributionManager.update(this, arg0, arg1);
                 break;
-            case CARD_MOVED:
-                updateCardMoved(((Pair<TarotAction, CardModel>) arg1).getValue());
-                break;
             case PLAYER_REVERTED:
             	updatePlayerReverted();
                 break;
@@ -175,6 +172,7 @@ public class View implements Observer {
                 GapManager.update(this, arg0, arg1);
                 break;
             case DISTRIBUTION_DONE:
+            	/*Place, au dessus des 8 derniers atouts (14-21), un dinosaure 3D correspondant a l'atout.*/
             	updateDinosaurs();
             	break;
         }
@@ -208,10 +206,6 @@ public class View implements Observer {
         }
     }
     
-    public void updateCardMoved(CardModel card){
-    	moveCard(cardViews.get(card.getName()), card, null);
-    }
-    
     public void updatePlayerReverted(){
     	revertDeck(model.getMyCards(), Player.NB_CARDS, doNexTActionEvent());
     }
@@ -229,7 +223,7 @@ public class View implements Observer {
 
     public void updatePetitSec(Pair<Boolean, Integer> petitSec) {
         if (!petitSec.getKey()) {
-        	drawActionsButtons();
+        	showActionButtons();
         } else {
         	unrealElementsGroup.getChildren().add(createPetitSecLabel(petitSec.getValue()));
             waiter(3, nouvelleDonneEvent());
@@ -258,23 +252,8 @@ public class View implements Observer {
     	}
     }
     
-    ///<-UPDATES
+    ///<-UPDATES MOVE CARDS->
     
-    public EventHandler<ActionEvent> doNexTActionEvent() {
-        return new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent t) {
-                controller.doNextAction();
-            }
-        };
-    }
-    
-    public void waiter(double duration, EventHandler<ActionEvent> event) {
-        Timeline timeLine = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(Duration.seconds(duration), event);
-        timeLine.getKeyFrames().add(keyFrame);
-        timeLine.play();
-    }
-
     private static final double CUT_TIME = 0.2;
     private void moveCutJeu(double xShiftValue, boolean trueZ, Integer indexCut, EventHandler<ActionEvent> onFinished) {
         CardModel card;
@@ -356,7 +335,6 @@ public class View implements Observer {
     }
 
     public static final double TIME_DIVIDER = 1000; // TODO REMETTRE A 1000
-
     private double calculTime(double[] deltas) {
         double time = 0;
         for (double d : deltas) {
@@ -383,9 +361,8 @@ public class View implements Observer {
         }
     }
 
-    private final static double REVERT_CARD_DURATION = 1; // TODO REMETTRE A 2
+    private final static double REVERT_CARD_DURATION = 1; // TODO REMETTRE A 1
     private final static double REVERT_CARD_Z = -300;
-
     private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished) {
         EventHandler<ActionEvent> continueAnimation = new EventHandler<ActionEvent>() {
             public void handle(ActionEvent t) {
@@ -396,18 +373,35 @@ public class View implements Observer {
         moveMeshView(REVERT_CARD_DURATION/2, cardView.getView(), null, null, REVERT_CARD_Z, 270.0, continueAnimation);
     }
     
+    /// <-MOVE CARDS
+    
+    public EventHandler<ActionEvent> doNexTActionEvent() {
+        return new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent t) {
+                controller.doNextAction();
+            }
+        };
+    }
+    
+    public void waiter(double duration, EventHandler<ActionEvent> event) {
+        Timeline timeLine = new Timeline();
+        KeyFrame keyFrame = new KeyFrame(Duration.seconds(duration), event);
+        timeLine.getKeyFrames().add(keyFrame);
+        timeLine.play();
+    }
+    
     private Label createPetitSecLabel(Integer player){
-    	Label l = new Label("Petit Sec Player " + player);
+    	Label l = new Label(" Petit Sec Player " + player + " ");
     	l.setTextFill(Color.WHITE);
     	l.setFont(new Font(Model.SCREEN_W/12));
-    	l.setTranslateX(Model.SCREEN_W/7.5);
-    	l.setTranslateY(Model.SCREEN_H/3);
-    	l.setTranslateZ(-300);
-    	l.setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(50), null)));
+    	l.setTranslateX((Model.SCREEN_W/6.4));
+    	l.setTranslateY((Model.SCREEN_W/6.4)*(Model.SCREEN_H/Model.SCREEN_W));
+    	l.setTranslateZ(-Model.SCREEN_W/6.4);
+    	l.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
     	return l;
     }
     
-    private void drawActionsButtons(){
+    private void showActionButtons(){
     	for(Button b : actionButtons.values()){
     		unrealElementsGroup.getChildren().add(b);
     	}
