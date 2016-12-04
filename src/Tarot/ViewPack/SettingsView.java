@@ -183,10 +183,12 @@ public class SettingsView {
                 if (soundMuteButton.getPath().contains("mute")) {
                     soundMuteButton.setImage("file:./res/soundicon.png");
                     soundSlider.setValue(70);
+                    principalView.setMusicVolume(0.7);
                 }
                 else {
                     soundMuteButton.setImage("file:./res/mute.png");
                     soundSlider.setValue(0);
+                    principalView.setMusicVolume(0);
                 }
             }
         });
@@ -205,6 +207,7 @@ public class SettingsView {
                     soundMuteButton.setImage("file:./res/mute.png");
                 else
                     soundMuteButton.setImage("file:./res/soundicon.png");
+                principalView.setMusicVolume(soundSlider.getValue() / 10.0);
             }
         });
 

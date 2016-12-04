@@ -1,5 +1,6 @@
 package Tarot.ViewPack;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
 import javafx.scene.text.Font;
@@ -54,7 +58,9 @@ public class View implements Observer {
 
     private HashMap<String, CardView> cardViews = new HashMap<String, CardView>();
     private Map<String, ActionButton> actionButtons = new HashMap<String, ActionButton>();
-    
+
+    private MediaPlayer music = new MediaPlayer(new Media(new File("./res/music.mp3").toURI().toString()));
+
     ///CONSTRUCTOR->
     public View(Controller controller) {
         root.setDepthTest(DepthTest.ENABLE);
@@ -77,9 +83,16 @@ public class View implements Observer {
         root.getChildren().add(menuGroup);
         menuView.display(menuGroup, root);
 
+        initMusic();
         creatActionButtons();
     }
-    
+
+    private void initMusic() {
+        music.setAutoPlay(true);
+        music.setVolume(1.0);
+        music.play();
+    }
+
     private void creatActionButtons() {
         actionButtons.put("passe", new ActionButton("Passe",
                 ActionButton.BUTTON_X_START, ActionButton.BUTTON_Y, -300,
@@ -119,7 +132,11 @@ public class View implements Observer {
     public CardView getCardView(String name){
     	return cardViews.get(name);
     }
-    
+
+    public void setMusicVolume(double value) {
+        music.setVolume(value);
+    }
+
     ///<-GETTERS DISPLAYS->
 
     public void displayMenu() {
@@ -137,7 +154,7 @@ public class View implements Observer {
         root.getChildren().add(unrealElementsGroup);
     }
     
-    ///<-DISPLAYS UPDATES->
+  ///<-DISPLAYS UPDATES->
     
 	@SuppressWarnings("unchecked")
 	@Override
@@ -343,7 +360,7 @@ public class View implements Observer {
         return time;
     }
     
-    private final static double REVERT_CARD_WAIT_COEF = 0.1; //TODO Remetre a 0.1
+    private final static double REVERT_CARD_WAIT_COEF = 0.05; //TODO Remetre � 0.1
     public void revertDeck(ArrayList<CardModel> deck, int size, EventHandler<ActionEvent> onFinished) {
         int i = 1;
         for (CardModel card : deck) {
