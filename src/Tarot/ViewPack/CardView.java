@@ -72,15 +72,9 @@ public class CardView {
     	return cardBack;
     }
     
-    public static final int NB_CARD_BACKS = 3;
-    public static void changeCardBack(boolean next){
-    	if(next){
-    		cardBack++;
-    	}
-    	else{
-    		cardBack--;
-    	}
-    	cardBack %= NB_CARD_BACKS;
+    public static final int NB_CARD_BACKS = 4;
+    public static void changeCardBack(int cardNb){
+    	cardBack = cardNb;
     }
     
     public MeshView getView(){

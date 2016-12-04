@@ -1,5 +1,6 @@
 package Tarot.ViewPack;
 
+import Tarot.ModelPack.CardModel;
 import Tarot.ModelPack.Model;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
@@ -17,14 +18,15 @@ import java.util.List;
 
 
 public class SettingsView {
-    private static final double CARDBACK_Y = Model.SCREEN_H / 10;
-    private static final double CARDBACK1_X = Model.SCREEN_W / 1.9;
-    private static final double CARDBACK2_X = Model.SCREEN_W / 1.52;
-    private static final double CARDBACK3_X = Model.SCREEN_W / 1.27;
+    private static final double CARD_BACK_Y = Model.SCREEN_H / 10;
+    private static final double CARD_BACKS_X[] = new double[]{ 
+    		Model.SCREEN_W / 1.92,
+    		Model.SCREEN_W / 1.64,
+    		Model.SCREEN_W / 1.43,
+    		Model.SCREEN_W / 1.27
+    		};
 
     private List<Node> components = new ArrayList<>();
-
-    private View principalView = null;
 
     private ImageView settingsBackground = new ImageView("file:./res/settings_background.png");
 
@@ -37,11 +39,14 @@ public class SettingsView {
     private Slider zoomSlider = new Slider(-400, 0, 0);
     private Slider rotationSlider = new Slider(0, 30, 25);
 
-    private ImageView cardBack1 = new ImageView("file:./res/backcard.png");
-    private ImageView cardBack2 = new ImageView("file:./res/backcard2.png");
-    private ImageView cardBack3 = new ImageView("file:./res/backcard3.png");
-    private Rectangle cbSelectionRect = new Rectangle(Model.SCREEN_W / 12.5, Model.SCREEN_H / 5.3);
-    private ImageView selectedCardBack = cardBack1;
+    private ImageView[] cardBacks = new ImageView[]{
+    		new ImageView("file:./res/backcard.png"),
+    		new ImageView("file:./res/backcard2.png"),
+    		new ImageView("file:./res/backcard3.png"),
+    		new ImageView("file:./res/backcard4.png")
+    };
+    private Rectangle cbSelectionRect = new Rectangle(CardModel.CARD_W, CardModel.CARD_H);
+    private int selectedCardBack = 0;
     private ImageView cardsBackImage = new ImageView("file:./res/cardsback.png");
     private ImageView soundImage = new ImageView("file:./res/sound.png");
     private ImageView zoomImage = new ImageView("file:./res/zoom.png");
@@ -60,36 +65,28 @@ public class SettingsView {
         components.add(soundSlider);
         components.add(zoomSlider);
         components.add(rotationSlider);
-        components.add(cardBack1);
-        components.add(cardBack2);
-        components.add(cardBack3);
+        
+        for(int i=0; i<CardView.NB_CARD_BACKS; i++){
+        	cardBacks[i].setFitWidth(CardModel.CARD_W);
+        	cardBacks[i].setFitHeight(CardModel.CARD_H);
+        	
+        	cardBacks[i].setTranslateX(CARD_BACKS_X[i]);
+        	
+        	cardBacks[i].setTranslateY(CARD_BACK_Y);
+        	
+        	components.add(cardBacks[i]);
+        }
+        
         components.add(cbSelectionRect);
         components.add(cardsBackImage);
         components.add(soundImage);
         components.add(zoomImage);
         components.add(rotationImage);
 
-        this.principalView = principalView;
-
-        cardBack1.setFitWidth(Model.SCREEN_W / 13);
-        cardBack1.setFitHeight(Model.SCREEN_H / 5.5);
-        cardBack1.setTranslateX(CARDBACK1_X);
-        cardBack1.setTranslateY(CARDBACK_Y);
-
-        cardBack2.setFitWidth(Model.SCREEN_W / 13);
-        cardBack2.setFitHeight(Model.SCREEN_H / 5.5);
-        cardBack2.setTranslateX(CARDBACK2_X);
-        cardBack2.setTranslateY(CARDBACK_Y);
-
-        cardBack3.setFitWidth(Model.SCREEN_W / 13);
-        cardBack3.setFitHeight(Model.SCREEN_H / 5.5);
-        cardBack3.setTranslateX(CARDBACK3_X);
-        cardBack3.setTranslateY(CARDBACK_Y);
-
         cbSelectionRect.setStrokeWidth(5);
         cbSelectionRect.setStroke(Paint.valueOf("white"));
-        cbSelectionRect.setTranslateX(Model.SCREEN_W / 1.9 - cbSelectionRect.getStrokeWidth() / 1.5);
-        cbSelectionRect.setTranslateY(Model.SCREEN_H / 10 - cbSelectionRect.getStrokeWidth() / 1.5);
+        cbSelectionRect.setTranslateX(CARD_BACKS_X[0]);
+        cbSelectionRect.setTranslateY(CARD_BACK_Y);
         cbSelectionRect.setFill(Paint.valueOf("transparent"));
 
         cardsBackImage.setFitWidth(Model.SCREEN_W / 6);
@@ -113,7 +110,7 @@ public class SettingsView {
         rotationImage.setTranslateY(Model.SCREEN_H / 1.3);
 
         leftArrow.setImageSize(Model.SCREEN_W / 10, Model.SCREEN_H / 8);
-        leftArrow.setPosition(Model.SCREEN_W / 2.8, Model.SCREEN_H / 9);
+        leftArrow.setPosition(Model.SCREEN_W / 2.9, Model.SCREEN_H / 9);
         leftArrow.setButtonSize(Model.SCREEN_W / 10, Model.SCREEN_H / 8);
         rightArrow.setImageSize(Model.SCREEN_W / 10, Model.SCREEN_H / 8);
         rightArrow.setPosition(Model.SCREEN_W / 1.2, Model.SCREEN_H / 9);
@@ -141,19 +138,11 @@ public class SettingsView {
         leftArrow.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                if(selectedCardBack == cardBack1) {
-                    cbSelectionRect.setTranslateX(CARDBACK3_X - cbSelectionRect.getStrokeWidth() / 1.5);
-                    selectedCardBack = cardBack3;
-                }
-                else if (selectedCardBack == cardBack2) {
-                    cbSelectionRect.setTranslateX(CARDBACK1_X - cbSelectionRect.getStrokeWidth() / 1.5);
-                    selectedCardBack = cardBack1;
-                }
-                else if(selectedCardBack == cardBack3) {
-                    cbSelectionRect.setTranslateX(CARDBACK2_X - cbSelectionRect.getStrokeWidth() / 1.5);
-                    selectedCardBack = cardBack2;
-                }
-                CardView.changeCardBack(false);
+                selectedCardBack--;
+                if(selectedCardBack == -1)
+                	selectedCardBack = CardView.NB_CARD_BACKS-1;
+                cbSelectionRect.setTranslateX(CARD_BACKS_X[selectedCardBack]);
+                CardView.changeCardBack(selectedCardBack);
             }
         });
         leftArrow.setOnMouseEntered(new EventHandler<MouseEvent>() {
@@ -174,19 +163,10 @@ public class SettingsView {
         rightArrow.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                if(selectedCardBack == cardBack2) {
-                    cbSelectionRect.setTranslateX(CARDBACK3_X - cbSelectionRect.getStrokeWidth() / 1.5);
-                    selectedCardBack = cardBack3;
-                }
-                else if (selectedCardBack == cardBack3) {
-                    cbSelectionRect.setTranslateX(CARDBACK1_X - cbSelectionRect.getStrokeWidth() / 1.5);
-                    selectedCardBack = cardBack1;
-                }
-                else if(selectedCardBack == cardBack1) {
-                    cbSelectionRect.setTranslateX(CARDBACK2_X - cbSelectionRect.getStrokeWidth() / 1.5);
-                    selectedCardBack = cardBack2;
-                }
-                CardView.changeCardBack(true);
+            	selectedCardBack++;
+                selectedCardBack %= CardView.NB_CARD_BACKS;
+                cbSelectionRect.setTranslateX(CARD_BACKS_X[selectedCardBack]);
+                CardView.changeCardBack(selectedCardBack);
             }
         });
         rightArrow.setOnMouseEntered(new EventHandler<MouseEvent>() {
