@@ -15,8 +15,12 @@ public class Controller {
         return model;
     }
 
+    /*Commence a -1 et est incremente au debut de doNextAction() (et pas a la fin)
+    car la fonction sera appellee recursivement.*/
     private int currentAction = -1;
     
+    /*Utilise lorsque qu'on repasse du menu a l'ecran de distribution avec le buton play
+     pour eviter de faire doNextAction() alors que le jeu est deja lance.*/
     public void startIfNeeded(){
     	if(currentAction == -1){
     		doNextAction();
@@ -27,10 +31,10 @@ public class Controller {
         currentAction++;
         switch (currentAction) {
             case 0:
-                model.mixDeck();
+                model.mixJeu();
                 break;
             case 1:
-                model.cutDeck();
+                model.cutJeu();
                 break;
             case 2:
                 model.distributeCards();
@@ -72,13 +76,13 @@ public class Controller {
         doNextAction();
     }
     
-    public void nouvelleDone() {
+    public void restart() {
         model.nouvelleDonne();
         currentAction = -1;
     }
     
-    public void restart() {
-    	nouvelleDone();
+    public void nouvelleDonne() {
+    	restart();
         doNextAction();
     }
 }

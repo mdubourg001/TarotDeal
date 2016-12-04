@@ -19,7 +19,6 @@ import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Point3D;
 import javafx.scene.DepthTest;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
@@ -34,82 +33,36 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
 public class View implements Observer {
-    public static double DISTRIBUTION_GROUP_ROTATE = -30; //CAMERA ROTATION MIN -30 MAX 0
-    private static double DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
-    public static double DISTRIBUTION_GROUP_SHIFT_Z = 0; //DEZOOM MIN 0 MAX 400
-
-    private static final double DISTRIBUTION_AREA_SHIFT = Model.SCREEN_W/2;
-
     private Controller controller;
     private Model model;
 
     private Group root = new Group();
     private Group menuGroup = new Group();
     private Group settingsGroup = new Group();
-    private Group distributionGroup = new Group();
+    public DistributionGroup distributionGroup = new DistributionGroup();
+    
     private Group unrealElementsGroup = new Group();
     private Scene scene = new Scene(root, Model.SCREEN_W, Model.SCREEN_H, true, SceneAntialiasing.DISABLED);
     private PerspectiveCamera camera = new PerspectiveCamera();
-
-    private HashMap<String, CardView> cardViews = new HashMap<String, CardView>();
     
-    private Ground ground = new Ground();
-
     private MenuView menuView = new MenuView(this);
     private SettingsView settingsView = new SettingsView(this);
 
-    private Rectangle distributionArea = new Rectangle(-DISTRIBUTION_AREA_SHIFT, -DISTRIBUTION_AREA_SHIFT, Model.SCREEN_W+2*DISTRIBUTION_AREA_SHIFT, Model.SCREEN_H + 2*DISTRIBUTION_AREA_SHIFT);
-
-    private Map<String, ActionButton> actionButtons = new HashMap<String, ActionButton>(){{
-        put("passe", new ActionButton("Passe",
-                ActionButton.BUTTON_X_START, ActionButton.BUTTON_Y, -300,
-                PlayerAction.PASSE));
-        put("prise", new ActionButton("Prise",
-                ActionButton.BUTTON_X_START + (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
-                PlayerAction.PRISE));
-        put("garde", new ActionButton("Garde",
-                ActionButton.BUTTON_X_START + 2 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
-                PlayerAction.GARDE));
-        put("gardeSans", new ActionButton("Garde\nsans chien",
-                ActionButton.BUTTON_X_START + 3 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
-                PlayerAction.GARDE_SANS));
-        put("gardeContre", new ActionButton("Garde contre\nle chien",
-                ActionButton.BUTTON_X_START + 4 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
-                PlayerAction.GARDE_CONTRE));
-    }};
+    private HashMap<String, CardView> cardViews = new HashMap<String, CardView>();
+    private Map<String, ActionButton> actionButtons = new HashMap<String, ActionButton>();
     
+    ///CONSTRUCTOR->
     public View(Controller controller) {
-        this.controller = controller;
-        this.model = controller.getModel();
-        
-        root.getChildren().add(menuGroup);
-
-        initGameView();
-
-        distributionGroup.setDepthTest(DepthTest.ENABLE);
-
-        if (!Platform.isSupported(ConditionalFeature.SCENE3D)) {
+        root.setDepthTest(DepthTest.ENABLE);
+        if (!Platform.isSupported(ConditionalFeature.SCENE3D))
             throw new RuntimeException("SCENE3D not supported");
-        }
-        
         scene.setFill(Color.BLACK);
         scene.setCamera(camera);
-        camera.setRotationAxis(new Point3D(1, 0, 0));
-        distributionGroup.setRotationAxis(new Point3D(1, 0, 0));
-        addCardsZones();
-
-        distributionArea.setTranslateZ(3);
-
-        for(ActionButton b : actionButtons.values()){
-            b.setOnMouseClicked(mouseEvent -> controller.chooseAction(b.getAction()));
-        }
-
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
@@ -118,35 +71,57 @@ public class View implements Observer {
                     displayMenu();
             }
         });
+    	
+        this.controller = controller;
+        this.model = controller.getModel();
+        
+        root.getChildren().add(menuGroup);
         menuView.display(menuGroup, root);
+
+        creatActionButtons();
     }
+    
+    private void creatActionButtons() {
+        actionButtons.put("passe", new ActionButton("Passe",
+                ActionButton.BUTTON_X_START, ActionButton.BUTTON_Y, -300,
+                PlayerAction.PASSE, controller));
+        actionButtons.put("prise", new ActionButton("Prise",
+                ActionButton.BUTTON_X_START + (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.PRISE, controller));
+        actionButtons.put("garde", new ActionButton("Garde",
+                ActionButton.BUTTON_X_START + 2 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.GARDE, controller));
+        actionButtons.put("gardeSans", new ActionButton("Garde\nsans chien",
+                ActionButton.BUTTON_X_START + 3 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.GARDE_SANS, controller));
+        actionButtons.put("gardeContre", new ActionButton("Garde contre\nle chien",
+                ActionButton.BUTTON_X_START + 4 * (ActionButton.BUTTON_W + ActionButton.BUTTON_X_DIFF), ActionButton.BUTTON_Y, -300,
+                PlayerAction.GARDE_CONTRE, controller));
+    }
+    
+    ///<-CONSTRUCTOR GETTERS->
 
     public Controller getController() {
         return this.controller;
     }
     
-    private void addCardsZones(){
-    	CardsZone[] zones = new CardsZone[]{
-    			new CardsZone("Chien", Model.CHIEN_X-5, Model.CHIEN_Y-5, Model.CHIEN_W+10, Model.CHIEN_H+10),
-    			new CardsZone("Your Cards", Model.MY_CARDS_X-5, Model.MY_CARDS_Y-5, Model.MY_CARDS_W+10, Model.MY_CARDS_H+10),
-    			new CardsZone("Gap", Model.GAP_X-5, Model.GAP_Y-5, Model.GAP_W+10, Model.GAP_H+10)
-    					};
-    	for(CardsZone zone : zones){
-    		distributionGroup.getChildren().add(zone.getZone());
-    		distributionGroup.getChildren().add(zone.getLab());
-    	}
+    public Model getModel() {
+        return this.model;
     }
-
+    
     public Scene getScene() {
         return scene;
     }
-
-    private void waiter(double duration, EventHandler<ActionEvent> event) {
-        Timeline timeLine = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(Duration.seconds(duration), event);
-        timeLine.getKeyFrames().add(keyFrame);
-        timeLine.play();
+    
+    public DistributionGroup getDistGroup(){
+    	return distributionGroup;
     }
+    
+    public CardView getCardView(String name){
+    	return cardViews.get(name);
+    }
+    
+    ///<-GETTERS DISPLAYS->
 
     public void displayMenu() {
         menuView.display(menuGroup, root);
@@ -155,62 +130,35 @@ public class View implements Observer {
     public void displaySettings() {
         settingsView.display(settingsGroup, root);
     }
-
-    public EventHandler<ActionEvent> doNexTActionEvent() {
-        return new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent t) {
-                controller.doNextAction();
-            }
-        };
-    }
-
-    private void updateRotateAndZoom() {
-        DISTRIBUTION_GROUP_ROTATE = settingsView.getRotationValue();
-        DISTRIBUTION_GROUP_SHIFT_Z = settingsView.getZoomValue();
-        DISTRIBUTION_GROUP_SHIFT_Y = 15*DISTRIBUTION_GROUP_ROTATE;
-
-        distributionGroup.setRotate(DISTRIBUTION_GROUP_ROTATE);
-        distributionGroup.setTranslateY(DISTRIBUTION_GROUP_SHIFT_Y);
-        distributionGroup.setTranslateZ(DISTRIBUTION_GROUP_SHIFT_Z);
-    }
-
-    private void initGameView() {
-        updateRotateAndZoom();
-        distributionGroup.getChildren().add(distributionArea);
-        distributionGroup.getChildren().add(ground.getView());
-    }
-
+    
     public void displayView(){
-        updateRotateAndZoom();
-        ground.resize();
+    	distributionGroup.updateRotateAndZoom(settingsView.getRotationValue(), settingsView.getZoomValue());
         root.getChildren().clear();
         root.getChildren().add(distributionGroup);
         root.getChildren().add(unrealElementsGroup);
     }
-
+    
+  ///<-DISPLAYS UPDATES->
+    
 	@SuppressWarnings("unchecked")
 	@Override
     public void update(Observable arg0, Object arg1) {
         switch (((Pair<TarotAction, Object>) arg1).getKey()) {
-            case DECK_MIXED:
-                updateDeckMixed();
+            case JEU_MIXED:
+                updateJeuMixed();
                 break;
-            case DECK_CUT:
-                updateDeckCut(((Pair<TarotAction, Integer>) arg1).getValue(), 1);
+            case JEU_CUT:
+                updateJeuCut(((Pair<TarotAction, Integer>) arg1).getValue(), 1);
                 break;
             case CARDS_DISTRIBUTED:
-                update3CardsDistributed(((Pair<TarotAction, Pair<Boolean, CardModel[]>>) arg1).getValue());
-                break;
-            case CARD_MOVED_FROM_DECK:
-                JeuManager.moveCardFromJeu(this, cardViews.get(((Pair<TarotAction, CardModel>) arg1).getValue().getName()),
-                        ((Pair<TarotAction, CardModel>) arg1).getValue(), null);
+            case CARD_MOVED_TO_CHIEN:
+                DistributionManager.update(this, arg0, arg1);
                 break;
             case CARD_MOVED:
-                moveCard(cardViews.get(((Pair<TarotAction, CardModel>) arg1).getValue().getName()),
-                        ((Pair<TarotAction, CardModel>) arg1).getValue(), null);
+                updateCardMoved(((Pair<TarotAction, CardModel>) arg1).getValue());
                 break;
             case PLAYER_REVERTED:
-                revertDeck(model.getMyCards(), Player.NB_CARDS, doNexTActionEvent());
+            	updatePlayerReverted();
                 break;
             case PLAYER_ORGANIZED:
                 updatePlayerCardsOrganized();
@@ -222,22 +170,17 @@ public class View implements Observer {
                 updateActionChosen(((Pair<TarotAction, PlayerAction>) arg1).getValue());
                 break;
             case CHIEN_REVERTED:
-                revertDeck(model.getChienCards(), Model.CHIEN_SIZE, GapManager.doGap(this, model, controller, cardViews));
-                break;
             case CARD_ADDED_GAP:
-            	moveCard(cardViews.get(((Pair<TarotAction, CardModel>) arg1).getValue().getName()),
-                        ((Pair<TarotAction, CardModel>) arg1).getValue(), 0.0, null);
-            	break;
             case GAP_DONE:
-                GapManager.updateGapDone(model, controller, cardViews);
+                GapManager.update(this, arg0, arg1);
                 break;
             case DISTRIBUTION_DONE:
-            	addDinosaurs();
+            	updateDinosaurs();
             	break;
         }
     }
 
-    public void updateDeckMixed() {
+    public void updateJeuMixed() {
         for (CardModel card : model.getJeu()) {
             cardViews.put(card.getName(), new CardView(card));
             distributionGroup.getChildren().add(cardViews.get(card.getName()).getView());
@@ -246,28 +189,94 @@ public class View implements Observer {
         controller.doNextAction();
     }
 
-    public void updateDeckCut(Integer indexHalf, int iteration) {
+    public void updateJeuCut(Integer indexHalf, int iteration) {
         EventHandler<ActionEvent> onFinished = new EventHandler<ActionEvent>() {
             public void handle(ActionEvent t) {
-                updateDeckCut(indexHalf, iteration + 1);
+                updateJeuCut(indexHalf, iteration + 1);
             }
         };
         switch (iteration) {
             case 1:
-                moveCutDeck(CardModel.CARD_W / 2 + 10, false, indexHalf, onFinished);
+                moveCutJeu(CardModel.CARD_W / 2 + 10, false, indexHalf, onFinished);
                 break;
             case 2:
-                moveCutDeck(CardModel.CARD_W / 2 + 10, true, indexHalf, onFinished);
+                moveCutJeu(CardModel.CARD_W / 2 + 10, true, indexHalf, onFinished);
                 break;
             case 3:
-                moveCutDeck(0, true, indexHalf, doNexTActionEvent());
+                moveCutJeu(0, true, indexHalf, doNexTActionEvent());
                 break;
         }
     }
+    
+    public void updateCardMoved(CardModel card){
+    	moveCard(cardViews.get(card.getName()), card, null);
+    }
+    
+    public void updatePlayerReverted(){
+    	revertDeck(model.getMyCards(), Player.NB_CARDS, doNexTActionEvent());
+    }
+    
+    private final static double ORGANIZE_CARD_TIME = 0.5;
+    public void updatePlayerCardsOrganized() {
+        CardModel card;
+        for (int i = 0; i < model.getMyCards().size(); i++) {
+            card = model.getMyCards().get(i);
+            cardViews.get(card.getName()).getView().setTranslateZ(card.getZ());
+            moveCard(cardViews.get(card.getName()), card, null);
+        }
+        waiter(ORGANIZE_CARD_TIME, doNexTActionEvent());
+    }
+
+    public void updatePetitSec(Pair<Boolean, Integer> petitSec) {
+        if (!petitSec.getKey()) {
+        	drawActionsButtons();
+        } else {
+        	unrealElementsGroup.getChildren().add(createPetitSecLabel(petitSec.getValue()));
+            waiter(3, nouvelleDonneEvent());
+        }
+    }
+    
+    public void updateActionChosen(PlayerAction action) {
+    	unrealElementsGroup.getChildren().clear();
+
+        if (action == PlayerAction.PASSE) {
+            nouvelleDonne();
+        } else if (action == PlayerAction.PRISE || action == PlayerAction.GARDE) {
+        	controller.doNextAction();
+        } else {
+            controller.skipGap();
+        }
+    }
+    
+    private void updateDinosaurs(){
+    	for(CardModel card : model.getMyCards()){
+    		if(cardViews.get(card.getName()).getDinosaurType() != null){
+    			distributionGroup.getChildren().add(new Dinosaur3D(card, 
+    					cardViews.get(card.getName()).getDinosaurType(),
+    					distributionGroup.getRotate()).getView());
+    		}
+    	}
+    }
+    
+    ///<-UPDATES
+    
+    public EventHandler<ActionEvent> doNexTActionEvent() {
+        return new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent t) {
+                controller.doNextAction();
+            }
+        };
+    }
+    
+    public void waiter(double duration, EventHandler<ActionEvent> event) {
+        Timeline timeLine = new Timeline();
+        KeyFrame keyFrame = new KeyFrame(Duration.seconds(duration), event);
+        timeLine.getKeyFrames().add(keyFrame);
+        timeLine.play();
+    }
 
     private static final double CUT_TIME = 0.2;
-
-    private void moveCutDeck(double xShiftValue, boolean trueZ, Integer indexCut, EventHandler<ActionEvent> onFinished) {
+    private void moveCutJeu(double xShiftValue, boolean trueZ, Integer indexCut, EventHandler<ActionEvent> onFinished) {
         CardModel card;
         double xShift;
         double z;
@@ -291,27 +300,6 @@ public class View implements Observer {
             	moveCard(CUT_TIME, cardViews.get(card.getName()), card.getX() + xShift, null, z, onFinished);
             }
         }
-    }
-
-    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.2; //TODO Remettre � 0.2
-    public void update3CardsDistributed(Pair<Boolean, CardModel[]> arg) {
-    	JeuManager.moveCardFromJeu(this, cardViews.get(arg.getValue()[0].getName()), arg.getValue()[0], null);
-    	JeuManager.moveCardFromJeu(this, cardViews.get(arg.getValue()[1].getName()), arg.getValue()[1], null);
-    	JeuManager.moveCardFromJeu(this, cardViews.get(arg.getValue()[2].getName()), arg.getValue()[2], null);
-    	
-        waiter(TIME_BETWEEN_DISTRIBUTIONS, continueCardDistribution(arg.getKey()));
-    }
-
-    private EventHandler<ActionEvent> continueCardDistribution(boolean nextAction) {
-        return new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent t) {
-                if (!nextAction) {
-                    model.distributeCards();
-                } else {
-                    controller.doNextAction();
-                }
-            }
-        };
     }
     
     public void moveCard(CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished) {
@@ -407,26 +395,6 @@ public class View implements Observer {
         };
         moveMeshView(REVERT_CARD_DURATION/2, cardView.getView(), null, null, REVERT_CARD_Z, 270.0, continueAnimation);
     }
-
-    private final static double ORGANIZE_CARD_TIME = 0.5;
-    public void updatePlayerCardsOrganized() {
-        CardModel card;
-        for (int i = 0; i < model.getMyCards().size(); i++) {
-            card = model.getMyCards().get(i);
-            cardViews.get(card.getName()).getView().setTranslateZ(card.getZ());
-            moveCard(cardViews.get(card.getName()), card, null);
-        }
-        waiter(ORGANIZE_CARD_TIME, doNexTActionEvent());
-    }
-
-    public void updatePetitSec(Pair<Boolean, Integer> petitSec) {
-        if (!petitSec.getKey()) {
-        	drawActionsButtons();
-        } else {
-        	unrealElementsGroup.getChildren().add(createPetitSecLabel(petitSec.getValue()));
-            waiter(3, nouvelleDonneEvent());
-        }
-    }
     
     private Label createPetitSecLabel(Integer player){
     	Label l = new Label("Petit Sec Player " + player);
@@ -445,27 +413,11 @@ public class View implements Observer {
     	}
     }
 
-    public void updateActionChosen(PlayerAction action) {
-    	unrealElementsGroup.getChildren().clear();
-
-        if (action == PlayerAction.PASSE) {
-            nouvelleDonne();
-        } else if (action == PlayerAction.PRISE || action == PlayerAction.GARDE) {
-        	controller.doNextAction();
-        } else {
-            controller.skipGap();
-        }
-    }
-
     private void nouvelleDonne() {
-        distributionGroup.getChildren().clear();
+        distributionGroup.nouvelleDonne();
         unrealElementsGroup.getChildren().clear();
 
-        distributionGroup.getChildren().add(distributionArea);
-        distributionGroup.getChildren().add(ground.getView());
-        addCardsZones();
-
-        controller.restart();
+        controller.nouvelleDonne();
     }
     
     private EventHandler<ActionEvent> nouvelleDonneEvent(){
@@ -475,13 +427,5 @@ public class View implements Observer {
 				nouvelleDonne();
 			}
     	};
-    }
-
-    private void addDinosaurs(){
-    	for(CardModel card : model.getMyCards()){
-    		if(cardViews.get(card.getName()).getDinosaurType() != null){
-    			distributionGroup.getChildren().add((new Dinosaur3D(card, cardViews.get(card.getName()).getDinosaurType()).getView()));
-    		}
-    	}
     }
 }

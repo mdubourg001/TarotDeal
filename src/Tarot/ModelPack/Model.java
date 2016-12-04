@@ -162,7 +162,7 @@ public class Model extends Observable {
 	public static final double DECK_Z_TOP = -76;
 	public static final double DECK_Z_DIFF = 1;
 	
-	public void mixDeck(){
+	public void mixJeu(){
 		Collections.shuffle(gameDecks.get("jeu"));
 		double z = DECK_Z_TOP;
 		for(CardModel card : gameDecks.get("jeu")){
@@ -171,10 +171,10 @@ public class Model extends Observable {
 			card.setZ(z);
 			z += DECK_Z_DIFF;
 		}
-		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.DECK_MIXED, null));
+		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.JEU_MIXED, null));
 	}
 
-	public void cutDeck(){
+	public void cutJeu(){
 		int cutIndex = new Random().nextInt(NB_CARDS-8) + 4;
         ArrayList<CardModel> firstHalf = subDeck(gameDecks.get("jeu") ,0, cutIndex);
         ArrayList<CardModel> secondHalf = subDeck(gameDecks.get("jeu") ,cutIndex, NB_CARDS);
@@ -182,7 +182,7 @@ public class Model extends Observable {
         gameDecks.replace("jeu", mergeDecks(secondHalf, firstHalf));
         adaptZJeu();
         
-        setAndNotifyChanged(new Pair<TarotAction, Integer>(TarotAction.DECK_CUT, cutIndex));
+        setAndNotifyChanged(new Pair<TarotAction, Integer>(TarotAction.JEU_CUT, cutIndex));
     }
 	
 	private ArrayList<CardModel> subDeck(ArrayList<CardModel> deck, int iMin, int iMax){
@@ -286,7 +286,7 @@ public class Model extends Observable {
 		chienCardX += (CardModel.CARD_W + DIST_CARD_X_SHIFT);
 		gameDecks.get("jeu").remove(0);
 
-		setAndNotifyChanged(new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED_FROM_DECK, 
+		setAndNotifyChanged(new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED_TO_CHIEN, 
 				gameDecks.get("chien").get(gameDecks.get("chien").size()-1)));
 	}
 	

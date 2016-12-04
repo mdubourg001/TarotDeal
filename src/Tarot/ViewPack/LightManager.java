@@ -14,12 +14,14 @@ public class LightManager {
     public static final double LAMPS_SPEED = 1;
     private static final double PROJECTOR_SHIFT = 50;
     
-    private static EnvironmentLight projector = new EnvironmentLight(Color.WHITE,
-    		new Point3D(Model.SCREEN_W/2 + PROJECTOR_SHIFT,
-    				Model.SCREEN_H/2 - 27*View.DISTRIBUTION_GROUP_ROTATE + PROJECTOR_SHIFT,
-    				-1400 - View.DISTRIBUTION_GROUP_SHIFT_Z));
+    private static EnvironmentLight projector;
     
     public static void addLights(Group group){
+    	projector  = new EnvironmentLight(Color.WHITE,
+        		new Point3D(Model.SCREEN_W/2 + PROJECTOR_SHIFT,
+        				Model.SCREEN_H/2 - 27*group.getRotate() + PROJECTOR_SHIFT,
+        				-1400 - group.getTranslateZ()));
+    	
         PointLight moonLight = new EnvironmentLight(Color.DARKBLUE, new Point3D(0, 0, MOON_LIGHT_Z));
         PointLight lampLight = new LampLight(Color.LIGHTBLUE, 
         		new Point3D(Model.SCREEN_W/2, Model.SCREEN_H/2, LAMP_Z), LAMPS_HOOK_Z, LAMPS_SPEED);

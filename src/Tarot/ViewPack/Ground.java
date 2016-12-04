@@ -1,13 +1,23 @@
 package Tarot.ViewPack;
 
 import Tarot.ModelPack.Model;
+import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.TriangleMesh;
 
-public class Ground{
+public class Ground extends Group{
+    private static final double DISTRIBUTION_AREA_SHIFT = Model.SCREEN_W/2;
+	
 	private MeshView view;
+	
+	/*Occupe une grande zone dans le group pour eviter qu'il se redimensionne apres
+    en deplacant des elements*/
+    private Rectangle distributionArea = new Rectangle(-DISTRIBUTION_AREA_SHIFT, -DISTRIBUTION_AREA_SHIFT, 
+    		Model.SCREEN_W+2*DISTRIBUTION_AREA_SHIFT, Model.SCREEN_H + 2*DISTRIBUTION_AREA_SHIFT);
+	
 	public Ground(){
         TriangleMesh mesh = new TriangleMesh();
 
@@ -34,15 +44,26 @@ public class Ground{
 
         view = new MeshView(mesh);
         view.setMaterial(groundMaterial);
-
+        
+        this.getChildren().add(view);
+        
+    	CardsZone[] zones = new CardsZone[]{
+    			new CardsZone("Chien", Model.CHIEN_X-5, Model.CHIEN_Y-5, Model.CHIEN_W+10, Model.CHIEN_H+10),
+    			new CardsZone("Your Cards", Model.MY_CARDS_X-5, Model.MY_CARDS_Y-5, Model.MY_CARDS_W+10, Model.MY_CARDS_H+10),
+    			new CardsZone("Gap", Model.GAP_X-5, Model.GAP_Y-5, Model.GAP_W+10, Model.GAP_H+10)
+    					};
+    	for(CardsZone zone : zones){
+    		this.getChildren().add(zone.getZone());
+    		this.getChildren().add(zone.getLab());
+    	}
+    	
+    	distributionArea.setTranslateZ(3);
+    	this.getChildren().add(distributionArea);
+    	
     }
 	
-	public void resize(){
-		view.setScaleX(1 + View.DISTRIBUTION_GROUP_SHIFT_Z/1330 - View.DISTRIBUTION_GROUP_ROTATE/100);
-		view.setScaleY(1 + View.DISTRIBUTION_GROUP_SHIFT_Z/1330 - View.DISTRIBUTION_GROUP_ROTATE/100);
-	}
-	
-	public MeshView getView(){
-		return view;
+	public void resize(double rotate, double shiftZ){
+		view.setScaleX(1 + shiftZ/1330 - rotate/100);
+		view.setScaleY(1 + shiftZ/1330 - rotate/100);
 	}
 }

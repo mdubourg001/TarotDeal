@@ -1,5 +1,6 @@
 package Tarot.ViewPack;
 
+import Tarot.Controller;
 import Tarot.ModelPack.Model;
 import Tarot.ModelPack.PlayerAction;
 import javafx.scene.control.Button;
@@ -21,8 +22,11 @@ public class ActionButton extends Button {
 
     private PlayerAction action;
 
-    ActionButton(String name, double x, double y, double z, PlayerAction action){
-        super(name);
+    ActionButton(String name, double x, double y, double z, PlayerAction action, Controller c){
+    	super(name);
+    	if(c == null){
+    		System.out.println("gqsrfdgreqhtehtezhhdfgbsfdbv");
+    	}
         this.action = action;
         setFont(font);
         setLayoutX(x);
@@ -34,6 +38,7 @@ public class ActionButton extends Button {
         setTextFill(Color.WHITE);
         setOnMouseEntered(mouseEvent -> changeColorButton(true));
         setOnMouseExited(mouseEvent -> changeColorButton(false));
+        setOnMouseClicked(mouseEvent -> c.chooseAction(action));
     }
 
     private void changeColorButton(boolean toWhite) {
