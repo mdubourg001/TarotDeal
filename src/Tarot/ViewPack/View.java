@@ -36,7 +36,6 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
-import javafx.scene.shape.Path;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 import javafx.util.Pair;
@@ -61,7 +60,7 @@ public class View implements Observer {
     private Map<String, ActionButton> actionButtons = new HashMap<String, ActionButton>();
 
     private MediaPlayer music = new MediaPlayer(new Media(new File("./res/music.mp3").toURI().toString()));
-    
+
     ///CONSTRUCTOR->
     public View(Controller controller) {
         root.setDepthTest(DepthTest.ENABLE);
@@ -93,7 +92,7 @@ public class View implements Observer {
         music.setVolume(1.0);
         music.play();
     }
-    
+
     private void creatActionButtons() {
         actionButtons.put("passe", new ActionButton("Passe",
                 ActionButton.BUTTON_X_START, ActionButton.BUTTON_Y, -300,
@@ -137,7 +136,7 @@ public class View implements Observer {
     public void setMusicVolume(double value) {
         music.setVolume(value);
     }
-    
+
     ///<-GETTERS DISPLAYS->
 
     public void displayMenu() {
@@ -378,7 +377,7 @@ public class View implements Observer {
         }
     }
 
-    private final static double REVERT_CARD_DURATION = 1; // TODO REMETTRE A 1
+    private final static double REVERT_CARD_DURATION = 0.8; // TODO REMETTRE A 0.7
     private final static double REVERT_CARD_Z = -300;
     private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished) {
         EventHandler<ActionEvent> continueAnimation = new EventHandler<ActionEvent>() {

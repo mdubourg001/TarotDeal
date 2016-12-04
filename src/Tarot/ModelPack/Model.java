@@ -22,7 +22,6 @@ public class Model extends Observable {
 	public static final int LAST_TRUMP = 21;
 	
 	public static final int NB_CARDS = 78;
-	
 	private static final int NB_PLAYERS = 4;
 	
 	public static final double DECK_X = (SCREEN_W / 2.5) - CardModel.CARD_W / 2 ;
@@ -45,7 +44,6 @@ public class Model extends Observable {
 
 	private static final double PLAYER_3_Y = -SCREEN_W/2.4;
 	private static final double PLAYER_3_X_SHIFT = 200;
-	
 	private static final double PLAYERS_2_4_X = SCREEN_H/1.8;
 	private static final double PLAYERS_2_4_SHIFT_Y = 200;
 	
@@ -58,10 +56,10 @@ public class Model extends Observable {
 			new Player(-PLAYERS_2_4_X, DECK_Y, 0, PLAYERS_2_4_SHIFT_Y)
 	};
 	
-	private int distributedCards = 0;
-
+	private int nbCardsDistributed = 0;
 	private int currentPlayer = 0;
-	private double chienCardX = CHIEN_X;
+	
+	///CONSTRUCTOR->
 	
 	public Model(){
 		gameDecks.put("jeu", new ArrayList<CardModel>());
@@ -70,6 +68,8 @@ public class Model extends Observable {
 		
 		loadCards();
 	}
+	
+	///<-CONSTRUCTOR GETTERS->
 
 	public ArrayList<CardModel> getJeu() {
 		return gameDecks.get("jeu");
@@ -83,10 +83,7 @@ public class Model extends Observable {
 		return players[0].getDeck();
 	}
 	
-	private void setAndNotifyChanged(Object arg){
-		setChanged();
-		notifyObservers(arg);
-	}
+	///<-GETTERS LOAD CARDS->
 
 	private void loadCards(){
 		loadColoredCards("Clubs");
@@ -123,6 +120,7 @@ public class Model extends Observable {
 		return values;
 	}
 	
+	private boolean ungableTrumps = false;
 	public ArrayList<String> ungapableCards(){
 		ArrayList<String> values = new ArrayList<String>();
 		
@@ -145,23 +143,15 @@ public class Model extends Observable {
 		return values;
 	}
 	
-	private boolean ungableTrumps = false;
-	private boolean ungableTrumps(){
-		int nbColoredCard = 0;
-		for(CardModel card : players[0].getDeck()){
-			if(!card.getName().contains("Trump")){
-				nbColoredCard++;
-			}
-			if(nbColoredCard == GAP_SIZE){
-				return true;
-			}
-		}
-		return false;
+	///<-LOAD CARDS
+	
+	private void setAndNotifyChanged(Object arg){
+		setChanged();
+		notifyObservers(arg);
 	}
 	
 	public static final double DECK_Z_TOP = -76;
 	public static final double DECK_Z_DIFF = 1;
-	
 	public void mixJeu(){
 		Collections.shuffle(gameDecks.get("jeu"));
 		double z = DECK_Z_TOP;
@@ -206,9 +196,9 @@ public class Model extends Observable {
         }
 	}
 
-	//Adapter pour eviter des bugs graphiques dus a des cartes qui se croisent
 	public void distributeCards(){
-		switch(distributedCards){
+		//Ajout au chien adapter pour eviter des bugs graphiques dus a des cartes qui se croisent
+		switch(nbCardsDistributed){
 		case 6:
 		case 19:
 		case 32:
@@ -222,7 +212,7 @@ public class Model extends Observable {
 	}
 	
 	private void distribute3Cards(){
-		distributedCards += 3;
+		nbCardsDistributed += 3;
 		
 		switch(currentPlayer){
 		case 0 :
@@ -236,9 +226,6 @@ public class Model extends Observable {
 		}
 	}
 	
-	/*Le parametre order fait en sorte que, plus une carte aura de distance a parcourir apres 
-	distribution, plus elle sera traitee tot. Cela evite que les cartes se croisent lors
-	d'un d�placement continue. Ainsi la Vue n'a pas a gerer ce bug graphique.*/
 	private void move3CardsToPlayer(int player, int[] order){
 		for(int i=0; i<3; i++){
 			players[player].getDeck().add(gameDecks.get("jeu").get(order[i]));
@@ -255,7 +242,9 @@ public class Model extends Observable {
 								players[player].getDeck().get(players[player].getDeck().size()-1)})));
 	}
 	
-	//Expliquer avant "move3CardsToPlayer(int player, int[] order){...}".
+	/*Fait en sorte que, plus une carte aura de distance a parcourir apres 
+	distribution, plus elle sera traitee tot. Cela evite que les cartes se croisent lors
+	d'un deplacement continue. Ainsi la Vue n'a pas a gerer ce bug graphique.*/
 	private int[] chooseMy3CardsOrder(){
 		int[] order = new int[3];
 		if(players[0].getDeck().size()%9 == 0){//Les cartes sont a gauche du Jeu.
@@ -276,22 +265,25 @@ public class Model extends Observable {
 	}
 	
 	private void addCardToChien(){
-		distributedCards++;
+		nbCardsDistributed++;
 		moveCardTochien();
 	}
 	
+	private int nbCardInChien = 0;
 	private void moveCardTochien(){
 		gameDecks.get("chien").add(gameDecks.get("jeu").get(0));
-		gameDecks.get("chien").get(gameDecks.get("chien").size()-1).moveTo(chienCardX, CHIEN_Y, 1);
-		chienCardX += (CardModel.CARD_W + DIST_CARD_X_SHIFT);
+		gameDecks.get("chien").get(gameDecks.get("chien").size()-1).moveTo(
+				CHIEN_X + (CardModel.CARD_W + DIST_CARD_X_SHIFT)*nbCardInChien, CHIEN_Y, 1);
 		gameDecks.get("jeu").remove(0);
 
+		nbCardInChien++;
+		
 		setAndNotifyChanged(new Pair<TarotAction, CardModel>(TarotAction.CARD_MOVED_TO_CHIEN, 
 				gameDecks.get("chien").get(gameDecks.get("chien").size()-1)));
 	}
 	
 	public void revertPlayer() {
-		ungableTrumps = ungableTrumps();
+		ungableTrumps = trumpsAreUngapable();
 		
 		for(CardModel card : players[0].getDeck()){
 			card.setOnFront(true);
@@ -300,10 +292,23 @@ public class Model extends Observable {
 		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.PLAYER_REVERTED, null));
 	}
 	
+	private boolean trumpsAreUngapable(){
+		int nbColoredCard = 0;
+		for(CardModel card : players[0].getDeck()){
+			if(!card.getName().contains("Trump")){
+				nbColoredCard++;
+			}
+			if(nbColoredCard == GAP_SIZE){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public void organizePlayerCards(){
 		Collections.sort(players[0].getDeck());
 		
-		/*Modifier tres legerement le z d'une carte a l'autre evite les croisements de cartes si elles
+		/*Modifier tres legerement le z d'une carte a l'autre. Evite les croisements de cartes si elles
 		sont bougees, d'abord en z, puis en x et y. La Vue peut alors gerer facilement ce bug graphique.*/
 		double newZ = 1.0;
 		for(int i = 0; i<Player.NB_CARDS; i++){
@@ -324,7 +329,7 @@ public class Model extends Observable {
 				if(card.getName().contentEquals("Trump1")){
 					petitSec = true;
 				}
-				else if(othersTrumps().contains(card.getName())){
+				else if(trumpsExceptFirst().contains(card.getName())){
 					petitSec = false;
 					break;
 				}
@@ -338,7 +343,7 @@ public class Model extends Observable {
 				new Pair<Boolean, Integer>(petitSec, playerNb)));
 	}
 
-	private ArrayList<String> othersTrumps(){
+	private ArrayList<String> trumpsExceptFirst(){
 		ArrayList<String> othersTrumps = new ArrayList<String>();
 		for(int i = FIRST_TRUMP+1; i <= LAST_TRUMP; i++){
 			othersTrumps.add("Trump"+Integer.toString(i));
@@ -357,7 +362,6 @@ public class Model extends Observable {
 	public static final double GAP_H = (GAP_SIZE/2) * CardModel.CARD_H + (GAP_SIZE/2 - 1) * DIST_CARD_Y_SHIFT;
 	public static final double GAP_X = 4 * (SCREEN_W / 5);
 	public static final double GAP_Y = SCREEN_H / 5;
-	
 	private int nbCardInGap = 0;
 	public void addCardToGap(CardModel card){
 		gameDecks.get("gap").add(card);
@@ -379,19 +383,19 @@ public class Model extends Observable {
 		}
 	}
 	
-	public void moveChienToPlayer(){
-		while(gameDecks.get("chien").size() > 0){
-			players[0].getDeck().add(gameDecks.get("chien").get(0));
-			gameDecks.get("chien").remove(0);
-		}
-	}
-	
 	public void revertChien() {
 		for(CardModel card : gameDecks.get("chien")){
 			card.setOnFront(true);
 		}
 		
 		setAndNotifyChanged(new Pair<TarotAction, Object>(TarotAction.CHIEN_REVERTED, null));
+	}
+	
+	public void moveChienToPlayer(){
+		while(gameDecks.get("chien").size() > 0){
+			players[0].getDeck().add(gameDecks.get("chien").get(0));
+			gameDecks.get("chien").remove(0);
+		}
 	}
 	
 	public void finish(){
@@ -410,9 +414,9 @@ public class Model extends Observable {
 		
 		loadCards();
 		
-		distributedCards = 0;
+		nbCardsDistributed = 0;
 		currentPlayer = 0;
-		chienCardX = CHIEN_X;
+		nbCardInChien = 0;
 		nbCardInGap = 0;
 	}
 }
