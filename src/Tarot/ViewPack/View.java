@@ -360,7 +360,7 @@ public class View implements Observer {
         return time;
     }
     
-    private final static double REVERT_CARD_WAIT_COEF = 0.05; //TODO Remetre � 0.1
+    private final static double REVERT_CARD_WAIT_COEF = 0.1; //TODO Remetre a 0.1
     public void revertDeck(ArrayList<CardModel> deck, int size, EventHandler<ActionEvent> onFinished) {
         int i = 1;
         for (CardModel card : deck) {
