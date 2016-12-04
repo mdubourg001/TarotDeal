@@ -1,5 +1,6 @@
 package Tarot.ViewPack;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +32,11 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Path;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 import javafx.util.Pair;
@@ -55,6 +59,8 @@ public class View implements Observer {
 
     private HashMap<String, CardView> cardViews = new HashMap<String, CardView>();
     private Map<String, ActionButton> actionButtons = new HashMap<String, ActionButton>();
+
+    private MediaPlayer music = new MediaPlayer(new Media(new File("./res/music.mp3").toURI().toString()));
     
     ///CONSTRUCTOR->
     public View(Controller controller) {
@@ -78,7 +84,14 @@ public class View implements Observer {
         root.getChildren().add(menuGroup);
         menuView.display(menuGroup, root);
 
+        initMusic();
         creatActionButtons();
+    }
+
+    private void initMusic() {
+        music.setAutoPlay(true);
+        music.setVolume(1.0);
+        music.play();
     }
     
     private void creatActionButtons() {
@@ -119,6 +132,10 @@ public class View implements Observer {
     
     public CardView getCardView(String name){
     	return cardViews.get(name);
+    }
+
+    public void setMusicVolume(double value) {
+        music.setVolume(value);
     }
     
     ///<-GETTERS DISPLAYS->
