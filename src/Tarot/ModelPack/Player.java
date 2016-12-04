@@ -10,7 +10,7 @@ public class Player {
 	private ArrayList<CardModel> deck = new ArrayList<CardModel>();
 	private Point2D[] cardsPositions = new Point2D[NB_CARDS];
 	
-	//My Player
+	//Les cartes de notre joueur sont positionnees de facon a etre toutes visibles
 	Player(double cardsX, double cardsY, double shiftX, double shiftY, boolean split){
 		double x = cardsX, y = cardsY;
 		for(int i = 0; i<NB_CARDS; i++){
@@ -23,7 +23,7 @@ public class Player {
 		}
 	}
 	
-	//Other Player
+	//Les cartes des autres joueurs s'empilent hors de l'ecran
 	Player(double cardsX, double cardsY, double shiftX, double shiftY){
 		for(int i = 0; i<NB_CARDS; i++){
 			switch(i%3){

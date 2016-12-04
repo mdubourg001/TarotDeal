@@ -30,7 +30,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
 import javafx.scene.text.Font;
@@ -138,7 +137,7 @@ public class View implements Observer {
         root.getChildren().add(unrealElementsGroup);
     }
     
-  ///<-DISPLAYS UPDATES->
+    ///<-DISPLAYS UPDATES->
     
 	@SuppressWarnings("unchecked")
 	@Override
@@ -344,7 +343,7 @@ public class View implements Observer {
         return time;
     }
     
-    private final static double REVERT_CARD_WAIT_COEF = 0.05; //TODO Remetre � 0.1
+    private final static double REVERT_CARD_WAIT_COEF = 0.1; //TODO Remetre a 0.1
     public void revertDeck(ArrayList<CardModel> deck, int size, EventHandler<ActionEvent> onFinished) {
         int i = 1;
         for (CardModel card : deck) {
@@ -361,7 +360,7 @@ public class View implements Observer {
         }
     }
 
-    private final static double REVERT_CARD_DURATION = 1; // TODO REMETTRE A 1
+    private final static double REVERT_CARD_DURATION = 0.8; // TODO REMETTRE A 0.7
     private final static double REVERT_CARD_Z = -300;
     private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished) {
         EventHandler<ActionEvent> continueAnimation = new EventHandler<ActionEvent>() {
