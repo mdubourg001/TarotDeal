@@ -15,8 +15,8 @@ public class Controller {
         return model;
     }
 
-    /*Commence a -1 et est incremente au debut de doNextAction() (et pas a la fin)
-    car la fonction sera appellee recursivement.*/
+    /*Commence a -1 et s'incremente au debut de doNextAction() (et pas a la fin)
+    car la fonction est appellee recursivement.*/
     private int currentAction = -1;
     
     /*Utilise lorsque qu'on repasse du menu a l'ecran de distribution avec le buton play

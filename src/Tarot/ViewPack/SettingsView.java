@@ -19,12 +19,12 @@ import java.util.List;
 
 public class SettingsView {
     private static final double CARD_BACK_Y = Model.SCREEN_H / 10;
-    private static final double CARD_BACKS_X[] = new double[]{ 
+    private static final double CARD_BACKS_X[] = new double[]{
     		Model.SCREEN_W / 1.92,
     		Model.SCREEN_W / 1.64,
     		Model.SCREEN_W / 1.43,
     		Model.SCREEN_W / 1.27
-    		};
+    };
 
     private List<Node> components = new ArrayList<>();
 
