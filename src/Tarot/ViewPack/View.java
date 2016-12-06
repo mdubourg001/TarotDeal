@@ -59,7 +59,7 @@ public class View implements Observer {
     private HashMap<String, CardView> cardViews = new HashMap<String, CardView>();
     private Map<String, ActionButton> actionButtons = new HashMap<String, ActionButton>();
 
-    //private MediaPlayer music = new MediaPlayer(new Media(new File("./res/music.mp3").toURI().toString()));
+    private MediaPlayer music = new MediaPlayer(new Media(new File("./res/music.wav").toURI().toString()));
 
     ///CONSTRUCTOR->
     public View(Controller controller) {
@@ -83,15 +83,15 @@ public class View implements Observer {
         root.getChildren().add(menuGroup);
         menuView.display(menuGroup, root);
 
-        //initMusic();
+        initMusic();
         creatActionButtons();
     }
 
-    /*private void initMusic() {
+    private void initMusic() {
         music.setAutoPlay(true);
         music.setVolume(1.0);
         music.play();
-    }*/
+    }
 
     private void creatActionButtons() {
         actionButtons.put("passe", new ActionButton("Passe",
