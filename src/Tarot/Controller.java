@@ -19,6 +19,8 @@ public class Controller {
     car la fonction est appellee recursivement.*/
     private int currentAction = -1;
     
+    private int nbDistribution = 0;
+    
     /*Utilise lorsque qu'on repasse du menu a l'ecran de distribution avec le buton play
      pour eviter de faire doNextAction() alors que le jeu est deja lance.*/
     public void startIfNeeded(){
@@ -37,7 +39,7 @@ public class Controller {
                 model.cutJeu();
                 break;
             case 2:
-                model.distributeCards();
+                distribute();
                 break;
             case 3:
                 model.revertPlayer();
@@ -62,6 +64,17 @@ public class Controller {
                 break;
         }
     }
+    
+    public void distribute(){
+    	if(nbDistribution == Model.NB_DISTRIBUTION-1){//derniere distribution
+    		model.distributeCards();
+    	}
+    	else{
+    		model.distributeCards();
+    		currentAction--;//On reste sur l'action distibute()
+    	}
+    	nbDistribution++;
+    }
 
     public void chooseAction(PlayerAction action) {
         model.chooseAction(action);
@@ -79,6 +92,7 @@ public class Controller {
     public void restart() {
         model.nouvelleDonne();
         currentAction = -1;
+        nbDistribution = 0;
     }
     
     public void nouvelleDonne() {

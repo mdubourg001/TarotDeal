@@ -71,16 +71,32 @@ public class Model extends Observable {
 	
 	///<-CONSTRUCTOR GETTERS->
 
-	public ArrayList<CardModel> getJeu() {
-		return gameDecks.get("jeu");
+	public CardModel getJeu(int i) {
+		return gameDecks.get("jeu").get(i);
+	}
+	public int getJeuSize() {
+		return gameDecks.get("jeu").size();
 	}
 
-	public ArrayList<CardModel> getChienCards() {
-		return gameDecks.get("chien");
+	public CardModel getChienCards(int i) {
+		return gameDecks.get("chien").get(i);
+	}
+	public int getChienSize() {
+		return gameDecks.get("chien").size();
 	}
 	
-	public ArrayList<CardModel> getMyCards() {
-		return players[0].getDeck();
+	public CardModel getGapCards(int i) {
+		return gameDecks.get("gap").get(i);
+	}
+	public int getGapSize() {
+		return gameDecks.get("gap").size();
+	}
+	
+	public CardModel getMyCards(int i) {
+		return players[0].getDeck().get(i);
+	}
+	public int getMyDeckSize() {
+		return players[0].getDeck().size();
 	}
 	
 	///<-GETTERS LOAD CARDS->
@@ -195,7 +211,8 @@ public class Model extends Observable {
 			z += DECK_Z_DIFF;
         }
 	}
-
+	
+	public static final int NB_DISTRIBUTION = (NB_CARDS - CHIEN_SIZE)/3;
 	public void distributeCards(){
 		//Ajout au chien adapter pour eviter des bugs graphiques dus a des cartes qui se croisent
 		switch(nbCardsDistributed){
@@ -235,11 +252,10 @@ public class Model extends Observable {
 		}
 		changePlayer();
 		
-		setAndNotifyChanged(new Pair<TarotAction, Pair<Boolean, CardModel[]>>(TarotAction.CARDS_DISTRIBUTED,
-				new Pair<Boolean, CardModel[]>(gameDecks.get("jeu").isEmpty(), 
+		setAndNotifyChanged(new Pair<TarotAction, CardModel[]>(TarotAction.CARDS_DISTRIBUTED,
 						new CardModel[]{players[player].getDeck().get(players[player].getDeck().size()-3), 
 								players[player].getDeck().get(players[player].getDeck().size()-2), 
-								players[player].getDeck().get(players[player].getDeck().size()-1)})));
+								players[player].getDeck().get(players[player].getDeck().size()-1)}));
 	}
 	
 	/*Fait en sorte que, plus une carte aura de distance a parcourir apres 

@@ -26,7 +26,7 @@ public class GapManager {
 	public static void update(View view, Observable arg0, Object arg1){
     	switch (((Pair<TarotAction, Object>) arg1).getKey()) {
         case CHIEN_REVERTED:
-        	view.revertDeck(view.getModel().getChienCards(), Model.CHIEN_SIZE, doGap(view));
+        	revertChien(view);
             break;
         case CARD_ADDED_GAP:
         	view.moveCard(view.getCardView(((Pair<TarotAction, CardModel>) arg1).getValue().getName()),
@@ -37,15 +37,26 @@ public class GapManager {
             break;
     	}
     }
+    
+    public static void revertChien(View view) {
+        for (int i = 0; i < view.getModel().getChienSize(); i++) {
+        	if(i != view.getModel().getChienSize()-1){//Ca n'est pas la derniere carte du deck
+        		view.waiter(View.REVERT_CARD_DURATION * View.REVERT_CARD_WAIT_COEF * (i+1), view.revertCardEvent(view.getModel().getChienCards(i), null));
+        	}
+        	else{
+        		view.waiter(View.REVERT_CARD_DURATION * View.REVERT_CARD_WAIT_COEF * (i+1), view.revertCardEvent(view.getModel().getChienCards(i), doGap(view)));
+        	}
+        }
+    }
 
     public static EventHandler<ActionEvent> doGap(View v) {
         return new EventHandler<ActionEvent>() {
             public void handle(ActionEvent t) {
-                for (CardModel card : v.getModel().getMyCards()) {
-                    updateGapableCard(v, card);
+                for (int i=0; i < v.getModel().getMyDeckSize(); i++) {
+                    updateGapableCard(v, v.getModel().getMyCards(i));
                 }
-                for (CardModel card : v.getModel().getChienCards()) {
-                    updateGapableCard(v, card);
+                for (int i=0; i < v.getModel().getChienSize(); i++) {
+                    updateGapableCard(v, v.getModel().getChienCards(i));
                 }
                 v.getController().doNextAction();
             }
@@ -153,8 +164,8 @@ public class GapManager {
     }
     
     public static void updateGapDone(View v) {
-        for (CardModel card : v.getModel().getMyCards()) {
-            removeListeners(v.getCardView(card.getName()));
+        for (int i=0; i < v.getModel().getMyDeckSize(); i++) {
+            removeListeners(v.getCardView(v.getModel().getMyCards(i).getName()));
         }
         v.getController().doNextAction();
     }

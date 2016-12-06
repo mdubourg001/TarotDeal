@@ -57,7 +57,7 @@ public class View implements Observer {
     private HashMap<String, CardView> cardViews = new HashMap<String, CardView>();
     private Map<String, ActionButton> actionButtons = new HashMap<String, ActionButton>();
 
-    private MediaPlayer music = new MediaPlayer(new Media(new File("./res/music.wav").toURI().toString()));
+    //private MediaPlayer music = new MediaPlayer(new Media(new File("./res/music.wav").toURI().toString()));
 
     ///CONSTRUCTOR->
     public View(Controller controller) {
@@ -81,15 +81,15 @@ public class View implements Observer {
         root.getChildren().add(menuGroup);
         menuView.display(menuGroup, root);
 
-        initMusic();
+        //initMusic();
         creatActionButtons();
     }
 
-    private void initMusic() {
+    /*private void initMusic() {
         music.setAutoPlay(true);
         music.setVolume(1.0);
         music.play();
-    }
+    }*/
 
     private void creatActionButtons() {
         actionButtons.put("passe", new ActionButton("Passe",
@@ -194,9 +194,9 @@ public class View implements Observer {
     }
 
     public void updateJeuMixed() {
-        for (CardModel card : model.getJeu()) {
-            cardViews.put(card.getName(), new CardView(card));
-            distributionGroup.getChildren().add(cardViews.get(card.getName()).getView());
+        for (int i = 0; i < model.getJeuSize(); i++) {
+            cardViews.put(model.getJeu(i).getName(), new CardView(model.getJeu(i)));
+            distributionGroup.getChildren().add(cardViews.get(model.getJeu(i).getName()).getView());
         }
         LightManager.addLights(distributionGroup);
         controller.doNextAction();
@@ -222,14 +222,14 @@ public class View implements Observer {
     }
     
     public void updatePlayerReverted(){
-    	revertDeck(model.getMyCards(), Player.NB_CARDS, doNexTActionEvent());
+    	revertMyCards(doNexTActionEvent());
     }
     
     private final static double ORGANIZE_CARD_TIME = 0.5;
     public void updatePlayerCardsOrganized() {
         CardModel card;
-        for (int i = 0; i < model.getMyCards().size(); i++) {
-            card = model.getMyCards().get(i);
+        for (int i = 0; i < model.getMyDeckSize(); i++) {
+            card = model.getMyCards(i);
             cardViews.get(card.getName()).getView().setTranslateZ(card.getZ());
             moveCard(cardViews.get(card.getName()), card, null);
         }
@@ -258,10 +258,10 @@ public class View implements Observer {
     }
     
     private void updateDinosaurs(){
-    	for(CardModel card : model.getMyCards()){
-    		if(cardViews.get(card.getName()).getDinosaurType() != null){
-    			distributionGroup.getChildren().add(new Dinosaur3D(card,
-    					cardViews.get(card.getName()).getDinosaurType(),
+    	for(int i=0; i < model.getMyDeckSize(); i++){
+    		if(cardViews.get(model.getMyCards(i).getName()).getDinosaurType() != null){
+    			distributionGroup.getChildren().add(new Dinosaur3D(model.getMyCards(i),
+    					cardViews.get(model.getMyCards(i).getName()).getDinosaurType(),
     					distributionGroup.getRotate()).getView());
     		}
     	}
@@ -274,8 +274,8 @@ public class View implements Observer {
         CardModel card;
         double xShift;
         double z;
-        for (int i = 0; i < model.getJeu().size(); i++) {
-            card = model.getJeu().get(i);
+        for (int i = 0; i < model.getJeuSize(); i++) {
+            card = model.getJeu(i);
             if (i < Model.NB_CARDS - indexCut) {
                 xShift = -xShiftValue;
             } else {
@@ -288,7 +288,7 @@ public class View implements Observer {
                 z = cardViews.get(card.getName()).getView().getTranslateZ();
             }
 
-            if (i != model.getJeu().size() - 1) {
+            if (i != model.getJeuSize() - 1) {
                 moveCard(CUT_TIME, cardViews.get(card.getName()), card.getX() + xShift, null, z, null);
             } else {
             	moveCard(CUT_TIME, cardViews.get(card.getName()), card.getX() + xShift, null, z, onFinished);
@@ -359,24 +359,28 @@ public class View implements Observer {
         return time;
     }
     
-    private final static double REVERT_CARD_WAIT_COEF = 0.1; //TODO Remetre a 0.1
-    public void revertDeck(ArrayList<CardModel> deck, int size, EventHandler<ActionEvent> onFinished) {
-        int i = 1;
-        for (CardModel card : deck) {
-            waiter(REVERT_CARD_DURATION * REVERT_CARD_WAIT_COEF * i, new EventHandler<ActionEvent>() {
-                public void handle(ActionEvent t) {
-                    if (deck.indexOf(card) != size - 1)
-                        revertCard(cardViews.get(card.getName()), null);
-                    else {
-                        revertCard(cardViews.get(card.getName()), onFinished);
-                    }
-                }
-            });
-            i++;
+    public final static double REVERT_CARD_WAIT_COEF = 0.1; //TODO Remetre a 0.1
+    public void revertMyCards(EventHandler<ActionEvent> onFinished) {
+        for (int i = 0; i < model.getMyDeckSize(); i++) {
+        	if(i != model.getMyDeckSize()-1){//Ca n'est pas la derniere carte du deck
+        		waiter(REVERT_CARD_DURATION * REVERT_CARD_WAIT_COEF * (i+1), revertCardEvent(model.getMyCards(i), null));
+        	}
+        	else{
+        		waiter(REVERT_CARD_DURATION * REVERT_CARD_WAIT_COEF * (i+1), revertCardEvent(model.getMyCards(i), onFinished));
+        	}
+            
         }
     }
+    
+    public EventHandler<ActionEvent> revertCardEvent(CardModel card, EventHandler<ActionEvent> onFinished){
+    	return new EventHandler<ActionEvent>(){
+            public void handle(ActionEvent t) {
+            	revertCard(cardViews.get(card.getName()), onFinished);
+            }
+        };
+    }
 
-    private final static double REVERT_CARD_DURATION = 0.8; // TODO REMETTRE A 0.7
+    public final static double REVERT_CARD_DURATION = 0.8; // TODO REMETTRE A 0.7
     private final static double REVERT_CARD_Z = -300;
     private void revertCard(CardView cardView, EventHandler<ActionEvent> onFinished) {
         EventHandler<ActionEvent> continueAnimation = new EventHandler<ActionEvent>() {
@@ -398,11 +402,20 @@ public class View implements Observer {
         };
     }
     
-    public void waiter(double duration, EventHandler<ActionEvent> event) {
-        Timeline timeLine = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(Duration.seconds(duration), event);
-        timeLine.getKeyFrames().add(keyFrame);
-        timeLine.play();
+    public void waiter(double duration, EventHandler<ActionEvent> event){
+    	if(duration == 0){
+    		/*On a decide de ne pas lancer l'exception pour ne pas surcharger les passages
+    		de code qui utilise waiter avec des try cacth. De plus le printStackTrace() montre
+    		deja la fonction d'ou waiter() a ete appellee.*/
+    		UselessWaiterException e = new UselessWaiterException();
+			e.printStackTrace();
+    	}
+    	else{
+    		Timeline timeLine = new Timeline();
+            KeyFrame keyFrame = new KeyFrame(Duration.seconds(duration), event);
+            timeLine.getKeyFrames().add(keyFrame);
+            timeLine.play();
+    	}
     }
     
     private Label createPetitSecLabel(Integer player){
