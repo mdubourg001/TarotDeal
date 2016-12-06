@@ -1,6 +1,5 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +12,8 @@ import Tarot.ModelPack.Model;
 import Tarot.ModelPack.Player;
 import Tarot.ModelPack.PlayerAction;
 import Tarot.ModelPack.TarotAction;
+import Tarot.ViewPack.MenuView;
+import Tarot.ViewPack.SettingsView;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -31,9 +32,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
 import javafx.scene.text.Font;
@@ -152,6 +150,7 @@ public class View implements Observer {
         root.getChildren().clear();
         root.getChildren().add(distributionGroup);
         root.getChildren().add(unrealElementsGroup);
+        controller.startIfNeeded();
     }
     
   ///<-DISPLAYS UPDATES->
@@ -261,7 +260,7 @@ public class View implements Observer {
     private void updateDinosaurs(){
     	for(CardModel card : model.getMyCards()){
     		if(cardViews.get(card.getName()).getDinosaurType() != null){
-    			distributionGroup.getChildren().add(new Dinosaur3D(card, 
+    			distributionGroup.getChildren().add(new Dinosaur3D(card,
     					cardViews.get(card.getName()).getDinosaurType(),
     					distributionGroup.getRotate()).getView());
     		}

@@ -2,6 +2,8 @@ package Tarot.ViewPack;
 
 import Tarot.ModelPack.CardModel;
 import Tarot.ModelPack.Model;
+import Tarot.ViewPack.DistributionPack.CardView;
+import Tarot.ViewPack.DistributionPack.View;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -10,6 +12,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
@@ -25,6 +28,8 @@ public class SettingsView {
     		Model.SCREEN_W / 1.43,
     		Model.SCREEN_W / 1.27
     };
+
+    private HBox cardBacksBox = new HBox();
 
     private List<Node> components = new ArrayList<>();
 
@@ -66,14 +71,11 @@ public class SettingsView {
         components.add(zoomSlider);
         components.add(rotationSlider);
         
-        for(int i=0; i<CardView.NB_CARD_BACKS; i++){
+        for(int i = 0; i< CardView.NB_CARD_BACKS; i++){
         	cardBacks[i].setFitWidth(CardModel.CARD_W);
         	cardBacks[i].setFitHeight(CardModel.CARD_H);
-        	
         	cardBacks[i].setTranslateX(CARD_BACKS_X[i]);
-        	
         	cardBacks[i].setTranslateY(CARD_BACK_Y);
-        	
         	components.add(cardBacks[i]);
         }
         

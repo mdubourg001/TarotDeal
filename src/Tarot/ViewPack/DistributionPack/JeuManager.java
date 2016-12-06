@@ -1,55 +1,20 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
 import java.util.ArrayList;
-import java.util.Observable;
 
 import Tarot.ModelPack.CardModel;
 import Tarot.ModelPack.Model;
-import Tarot.ModelPack.TarotAction;
+import Tarot.ViewPack.DistributionPack.CardView;
+import Tarot.ViewPack.DistributionPack.View;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
-import javafx.util.Pair;
 
-/*Regroupe toutes les fonctions permettant de distribuer les cartes depuis le Jeu.*/
-public class DistributionManager {
+/*Regroupe toutes les fonctions permettant de deplacer les cartes depuis le Jeu
+sans quelles passes au travers.*/
+public class JeuManager {
 	
-    private static final double TIME_BETWEEN_DISTRIBUTIONS = 0.2; //TODO Remettre a 0.2
-    
-    @SuppressWarnings({ "unchecked", "incomplete-switch" })
-    public static void update(View view, Observable arg0, Object arg1) {
-        switch (((Pair<TarotAction, Object>) arg1).getKey()) {
-            case CARDS_DISTRIBUTED:
-                update3CardsDistributed(view, ((Pair<TarotAction, Pair<Boolean, CardModel[]>>) arg1).getValue());
-                break;
-            case CARD_MOVED_TO_CHIEN:
-                moveCardFromJeu(view, view.getCardView(((Pair<TarotAction, CardModel>) arg1).getValue().getName()),
-                        ((Pair<TarotAction, CardModel>) arg1).getValue(), null);
-                break;
-        }
-    }
-    
-    public static void update3CardsDistributed(View view, Pair<Boolean, CardModel[]> arg) {
-    	moveCardFromJeu(view, view.getCardView(arg.getValue()[0].getName()), arg.getValue()[0], null);
-    	moveCardFromJeu(view, view.getCardView(arg.getValue()[1].getName()), arg.getValue()[1], null);
-    	moveCardFromJeu(view, view.getCardView(arg.getValue()[2].getName()), arg.getValue()[2], null);
-    	
-        view.waiter(TIME_BETWEEN_DISTRIBUTIONS, continueCardDistribution(view, arg.getKey()));
-    }
-
-    private static  EventHandler<ActionEvent> continueCardDistribution(View view, boolean nextAction) {
-        return new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent t) {
-                if (!nextAction) {
-                	view.getModel().distributeCards();
-                } else {
-                	view.getController().doNextAction();
-                }
-            }
-        };
-    }
-	
-	/*Attend que les cartes soit totalement sortient du cercle forme par la diagonale du Jeu
+	/*Attend que les cartes soit totalement sortient du cercle forme par la diagonale du deck (jeu)
     avant de descendre (en z). Evite que les cartes passe au travers du deck.*/
     public static void moveCardFromJeu(View view, CardView cardView, CardModel card, EventHandler<ActionEvent> onFinished2) {
         Point2D firstDest = calculFirstDest(cardView, card);

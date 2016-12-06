@@ -1,4 +1,4 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
 import javafx.geometry.Point3D;
 import javafx.scene.Group;

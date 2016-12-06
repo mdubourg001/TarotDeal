@@ -1,4 +1,4 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
 public enum DinosaurType {
 	LIOPLEURODON,
@@ -8,5 +8,6 @@ public enum DinosaurType {
 	PLESIOSAURUS,
 	SPINOSAURUS,
 	DIPLODOCUS,
-	CARNOTAURUS
+	CARNOTAURUS,
+	DEINOSUCHUS
 }

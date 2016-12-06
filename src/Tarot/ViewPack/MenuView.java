@@ -1,12 +1,11 @@
 package Tarot.ViewPack;
 
 import Tarot.ModelPack.Model;
+import Tarot.ViewPack.DistributionPack.View;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 import java.util.ArrayList;
@@ -67,7 +66,6 @@ public class MenuView {
             @Override
             public void handle(MouseEvent event) {
                 principalView.displayDistribution();
-                principalView.getController().startIfNeeded();
             }
         });
         imageButtons.get("play").setOnMouseEntered(new EventHandler<MouseEvent>() {

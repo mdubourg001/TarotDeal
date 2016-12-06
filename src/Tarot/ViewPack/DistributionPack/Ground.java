@@ -1,4 +1,4 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
 import Tarot.ModelPack.Model;
 import javafx.scene.Group;

@@ -11,8 +11,9 @@ public class CardModel implements Comparable<CardModel> {
     private double z;
     private boolean onFront = false;
 
-    private int order;
+    //L'order
     private static int orderCpt = 0;
+    private int order;
     
     public static void reinitOrder(){
     	orderCpt = 0;
