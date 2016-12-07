@@ -22,9 +22,9 @@ public class MenuView {
     private ImageView menuTitle = new ImageView("file:./res/title.png");
 
     private Map<String, ImageButton> imageButtons = new HashMap<String, ImageButton>() {{
-        put("play", new ImageButton("file:./res/play.png", Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2, Model.SCREEN_W / 2));
-        put("settings", new ImageButton("file:./res/settings.png", Model.SCREEN_W / 2 - (ImageButton.BUTTON_W + Model.SCREEN_W / 19.2) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 20));
-        put("quit", new ImageButton("file:./res/quit.png", Model.SCREEN_W / 2 - (ImageButton.BUTTON_W + Model.SCREEN_W / 19.2) / 2, Model.SCREEN_H / 2 + Model.SCREEN_H / 3.6));
+        put("play", new ImageButton("file:./res/play.png", Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2, Model.SCREEN_H / 4 + ImageButton.BUTTON_H / 2));
+        put("settings", new ImageButton("file:./res/settings.png", Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 1.5, Model.SCREEN_H / 2 + ImageButton.BUTTON_H / 4.5));
+        put("quit", new ImageButton("file:./res/quit.png", Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 1.8, Model.SCREEN_H / 2 + ImageButton.BUTTON_H * 1.7));
     }};
 
     private View principalView = null;
@@ -35,9 +35,6 @@ public class MenuView {
         components.add(imageButtons.get("play"));
         components.add(imageButtons.get("settings"));
         components.add(imageButtons.get("quit"));
-        components.add(imageButtons.get("play").getImage());
-        components.add(imageButtons.get("settings").getImage());
-        components.add(imageButtons.get("quit").getImage());
 
         this.principalView = principalView;
 
@@ -52,70 +49,28 @@ public class MenuView {
         menuTitle.setTranslateY(Model.SCREEN_H / 10);
 
         imageButtons.get("play").setImageSize(Model.SCREEN_W / 5, Model.SCREEN_H / 5);
-        imageButtons.get("play").setPosition(Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2.5,
-                Model.SCREEN_H / 4 + ImageButton.BUTTON_H / 2);
 
         imageButtons.get("settings").setImageSize(Model.SCREEN_W / 4, Model.SCREEN_H / 4);
-        imageButtons.get("settings").setPosition(Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2,
-                Model.SCREEN_H / 2 + ImageButton.BUTTON_H / 3);
 
         imageButtons.get("quit").setImageSize(Model.SCREEN_W / 5, Model.SCREEN_H / 5);
-        imageButtons.get("quit").setPosition(Model.SCREEN_W / 2 - ImageButton.BUTTON_W / 2,
-                Model.SCREEN_H / 2 + ImageButton.BUTTON_H * 1.7);
 
-        imageButtons.get("play").setOnMouseClicked(new EventHandler<MouseEvent>() {
+        imageButtons.get("play").setOnMouseClick(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 principalView.displayDistribution();
                 principalView.getController().startIfNeeded();
             }
         });
-        imageButtons.get("play").setOnMouseEntered(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                imageButtons.get("play").inflate();
-            }
-        });
-        imageButtons.get("play").setOnMouseExited(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                imageButtons.get("play").deflate();
-            }
-        });
-        imageButtons.get("settings").setOnMouseClicked(new EventHandler<MouseEvent>() {
+        imageButtons.get("settings").setOnMouseClick(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 principalView.displaySettings();
             }
         });
-        imageButtons.get("settings").setOnMouseEntered(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                imageButtons.get("settings").inflate();
-            }
-        });
-        imageButtons.get("settings").setOnMouseExited(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                imageButtons.get("settings").deflate();
-            }
-        });
-        imageButtons.get("quit").setOnMouseClicked(new EventHandler<MouseEvent>() {
+        imageButtons.get("quit").setOnMouseClick(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 System.exit(0);
-            }
-        });
-        imageButtons.get("quit").setOnMouseEntered(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                imageButtons.get("quit").inflate();
-            }
-        });
-        imageButtons.get("quit").setOnMouseExited(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                imageButtons.get("quit").deflate();
             }
         });
     }

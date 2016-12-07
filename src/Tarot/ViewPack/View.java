@@ -1,18 +1,7 @@
 package Tarot.ViewPack;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-
-import Tarot.*;
-import Tarot.ModelPack.CardModel;
-import Tarot.ModelPack.Model;
-import Tarot.ModelPack.Player;
-import Tarot.ModelPack.PlayerAction;
-import Tarot.ModelPack.TarotAction;
+import Tarot.Controller;
+import Tarot.ModelPack.*;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -20,18 +9,13 @@ import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.DepthTest;
-import javafx.scene.Group;
-import javafx.scene.PerspectiveCamera;
-import javafx.scene.Scene;
-import javafx.scene.SceneAntialiasing;
+import javafx.scene.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
@@ -39,6 +23,9 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 import javafx.util.Pair;
+
+import java.io.File;
+import java.util.*;
 
 public class View implements Observer {
     private Controller controller;
@@ -134,7 +121,7 @@ public class View implements Observer {
     }
 
     public void setMusicVolume(double value) {
-        //music.setVolume(value);
+        music.setVolume(value);
     }
 
     ///<-GETTERS DISPLAYS->

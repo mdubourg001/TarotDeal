@@ -1,47 +1,57 @@
 package Tarot.ViewPack;
 
 import Tarot.ModelPack.Model;
+import javafx.event.EventHandler;
+import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 
-import static Tarot.ViewPack.ImageButton.BUTTON_W;
-
-public class ImageButton extends Button{
+public class ImageButton extends Group{
 
     public static final double BUTTON_W = Model.SCREEN_W /  5;
     public static final double BUTTON_H = Model.SCREEN_H / 6;
+    public static final double IMAGE_WIDTH = Model.SCREEN_W / 5;
+    public static final double IMAGE_HEIGHT = Model.SCREEN_H / 5;
 
-    private static final Color BUTTON_BACKGROUND = Color.TRANSPARENT;
+    private static final Color BUTTON_BACKGROUND = Color.ORANGE;
 
     private ImageView image = null;
+    private Button button = new Button();
     private String path = null;
-    private double yShift = 0;
-    private double xShift = 0;
 
-    public ImageButton(String path, double x, double y, double width, double height) {
+    public ImageButton(String filepath, double x, double y) {
         super();
+
+        path = filepath;
+
         image = new ImageView(path);
-        this.path = path;
-        this.setPrefSize(width, height);
-        this.setTranslateX(0);
-        this.setTranslateY(0);
-        this.setTranslateZ(-5);
-        this.setTextAlignment(TextAlignment.CENTER);
-        this.setBackground(new Background(new BackgroundFill(BUTTON_BACKGROUND, new CornerRadii(50), null)));
-        image.setTranslateZ(-4);
-        image.setFitWidth(Model.SCREEN_W / 5);
-        image.setFitHeight(Model.SCREEN_H / 5);
+        image.setTranslateZ(0);
+        image.setFitWidth(IMAGE_WIDTH);
+        image.setFitHeight(IMAGE_HEIGHT);
+
+        button.setPrefSize(IMAGE_WIDTH, IMAGE_HEIGHT);
+        button.setBackground(new Background(new BackgroundFill(BUTTON_BACKGROUND, new CornerRadii(50), null)));
+        button.setTranslateZ(-1);
+        button.setOpacity(0.5);
+
+        this.setPosition(x, y);
+
+
+        this.setOnMouseEntered(mouseEvent -> inflate());
+        this.setOnMouseExited(mouseEvent -> deflate());
+
+        this.getChildren().add(image);
+        this.getChildren().add(button);
     }
 
-    public ImageButton(String path, double x, double y) {
-        this(path, x, y, BUTTON_W, BUTTON_H);
-    }
+    public String getPath() { return this.path; }
 
     public ImageView getImage(){ return this.image; }
 
@@ -50,48 +60,38 @@ public class ImageButton extends Button{
         this.path = path;
     }
 
-    public void setButtonSize(double width, double height) {
-        this.setPrefSize(width, height);
-        this.setTranslateX(image.getTranslateX());
-        this.setTranslateY(image.getTranslateY());
-    }
-
-    public String getPath() {
-        return this.path;
+    public void setOnMouseClick(EventHandler<? super MouseEvent> value) {
+        button.setOnMouseClicked(value);
     }
 
     public void setImageSize(double width, double height) {
         image.setFitWidth(width);
         image.setFitHeight(height);
-        // actualisation de la position après redimensionnement
-        image.setTranslateX((this.getTranslateX() + this.getWidth() / 2) - image.getFitWidth() / 2);
-        image.setTranslateY((this.getTranslateY() + this.getHeight() / 2) - image.getFitHeight() / 2);
+        button.setPrefSize(width, height);
+    }
+
+    public void setDisplayed(boolean displayed) {
+        if(displayed) {
+            this.setVisible(true);
+            this.setDisable(false);
+        } else {
+            this.setVisible(false);
+            this.setDisable(true);
+        }
     }
 
     public void setPosition(double x, double y) {
         this.setTranslateX(x);
         this.setTranslateY(y);
-        image.setTranslateX((this.getTranslateX() + BUTTON_W / 2) - image.getFitWidth() / 2);
-        image.setTranslateY((this.getTranslateY() + BUTTON_H / 2) - image.getFitHeight() / 2);
-        yShift = ((Model.SCREEN_H / 2 - (this.getTranslateY() + this.BUTTON_H / 2)) * 0.20);
-        xShift = ((Model.SCREEN_W / 2 - (this.getTranslateX() + this.BUTTON_W / 2)) * 0.20);
     }
 
     public void inflate() {
-        image.setTranslateZ(image.getTranslateZ() - 400);
-        this.setTranslateZ(this.getTranslateZ() - 401);
-        this.setTranslateY(this.getTranslateY() + yShift);
-        image.setTranslateY(image.getTranslateY() + yShift);
-        this.setTranslateX(this.getTranslateX() + xShift);
-        image.setTranslateX(image.getTranslateX() + xShift);
+        this.setScaleX(1.3);
+        this.setScaleY(1.3);
     }
 
     public void deflate() {
-        image.setTranslateZ(image.getTranslateZ() + 400);
-        this.setTranslateZ(this.getTranslateZ() + 401);
-        this.setTranslateY(this.getTranslateY() - yShift);
-        image.setTranslateY(image.getTranslateY() - yShift);
-        this.setTranslateX(this.getTranslateX() - xShift);
-        image.setTranslateX(image.getTranslateX() - xShift);
+        this.setScaleX(1);
+        this.setScaleY(1);
     }
 }
