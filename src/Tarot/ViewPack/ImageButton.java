@@ -20,7 +20,7 @@ public class ImageButton extends Group{
     public static final double IMAGE_WIDTH = Model.SCREEN_W / 5;
     public static final double IMAGE_HEIGHT = Model.SCREEN_H / 5;
 
-    private static final Color BUTTON_BACKGROUND = Color.ORANGE;
+    private static final Color BUTTON_BACKGROUND = Color.TRANSPARENT;
 
     private ImageView image = null;
     private Button button = new Button();
@@ -39,7 +39,6 @@ public class ImageButton extends Group{
         button.setPrefSize(IMAGE_WIDTH, IMAGE_HEIGHT);
         button.setBackground(new Background(new BackgroundFill(BUTTON_BACKGROUND, new CornerRadii(50), null)));
         button.setTranslateZ(-1);
-        button.setOpacity(0.5);
 
         this.setPosition(x, y);
 

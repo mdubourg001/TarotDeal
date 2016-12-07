@@ -1,4 +1,4 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
 import Tarot.ModelPack.CardModel;
 import javafx.geometry.Point3D;
@@ -119,6 +119,9 @@ public class CardView {
     	case "Trump14" :
     		dinosaurType = DinosaurType.CARNOTAURUS;
     		break;
+        case "Trump13" :
+            dinosaurType = DinosaurType.DEINOSUCHUS;
+            break;
     	}
     }
 }

@@ -1,6 +1,7 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
 import Tarot.ModelPack.Model;
+import Tarot.ViewPack.ImageButton;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.paint.PhongMaterial;

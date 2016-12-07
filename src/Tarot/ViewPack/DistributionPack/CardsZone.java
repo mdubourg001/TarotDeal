@@ -1,4 +1,4 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;

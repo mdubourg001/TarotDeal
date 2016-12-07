@@ -2,11 +2,15 @@ package Tarot.ViewPack;
 
 import Tarot.ModelPack.CardModel;
 import Tarot.ModelPack.Model;
+import Tarot.ViewPack.DistributionPack.CardView;
+import Tarot.ViewPack.DistributionPack.View;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import java.util.ArrayList;
@@ -17,6 +21,14 @@ public class SettingsView {
     private static final double CARD_BACK_Y = Model.SCREEN_H / 10;
     private static final double CARD_BACK_X = Model.SCREEN_W / 1.95;
     private static final double CARD_BACK_SHIFT = CardModel.CARD_W *1.3;
+    private static final double CARD_BACKS_X[] = new double[]{
+    		Model.SCREEN_W / 1.92,
+    		Model.SCREEN_W / 1.64,
+    		Model.SCREEN_W / 1.43,
+    		Model.SCREEN_W / 1.27
+    };
+
+    private HBox cardBacksBox = new HBox();
 
     private ImageView settingsBackground = new ImageView("file:./res/settings_background.png");
 

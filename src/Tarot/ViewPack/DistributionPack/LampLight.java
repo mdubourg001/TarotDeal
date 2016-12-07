@@ -1,5 +1,6 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
+import Tarot.ViewPack.DistributionPack.EnvironmentLight;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;

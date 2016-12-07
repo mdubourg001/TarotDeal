@@ -1,8 +1,9 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
 import java.util.ArrayList;
 import java.util.Observable;
 
+import Tarot.Controller;
 import Tarot.ModelPack.CardModel;
 import Tarot.ModelPack.Model;
 import Tarot.ModelPack.TarotAction;
@@ -20,7 +21,7 @@ public class DistributionManager {
     public static void update(View view, Observable arg0, Object arg1) {
         switch (((Pair<TarotAction, Object>) arg1).getKey()) {
             case CARDS_DISTRIBUTED:
-                update3CardsDistributed(view, ((Pair<TarotAction, Pair<Boolean, CardModel[]>>) arg1).getValue());
+                update3CardsDistributed(view, ((Pair<TarotAction, CardModel[]>) arg1).getValue());
                 break;
             case CARD_MOVED_TO_CHIEN:
                 moveCardFromJeu(view, view.getCardView(((Pair<TarotAction, CardModel>) arg1).getValue().getName()),
@@ -29,22 +30,18 @@ public class DistributionManager {
         }
     }
     
-    public static void update3CardsDistributed(View view, Pair<Boolean, CardModel[]> arg) {
-    	moveCardFromJeu(view, view.getCardView(arg.getValue()[0].getName()), arg.getValue()[0], null);
-    	moveCardFromJeu(view, view.getCardView(arg.getValue()[1].getName()), arg.getValue()[1], null);
-    	moveCardFromJeu(view, view.getCardView(arg.getValue()[2].getName()), arg.getValue()[2], null);
+    public static void update3CardsDistributed(View view, CardModel[] arg) {
+    	moveCardFromJeu(view, view.getCardView(arg[0].getName()), arg[0], null);
+    	moveCardFromJeu(view, view.getCardView(arg[1].getName()), arg[1], null);
+    	moveCardFromJeu(view, view.getCardView(arg[2].getName()), arg[2], null);
     	
-        view.waiter(TIME_BETWEEN_DISTRIBUTIONS, continueCardDistribution(view, arg.getKey()));
+        view.waiter(TIME_BETWEEN_DISTRIBUTIONS, continueCardDistribution(view.getController()));
     }
 
-    private static  EventHandler<ActionEvent> continueCardDistribution(View view, boolean nextAction) {
+    private static  EventHandler<ActionEvent> continueCardDistribution(Controller controller) {
         return new EventHandler<ActionEvent>() {
             public void handle(ActionEvent t) {
-                if (!nextAction) {
-                	view.getModel().distributeCards();
-                } else {
-                	view.getController().doNextAction();
-                }
+                controller.doNextAction();
             }
         };
     }

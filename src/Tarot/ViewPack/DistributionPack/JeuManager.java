@@ -1,9 +1,11 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
 import java.util.ArrayList;
 
 import Tarot.ModelPack.CardModel;
 import Tarot.ModelPack.Model;
+import Tarot.ViewPack.DistributionPack.CardView;
+import Tarot.ViewPack.DistributionPack.View;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;

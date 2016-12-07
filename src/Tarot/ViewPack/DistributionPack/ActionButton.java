@@ -1,4 +1,4 @@
-package Tarot.ViewPack;
+package Tarot.ViewPack.DistributionPack;
 
 import Tarot.Controller;
 import Tarot.ModelPack.Model;
