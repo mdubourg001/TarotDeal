@@ -86,13 +86,13 @@ public class View implements Observer {
         //initMusic();
         creatActionButtons();
 
-        ImageView nouvelleDonneButton = new ImageView("file:./res/nouvelle_donne.png");
+        /*ImageView nouvelleDonneButton = new ImageView("file:./res/nouvelle_donne.png");
         unrealElementsGroup.getChildren().add(nouvelleDonneButton);
         nouvelleDonneButton.setFitWidth(ImageButton.BUTTON_W/1.5);
         nouvelleDonneButton.setFitHeight(ImageButton.BUTTON_H/1.5);
         nouvelleDonneButton.setTranslateX(Model.SCREEN_W - ImageButton.BUTTON_W - 80);
         nouvelleDonneButton.setTranslateY(Model.SCREEN_H - ImageButton.BUTTON_H - 60);
-        nouvelleDonneButton.setTranslateZ(-400);
+        nouvelleDonneButton.setTranslateZ(-400);*/
     }
 
     /*private void initMusic() {
