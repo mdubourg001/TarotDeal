@@ -12,6 +12,7 @@ import Tarot.ModelPack.Model;
 import Tarot.ModelPack.Player;
 import Tarot.ModelPack.PlayerAction;
 import Tarot.ModelPack.TarotAction;
+import Tarot.ViewPack.ImageButton;
 import Tarot.ViewPack.MenuView;
 import Tarot.ViewPack.SettingsView;
 import javafx.animation.KeyFrame;
@@ -28,6 +29,7 @@ import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
@@ -83,6 +85,14 @@ public class View implements Observer {
 
         //initMusic();
         creatActionButtons();
+
+        ImageView nouvelleDonneButton = new ImageView("file:./res/nouvelle_donne.png");
+        unrealElementsGroup.getChildren().add(nouvelleDonneButton);
+        nouvelleDonneButton.setFitWidth(ImageButton.BUTTON_W/1.5);
+        nouvelleDonneButton.setFitHeight(ImageButton.BUTTON_H/1.5);
+        nouvelleDonneButton.setTranslateX(Model.SCREEN_W - ImageButton.BUTTON_W - 80);
+        nouvelleDonneButton.setTranslateY(Model.SCREEN_H - ImageButton.BUTTON_H - 60);
+        nouvelleDonneButton.setTranslateZ(-400);
     }
 
     /*private void initMusic() {
@@ -187,7 +197,7 @@ public class View implements Observer {
                 GapManager.update(this, arg0, arg1);
                 break;
             case DISTRIBUTION_DONE:
-            	/*Place, au dessus des 8 derniers atouts (14-21), un dinosaure 3D correspondant a l'atout.*/
+            	/*Place, au dessus des 8 derniers atouts (13-21), un dinosaure 3D correspondant a l'atout.*/
             	updateDinosaurs();
             	break;
         }
@@ -403,19 +413,19 @@ public class View implements Observer {
     }
     
     public void waiter(double duration, EventHandler<ActionEvent> event){
-    	if(duration == 0){
-    		/*On a decide de ne pas lancer l'exception pour ne pas surcharger les passages
+    	/*if(duration == 0){
+    		On a decide de ne pas lancer l'exception pour ne pas surcharger les passages
     		de code qui utilise waiter avec des try cacth. De plus le printStackTrace() montre
-    		deja la fonction d'ou waiter() a ete appellee.*/
+    		deja la fonction d'ou waiter() a ete appellee.
     		UselessWaiterException e = new UselessWaiterException();
 			e.printStackTrace();
-    	}
-    	else{
+    	}*/
+    	//else{
     		Timeline timeLine = new Timeline();
             KeyFrame keyFrame = new KeyFrame(Duration.seconds(duration), event);
             timeLine.getKeyFrames().add(keyFrame);
             timeLine.play();
-    	}
+    	//}
     }
     
     private Label createPetitSecLabel(Integer player){

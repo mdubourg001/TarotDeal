@@ -1,5 +1,6 @@
 package Tarot.ViewPack.DistributionPack;
 
+import Tarot.ViewPack.ImageButton;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 
