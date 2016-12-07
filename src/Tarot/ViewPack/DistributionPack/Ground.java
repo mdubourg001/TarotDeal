@@ -1,6 +1,7 @@
 package Tarot.ViewPack.DistributionPack;
 
 import Tarot.ModelPack.Model;
+import Tarot.ViewPack.ImageButton;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.paint.PhongMaterial;
@@ -17,7 +18,9 @@ public class Ground extends Group{
     en deplacant des elements*/
     private Rectangle distributionArea = new Rectangle(-DISTRIBUTION_AREA_SHIFT, -DISTRIBUTION_AREA_SHIFT, 
     		Model.SCREEN_W+2*DISTRIBUTION_AREA_SHIFT, Model.SCREEN_H + 2*DISTRIBUTION_AREA_SHIFT);
-	
+
+	private ImageButton nouvDonne = new ImageButton("file:./res/nouvelle_donne.png", Model.SCREEN_W / 1.3, Model.SCREEN_H / 1.3);
+
 	public Ground(){
         TriangleMesh mesh = new TriangleMesh();
 
@@ -56,10 +59,9 @@ public class Ground extends Group{
     		this.getChildren().add(zone.getZone());
     		this.getChildren().add(zone.getLab());
     	}
-    	
+
     	distributionArea.setTranslateZ(3);
     	this.getChildren().add(distributionArea);
-    	
     }
 	
 	public void resize(double rotate, double shiftZ){
