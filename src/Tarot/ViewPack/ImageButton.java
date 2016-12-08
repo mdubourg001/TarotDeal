@@ -25,16 +25,20 @@ public class ImageButton extends Group{
     private ImageView image = null;
     private Button button = new Button();
     private String path = null;
+    
+    public ImageButton(String filepath, double x, double y){
+    	this(filepath, x, y, IMAGE_WIDTH, IMAGE_HEIGHT);
+    }
 
-    public ImageButton(String filepath, double x, double y) {
+	public ImageButton(String filepath, double x, double y, double w, double h) {
         super();
 
         path = filepath;
 
         image = new ImageView(path);
         image.setTranslateZ(0);
-        image.setFitWidth(IMAGE_WIDTH);
-        image.setFitHeight(IMAGE_HEIGHT);
+        image.setFitWidth(w);
+        image.setFitHeight(h);
 
         button.setPrefSize(IMAGE_WIDTH, IMAGE_HEIGHT);
         button.setBackground(new Background(new BackgroundFill(BUTTON_BACKGROUND, new CornerRadii(50), null)));
@@ -67,16 +71,6 @@ public class ImageButton extends Group{
         image.setFitWidth(width);
         image.setFitHeight(height);
         button.setPrefSize(width, height);
-    }
-
-    public void setDisplayed(boolean displayed) {
-        if(displayed) {
-            this.setVisible(true);
-            this.setDisable(false);
-        } else {
-            this.setVisible(false);
-            this.setDisable(true);
-        }
     }
 
     public void setPosition(double x, double y) {

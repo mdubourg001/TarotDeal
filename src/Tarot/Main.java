@@ -1,7 +1,7 @@
 package Tarot;
 
 import Tarot.ModelPack.Model;
-import Tarot.ViewPack.DistributionPack.View;
+import Tarot.ViewPack.View;
 import javafx.application.Application;
 import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;

@@ -8,7 +8,6 @@ import static org.junit.Assert.*;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Map;
 
 import org.junit.Test;
 

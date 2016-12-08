@@ -89,14 +89,10 @@ public class Controller {
         doNextAction();
     }
     
-    public void restart() {
-        model.nouvelleDonne();
+    public void nouvelleDonne() {
+    	model.nouvelleDonne();
         currentAction = -1;
         nbDistribution = 0;
-    }
-    
-    public void nouvelleDonne() {
-    	restart();
         doNextAction();
     }
 }
