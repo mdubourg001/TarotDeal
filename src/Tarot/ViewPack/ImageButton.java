@@ -11,7 +11,6 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
-import javafx.scene.text.TextAlignment;
 
 public class ImageButton extends Group{
 
@@ -25,6 +24,10 @@ public class ImageButton extends Group{
     private ImageView image = null;
     private Button button = new Button();
     private String path = null;
+    
+    public ImageButton(String filepath){
+    	this(filepath, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+    }
     
     public ImageButton(String filepath, double x, double y){
     	this(filepath, x, y, IMAGE_WIDTH, IMAGE_HEIGHT);
@@ -40,12 +43,11 @@ public class ImageButton extends Group{
         image.setFitWidth(w);
         image.setFitHeight(h);
 
-        button.setPrefSize(IMAGE_WIDTH, IMAGE_HEIGHT);
+        button.setPrefSize(w, h);
         button.setBackground(new Background(new BackgroundFill(BUTTON_BACKGROUND, new CornerRadii(50), null)));
         button.setTranslateZ(-1);
 
         this.setPosition(x, y);
-
 
         this.setOnMouseEntered(mouseEvent -> inflate());
         this.setOnMouseExited(mouseEvent -> deflate());
